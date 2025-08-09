@@ -3,7 +3,8 @@ import { AuthService } from './auth.service';
 import { RegisterAuthDto } from './dto/register-auth.dto';
 import { LoginAuthDto } from './dto/login-auth.dto';
 import { RefreshTokenDto } from './dto/refresh-token.dto';
-
+// import { JwtAuthGuard } from './guards/jwt-auth.guard';
+// import { UseGuards } from '@nestjs/common';
 @Controller('auth')
 export class AuthController {
   constructor(private readonly authService: AuthService) {}
@@ -14,6 +15,7 @@ export class AuthController {
   }
 
   @Post('login')
+  //   @UseGuards(JwtAuthGuard)
   login(@Body() loginDto: LoginAuthDto) {
     return this.authService.login(loginDto);
   }
