@@ -1,0 +1,19 @@
+# docker-compose.yml
+version: '3.8'
+
+services:
+  db:
+    image: postgis/postgis:16-3.4  # Imagen que ya incluye PostgreSQL 16 y PostGIS 3.4
+    container_name: delivery_db
+    restart: always
+    ports:
+      - "5432:5432"  # Expone el puerto de la DB a tu máquina local
+    environment:
+      - POSTGRES_USER=delivery_user
+      - POSTGRES_PASSWORD=verano8080  # ¡Cambia esto!
+      - POSTGRES_DB=delivery_app_db
+    volumes:
+      - pgdata:/var/lib/postgresql/data # Persiste los datos aunque el contenedor se detenga
+
+volumes:
+  pgdata:
