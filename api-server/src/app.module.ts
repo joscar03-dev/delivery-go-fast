@@ -18,6 +18,11 @@ import * as Joi from 'joi';
         DB_USERNAME: Joi.string().required(),
         DB_PASSWORD: Joi.string().required(),
         DB_DATABASE: Joi.string().required(),
+        JWT_SECRET: Joi.string().required(),
+        JWT_REFRESH_SECRET: Joi.string().required(),
+        JWT_ACCESS_TOKEN_EXPIRATION_TIME: Joi.string().default('1h'),
+        JWT_REFRESH_TOKEN_EXPIRATION_TIME: Joi.string().default('7d'),
+        BCRYPT_SALT_ROUNDS: Joi.number().default(10),
       }),
     }),
 
