@@ -49,4 +49,7 @@ export class User {
 
   @OneToMany(() => Order, (order) => order.driver)
   ordersAsDriver: Order[];
+
+  @Column({ name: 'hashed_refresh_token', type: 'varchar', nullable: true })
+  hashedRefreshToken: string;
 }
