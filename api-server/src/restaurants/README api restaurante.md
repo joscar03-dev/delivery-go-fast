@@ -79,6 +79,36 @@ GET /restaurants/:id
 }
 ```
 
+### Obtener Menú de un Restaurante
+
+```
+GET /restaurants/:id/menu
+```
+
+**Respuesta:**
+
+```json
+[
+  {
+    "id": "uuid",
+    "name": "Pizza Margherita",
+    "description": "Pizza clásica con tomate y mozzarella",
+    "price": "25.00",
+    "imageUrl": "https://...",
+    "category": {
+      "id": "uuid",
+      "name": "Comida Italiana"
+    }
+  }
+]
+```
+
+### Obtener Categorías
+
+```
+GET /restaurants/categories/all
+```
+
 ## Endpoints Administrativos (Requieren rol SUPER_ADMIN)
 
 ### Crear Restaurante
@@ -116,8 +146,7 @@ PATCH /restaurants/:id
   "phone": "+51999888777",
   "latitude": -16.4040102,
   "longitude": -71.559611,
-  "restaurantCategoryId": "uuid",
-  "owner_id": "uuid"
+  "categoryId": "uuid"
 }
 ```
 
