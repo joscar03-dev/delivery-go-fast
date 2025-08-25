@@ -24,8 +24,7 @@ export class RolesGuard implements CanActivate {
 
     // 3. Comparar los roles del usuario con los roles requeridos
     // (Asumimos que user.role.name contiene el nombre del rol)
-    const hasRole = () =>
-      requiredRoles.some((role) => user.role?.name === role);
+    const hasRole = () => requiredRoles.some((role) => user.role === role);
 
     return user && user.role && hasRole();
   }
