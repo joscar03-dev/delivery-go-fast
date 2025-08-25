@@ -23,5 +23,5 @@ export class UpdateMenuItemDto {
 
   @IsUUID()
   @IsOptional()
-  categoryId?: string;
+  menuCategoryId?: string;
 }
