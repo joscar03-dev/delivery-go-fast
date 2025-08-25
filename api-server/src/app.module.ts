@@ -44,7 +44,6 @@ import * as Joi from 'joi';
     UsersModule,
     RestaurantsModule,
     OrdersModule,
-    UsersModule,
   ],
   controllers: [],
   providers: [],
