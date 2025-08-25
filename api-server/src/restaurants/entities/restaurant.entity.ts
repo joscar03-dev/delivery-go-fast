@@ -6,7 +6,6 @@ import {
   PrimaryGeneratedColumn,
   UpdateDateColumn,
   JoinColumn,
-  Point,
   ManyToOne,
   OneToMany,
 } from 'typeorm';
@@ -35,7 +34,7 @@ export class Restaurant {
     srid: 4326, // Sistema de coordenadas estándar (WGS 84)
     nullable: true,
   })
-  location: Point;
+  location: string; // Cambiamos a string para manejar mejor con PostGIS
 
   @CreateDateColumn({ name: 'created_at', type: 'timestamptz' })
   createdAt: Date;
