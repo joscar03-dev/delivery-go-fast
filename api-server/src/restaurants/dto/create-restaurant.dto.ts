@@ -33,9 +33,9 @@ export class CreateRestaurantDto {
 
   @IsUUID()
   @IsOptional()
-  categoryId?: string;
+  restaurantCategoryId?: string;
 
   @IsUUID()
-  @IsNotEmpty()
-  ownerId: string;
+  @IsOptional()
+  ownerId?: string;
 }
