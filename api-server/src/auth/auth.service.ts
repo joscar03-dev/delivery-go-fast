@@ -9,6 +9,7 @@ import * as bcrypt from 'bcryptjs';
 import { RegisterAuthDto } from './dto/register-auth.dto';
 import { LoginAuthDto } from './dto/login-auth.dto';
 import { ConfigService } from '@nestjs/config';
+import { Role } from '../common/enums/role.enum';
 
 @Injectable()
 export class AuthService {
@@ -26,8 +27,28 @@ export class AuthService {
       throw new ConflictException('El correo electrónico ya está en uso');
     }
     const hashedPassword = await bcrypt.hash(registerDto.password, 10);
-    await this.usersService.create(registerDto, hashedPassword);
+
+    // Por defecto, todos los usuarios registrados son CLIENT
+    await this.usersService.create(registerDto, hashedPassword, Role.CLIENT);
     return { message: 'Usuario registrado exitosamente' };
+  }
+
+  async createSuperAdmin(registerDto: RegisterAuthDto) {
+    const userExists = await this.usersService.findOneByEmail(
+      registerDto.email,
+    );
+    if (userExists) {
+      throw new ConflictException('El correo electrónico ya está en uso');
+    }
+
+    const hashedPassword = await bcrypt.hash(registerDto.password, 10);
+    await this.usersService.create(
+      registerDto,
+      hashedPassword,
+      Role.SUPER_ADMIN,
+    );
+
+    return { message: 'Super administrador creado exitosamente' };
   }
 
   async login(loginDto: LoginAuthDto) {
@@ -43,7 +64,11 @@ export class AuthService {
       throw new UnauthorizedException('Credenciales inválidas');
     }
 
-    const payload = { sub: user.id, email: user.email };
+    const payload = {
+      sub: user.id,
+      email: user.email,
+      role: user.role?.name || 'CLIENT',
+    };
     return await this._generateTokens(payload);
   }
 
@@ -73,7 +98,11 @@ export class AuthService {
       }
 
       // Generar nuevos tokens usando el método privado
-      const newPayload = { sub: user.id, email: user.email };
+      const newPayload = {
+        sub: user.id,
+        email: user.email,
+        role: user.role?.name || 'CLIENT',
+      };
       return await this._generateTokens(newPayload);
     } catch {
       throw new UnauthorizedException('Token de refresco inválido o expirado');
@@ -86,7 +115,11 @@ export class AuthService {
     return { message: 'Logout exitoso' };
   }
 
-  private async _generateTokens(payload: { sub: string; email: string }) {
+  private async _generateTokens(payload: {
+    sub: string;
+    email: string;
+    role?: string;
+  }) {
     const accessToken = this.jwtService.sign(payload, {
       secret: this.configService.get<string>('JWT_SECRET'),
       expiresIn: this.configService.get<string>(
