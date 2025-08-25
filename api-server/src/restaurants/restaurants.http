@@ -1,0 +1,136 @@
+# Archivo de pruebas para la API de Restaurantes
+# Usar con herramientas como Thunder Client, Postman o similar
+
+### Variables
+@baseUrl = http://localhost:3000
+@authToken = your_jwt_token_here
+
+### 1. Obtener todos los restaurantes (público)
+GET {{baseUrl}}/restaurants
+
+### 2. Obtener restaurantes cercanos (público)
+GET {{baseUrl}}/restaurants?latitude=-16.4040102&longitude=-71.559611&radius=10
+
+### 3. Obtener detalles de un restaurante (público)
+GET {{baseUrl}}/restaurants/restaurant-uuid-here
+
+### 4. Obtener menú de un restaurante (público)
+GET {{baseUrl}}/restaurants/restaurant-uuid-here/menu
+
+### 5. Obtener todas las categorías (público)
+GET {{baseUrl}}/restaurants/categories/all
+
+### 6. Crear categorías por defecto (ADMIN)
+POST {{baseUrl}}/restaurants/categories/seed
+Authorization: Bearer {{authToken}}
+
+### 7. Crear una nueva categoría (ADMIN)
+POST {{baseUrl}}/restaurants/categories
+Authorization: Bearer {{authToken}}
+Content-Type: application/json
+
+{
+  "name": "Comida Peruana",
+  "description": "Restaurantes especializados en comida tradicional peruana"
+}
+
+### 8. Crear un nuevo restaurante (ADMIN)
+POST {{baseUrl}}/restaurants
+Authorization: Bearer {{authToken}}
+Content-Type: application/json
+
+{
+  "name": "Chez Pierre",
+  "address": "Av. El Sol 456, Cusco",
+  "phone": "+51984123456",
+  "latitude": -13.5164,
+  "longitude": -71.9785,
+  "categoryId": "category-uuid-here",
+  "ownerId": "user-uuid-here"
+}
+
+### 9. Actualizar un restaurante (ADMIN)
+PATCH {{baseUrl}}/restaurants/restaurant-uuid-here
+Authorization: Bearer {{authToken}}
+Content-Type: application/json
+
+{
+  "name": "Chez Pierre - Restaurante Francés",
+  "phone": "+51984999888"
+}
+
+### 10. Crear un item de menú (ADMIN)
+POST {{baseUrl}}/restaurants/restaurant-uuid-here/menu
+Authorization: Bearer {{authToken}}
+Content-Type: application/json
+
+{
+  "name": "Coq au Vin",
+  "description": "Pollo guisado en vino tinto con verduras",
+  "price": 45.00,
+  "imageUrl": "https://example.com/coq-au-vin.jpg",
+  "categoryId": "category-uuid-here"
+}
+
+### 11. Obtener un item específico del menú (público)
+GET {{baseUrl}}/restaurants/restaurant-uuid-here/menu/menu-item-uuid-here
+
+### 12. Actualizar un item de menú (ADMIN)
+PATCH {{baseUrl}}/restaurants/restaurant-uuid-here/menu/menu-item-uuid-here
+Authorization: Bearer {{authToken}}
+Content-Type: application/json
+
+{
+  "price": 48.00,
+  "description": "Pollo guisado en vino tinto francés con verduras frescas"
+}
+
+### 13. Eliminar un item de menú (ADMIN)
+DELETE {{baseUrl}}/restaurants/restaurant-uuid-here/menu/menu-item-uuid-here
+Authorization: Bearer {{authToken}}
+
+### 14. Eliminar un restaurante (ADMIN)
+DELETE {{baseUrl}}/restaurants/restaurant-uuid-here
+Authorization: Bearer {{authToken}}
+
+###
+### Ejemplos de respuestas esperadas:
+###
+
+### Respuesta de GET /restaurants (con parámetros de ubicación):
+# [
+#   {
+#     "id": "550e8400-e29b-41d4-a716-446655440000",
+#     "name": "Pizza Palace",
+#     "address": "Av. Principal 123",
+#     "phone": "+51987654321",
+#     "location": "POINT(-71.559611 -16.4040102)",
+#     "createdAt": "2023-01-01T00:00:00.000Z",
+#     "updatedAt": "2023-01-01T00:00:00.000Z",
+#     "category": {
+#       "id": "category-uuid",
+#       "name": "Comida Italiana",
+#       "description": "Restaurantes especializados en comida italiana"
+#     },
+#     "owner": {
+#       "id": "user-uuid",
+#       "email": "owner@example.com",
+#       "name": "Juan Pérez"
+#     }
+#   }
+# ]
+
+### Respuesta de GET /restaurants/:id/menu:
+# [
+#   {
+#     "id": "menu-item-uuid",
+#     "name": "Pizza Margherita",
+#     "description": "Pizza clásica con tomate, mozzarella y albahaca",
+#     "price": "25.00",
+#     "imageUrl": "https://example.com/pizza-margherita.jpg",
+#     "category": {
+#       "id": "category-uuid",
+#       "name": "Comida Italiana"
+#     }
+#   }
+# ]
