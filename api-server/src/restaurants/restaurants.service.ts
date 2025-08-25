@@ -1,9 +1,14 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import {
+  Injectable,
+  NotFoundException,
+  BadRequestException,
+} from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { Restaurant } from './entities/restaurant.entity';
 import { MenuItem } from './entities/menu-item.entity';
-import { Category } from './entities/category.entity';
+import { RestaurantCategory } from './entities/restaurant-category.entity';
+import { MenuCategory } from './entities/menu-category.entity';
 import { CreateRestaurantDto } from './dto/create-restaurant.dto';
 import { UpdateRestaurantDto } from './dto/update-restaurant.dto';
 import { CreateMenuItemDto } from './dto/create-menu-item.dto';
@@ -20,14 +25,28 @@ export class RestaurantsService {
     private readonly restaurantRepository: Repository<Restaurant>,
     @InjectRepository(MenuItem)
     private readonly menuItemRepository: Repository<MenuItem>,
-    @InjectRepository(Category)
-    private readonly categoryRepository: Repository<Category>,
+    @InjectRepository(RestaurantCategory)
+    private readonly restaurantCategoryRepository: Repository<RestaurantCategory>,
+    @InjectRepository(MenuCategory)
+    private readonly menuCategoryRepository: Repository<MenuCategory>,
   ) {}
 
   // CRUD para Restaurantes
   async create(createRestaurantDto: CreateRestaurantDto): Promise<Restaurant> {
-    const { longitude, latitude, categoryId, ownerId, ...restaurantData } =
-      createRestaurantDto;
+    const {
+      longitude,
+      latitude,
+      restaurantCategoryId,
+      ownerId,
+      ...restaurantData
+    } = createRestaurantDto;
+
+    // Validar que ownerId esté presente
+    if (!ownerId) {
+      throw new BadRequestException(
+        'ownerId es requerido para crear un restaurante',
+      );
+    }
 
     // 👇 AQUÍ TRANSFORMAMOS LOS DATOS 👇
     const locationObject: Point = {
@@ -35,10 +54,23 @@ export class RestaurantsService {
       coordinates: [longitude, latitude], // Orden: [longitud, latitud]
     };
 
+    // Buscar la categoría de restaurante si se proporciona
+    let category;
+    if (restaurantCategoryId) {
+      category = await this.restaurantCategoryRepository.findOne({
+        where: { id: restaurantCategoryId },
+      });
+      if (!category) {
+        throw new NotFoundException(
+          `Categoría de restaurante con ID ${restaurantCategoryId} no encontrada`,
+        );
+      }
+    }
+
     const restaurant = this.restaurantRepository.create({
       ...restaurantData,
       location: locationObject, // Asignamos el objeto transformado
-      category: { id: categoryId },
+      category,
       owner: { id: ownerId },
     });
 
@@ -91,8 +123,26 @@ export class RestaurantsService {
     id: string,
     updateRestaurantDto: UpdateRestaurantDto,
   ): Promise<Restaurant> {
-    const { longitude, latitude, categoryId, ownerId, ...restaurantData } =
-      updateRestaurantDto;
+    const {
+      longitude,
+      latitude,
+      restaurantCategoryId,
+      ownerId,
+      ...restaurantData
+    } = updateRestaurantDto;
+
+    // Buscar la categoría de restaurante si se proporciona
+    let category;
+    if (restaurantCategoryId) {
+      category = await this.restaurantCategoryRepository.findOne({
+        where: { id: restaurantCategoryId },
+      });
+      if (!category) {
+        throw new NotFoundException(
+          `Categoría de restaurante con ID ${restaurantCategoryId} no encontrada`,
+        );
+      }
+    }
 
     // El método .preload() es más seguro para actualizaciones.
     // Carga la entidad existente y luego fusiona los nuevos datos.
@@ -109,7 +159,7 @@ export class RestaurantsService {
           },
         }),
       // 👆 --- FIN DE LA CORRECCIÓN --- 👆
-      ...(categoryId && { category: { id: categoryId } }),
+      ...(category && { category }),
       ...(ownerId && { owner: { id: ownerId } }),
     });
 
@@ -130,12 +180,25 @@ export class RestaurantsService {
   async createMenuItem(
     createMenuItemDto: CreateMenuItemDto,
   ): Promise<MenuItem> {
-    const { restaurantId, categoryId, ...menuItemData } = createMenuItemDto;
+    const { restaurantId, menuCategoryId, ...menuItemData } = createMenuItemDto;
+
+    // Buscar la categoría de menú si se proporciona
+    let category;
+    if (menuCategoryId) {
+      category = await this.menuCategoryRepository.findOne({
+        where: { id: menuCategoryId },
+      });
+      if (!category) {
+        throw new NotFoundException(
+          `Categoría de menú con ID ${menuCategoryId} no encontrada`,
+        );
+      }
+    }
 
     const menuItem = this.menuItemRepository.create({
       ...menuItemData,
       restaurant: { id: restaurantId },
-      category: categoryId ? { id: categoryId } : null,
+      category,
     });
 
     return await this.menuItemRepository.save(menuItem);
@@ -169,13 +232,26 @@ export class RestaurantsService {
     itemId: string,
     updateMenuItemDto: UpdateMenuItemDto,
   ): Promise<MenuItem> {
-    const { categoryId, ...menuItemData } = updateMenuItemDto;
+    const { menuCategoryId, ...menuItemData } = updateMenuItemDto;
 
     await this.findMenuItem(restaurantId, itemId);
 
+    // Buscar la categoría de menú si se proporciona
+    let category;
+    if (menuCategoryId) {
+      category = await this.menuCategoryRepository.findOne({
+        where: { id: menuCategoryId },
+      });
+      if (!category) {
+        throw new NotFoundException(
+          `Categoría de menú con ID ${menuCategoryId} no encontrada`,
+        );
+      }
+    }
+
     await this.menuItemRepository.update(itemId, {
       ...menuItemData,
-      ...(categoryId && { category: { id: categoryId } }),
+      ...(category && { category }),
     });
 
     return this.findMenuItem(restaurantId, itemId);
@@ -186,18 +262,26 @@ export class RestaurantsService {
     await this.menuItemRepository.remove(menuItem);
   }
 
-  // Métodos para categorías
-  async findCategories(): Promise<Category[]> {
-    return await this.categoryRepository.find();
+  // Métodos para categorías de restaurante
+  async findRestaurantCategories(): Promise<RestaurantCategory[]> {
+    return await this.restaurantCategoryRepository.find();
   }
 
-  async createCategory(name: string, description?: string): Promise<Category> {
-    const category = this.categoryRepository.create({ name, description });
-    return await this.categoryRepository.save(category);
+  async createRestaurantCategory(
+    name: string,
+    description?: string,
+    icon?: string,
+  ): Promise<RestaurantCategory> {
+    const category = this.restaurantCategoryRepository.create({
+      name,
+      description,
+      icon,
+    });
+    return await this.restaurantCategoryRepository.save(category);
   }
 
-  async seedCategories(): Promise<Category[]> {
-    const existingCategories = await this.categoryRepository.find();
+  async seedRestaurantCategories(): Promise<RestaurantCategory[]> {
+    const existingCategories = await this.restaurantCategoryRepository.find();
 
     if (existingCategories.length > 0) {
       return existingCategories;
@@ -205,8 +289,8 @@ export class RestaurantsService {
 
     const categories = await Promise.all(
       defaultCategories.map(async (categoryData) => {
-        const category = this.categoryRepository.create(categoryData);
-        return await this.categoryRepository.save(category);
+        const category = this.restaurantCategoryRepository.create(categoryData);
+        return await this.restaurantCategoryRepository.save(category);
       }),
     );
 
