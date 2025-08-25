@@ -28,5 +28,5 @@ export class CreateMenuItemDto {
 
   @IsUUID()
   @IsOptional()
-  categoryId?: string;
+  menuCategoryId?: string;
 }
