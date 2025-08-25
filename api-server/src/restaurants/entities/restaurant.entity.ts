@@ -10,7 +10,8 @@ import {
   ManyToOne,
   OneToMany,
 } from 'typeorm';
-import { Category } from './category.entity';
+import { RestaurantCategory } from './restaurant-category.entity';
+import { MenuCategory } from './menu-category.entity';
 import { Order } from 'src/orders/entities/order.entity';
 import { MenuItem } from './menu-item.entity';
 @Entity('restaurants')
@@ -51,9 +52,14 @@ export class Restaurant {
   @OneToMany(() => Order, (order) => order.restaurant)
   orders: Order[];
 
-  @ManyToOne(() => Category)
-  @JoinColumn({ name: 'category_id' })
-  category: Category;
+  // Relación: Un restaurante pertenece a una categoría de restaurante
+  @ManyToOne(() => RestaurantCategory, (category) => category.restaurants)
+  @JoinColumn({ name: 'restaurant_category_id' })
+  category: RestaurantCategory;
+
+  // Relación: Un restaurante tiene muchas categorías de menú
+  @OneToMany(() => MenuCategory, (menuCategory) => menuCategory.restaurant)
+  menuCategories: MenuCategory[];
 
   // Relación: Un restaurante es propiedad de un usuario.
   @ManyToOne(() => User, { nullable: false }) // Un restaurante DEBE tener un dueño.
