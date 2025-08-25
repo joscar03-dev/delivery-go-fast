@@ -6,7 +6,7 @@ import {
   PrimaryGeneratedColumn,
 } from 'typeorm';
 import { Restaurant } from './restaurant.entity';
-import { Category } from './category.entity';
+import { MenuCategory } from './menu-category.entity';
 
 @Entity('menu_items')
 export class MenuItem {
@@ -30,8 +30,8 @@ export class MenuItem {
   @JoinColumn({ name: 'restaurant_id' })
   restaurant: Restaurant;
 
-  // Aquí añadiremos la relación con Category
-  @ManyToOne(() => Category)
-  @JoinColumn({ name: 'category_id' })
-  category: Category;
+  // Relación: Un item del menú pertenece a una categoría de menú
+  @ManyToOne(() => MenuCategory, (menuCategory) => menuCategory.menuItems)
+  @JoinColumn({ name: 'menu_category_id' })
+  category: MenuCategory;
 }
