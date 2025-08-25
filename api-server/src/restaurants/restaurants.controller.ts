@@ -8,6 +8,8 @@ import {
   Delete,
   Query,
   UseGuards,
+  Request,
+  ForbiddenException,
 } from '@nestjs/common';
 import { RestaurantsService } from './restaurants.service';
 import { CreateRestaurantDto } from './dto/create-restaurant.dto';
@@ -15,7 +17,6 @@ import { UpdateRestaurantDto } from './dto/update-restaurant.dto';
 import { CreateMenuItemDto } from './dto/create-menu-item.dto';
 import { UpdateMenuItemDto } from './dto/update-menu-item.dto';
 import { FindRestaurantsDto } from './dto/find-restaurants.dto';
-import { CreateCategoryDto } from './dto/create-category.dto';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { RolesGuard } from '../auth/guards/roles.guard';
 import { Roles } from '../auth/decorators/roles.decorator';
@@ -41,22 +42,58 @@ export class RestaurantsController {
     return this.restaurantsService.findMenuItems(restaurantId);
   }
 
-  // Endpoints para administradores
+  // Endpoints para administradores y dueños de restaurante
   @Post()
   @UseGuards(JwtAuthGuard, RolesGuard)
-  @Roles(Role.SUPER_ADMIN)
-  create(@Body() createRestaurantDto: CreateRestaurantDto) {
-    return this.restaurantsService.create(createRestaurantDto);
+  @Roles(Role.RESTAURANT_OWNER, Role.SUPER_ADMIN)
+  create(@Body() createRestaurantDto: CreateRestaurantDto, @Request() req) {
+    // Para RESTAURANT_OWNER, asignar automáticamente como owner
+    // Para SUPER_ADMIN, usar el ownerId del body o el usuario actual
+    const currentUser = req.user;
+
+    if (currentUser.role === Role.RESTAURANT_OWNER) {
+      // Si es RESTAURANT_OWNER, siempre asignar como owner
+      return this.restaurantsService.create({
+        ...createRestaurantDto,
+        ownerId: currentUser.id, // Usar id en lugar de sub
+      });
+    } else {
+      // Si es SUPER_ADMIN, usar ownerId del body o usuario actual como fallback
+      return this.restaurantsService.create({
+        ...createRestaurantDto,
+        ownerId: createRestaurantDto.ownerId || currentUser.id,
+      });
+    }
   }
 
   @Patch(':id')
   @UseGuards(JwtAuthGuard, RolesGuard)
-  @Roles(Role.SUPER_ADMIN)
-  update(
+  @Roles(Role.RESTAURANT_OWNER, Role.SUPER_ADMIN)
+  async update(
     @Param('id') id: string,
     @Body() updateRestaurantDto: UpdateRestaurantDto,
+    @Request() req,
   ) {
-    return this.restaurantsService.update(id, updateRestaurantDto);
+    const currentUser = req.user;
+
+    if (currentUser.role === Role.RESTAURANT_OWNER) {
+      // Verificar que el restaurante pertenezca al usuario actual
+      const restaurant = await this.restaurantsService.findOne(id);
+
+      if (restaurant.owner.id !== currentUser.sub) {
+        throw new ForbiddenException(
+          'No tienes permisos para actualizar este restaurante',
+        );
+      }
+
+      // No permitir cambiar el owner si es RESTAURANT_OWNER
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
+      const { ownerId, ...allowedUpdates } = updateRestaurantDto;
+      return this.restaurantsService.update(id, allowedUpdates);
+    } else {
+      // SUPER_ADMIN puede actualizar cualquier campo de cualquier restaurante
+      return this.restaurantsService.update(id, updateRestaurantDto);
+    }
   }
 
   @Delete(':id')
@@ -66,14 +103,28 @@ export class RestaurantsController {
     return this.restaurantsService.remove(id);
   }
 
-  // Endpoints para gestión de menú (solo administradores)
+  // Endpoints para gestión de menú
   @Post(':id/menu')
   @UseGuards(JwtAuthGuard, RolesGuard)
-  @Roles(Role.SUPER_ADMIN)
-  createMenuItem(
+  @Roles(Role.RESTAURANT_OWNER, Role.SUPER_ADMIN)
+  async createMenuItem(
     @Param('id') restaurantId: string,
     @Body() createMenuItemDto: CreateMenuItemDto,
+    @Request() req,
   ) {
+    const currentUser = req.user;
+
+    if (currentUser.role === Role.RESTAURANT_OWNER) {
+      // Verificar que el restaurante pertenezca al usuario actual
+      const restaurant = await this.restaurantsService.findOne(restaurantId);
+
+      if (restaurant.owner.id !== currentUser.sub) {
+        throw new ForbiddenException(
+          'No tienes permisos para gestionar el menú de este restaurante',
+        );
+      }
+    }
+
     return this.restaurantsService.createMenuItem({
       ...createMenuItemDto,
       restaurantId,
@@ -90,12 +141,26 @@ export class RestaurantsController {
 
   @Patch(':restaurantId/menu/:itemId')
   @UseGuards(JwtAuthGuard, RolesGuard)
-  @Roles(Role.SUPER_ADMIN)
-  updateMenuItem(
+  @Roles(Role.RESTAURANT_OWNER, Role.SUPER_ADMIN)
+  async updateMenuItem(
     @Param('restaurantId') restaurantId: string,
     @Param('itemId') itemId: string,
     @Body() updateMenuItemDto: UpdateMenuItemDto,
+    @Request() req,
   ) {
+    const currentUser = req.user;
+
+    if (currentUser.role === Role.RESTAURANT_OWNER) {
+      // Verificar que el restaurante pertenezca al usuario actual
+      const restaurant = await this.restaurantsService.findOne(restaurantId);
+
+      if (restaurant.owner.id !== currentUser.sub) {
+        throw new ForbiddenException(
+          'No tienes permisos para gestionar el menú de este restaurante',
+        );
+      }
+    }
+
     return this.restaurantsService.updateMenuItem(
       restaurantId,
       itemId,
@@ -103,36 +168,27 @@ export class RestaurantsController {
     );
   }
 
-  @Delete(':restaurantId/menu/:itemId')
+  @Delete(':restaurantId/menu-items/:itemId')
   @UseGuards(JwtAuthGuard, RolesGuard)
-  @Roles(Role.SUPER_ADMIN)
-  removeMenuItem(
+  @Roles(Role.RESTAURANT_OWNER, Role.SUPER_ADMIN)
+  async removeMenuItem(
     @Param('restaurantId') restaurantId: string,
     @Param('itemId') itemId: string,
+    @Request() req,
   ) {
+    const currentUser = req.user;
+
+    if (currentUser.role === Role.RESTAURANT_OWNER) {
+      // Verificar que el restaurante pertenezca al usuario actual
+      const restaurant = await this.restaurantsService.findOne(restaurantId);
+
+      if (restaurant.owner.id !== currentUser.sub) {
+        throw new ForbiddenException(
+          'No tienes permisos para gestionar el menú de este restaurante',
+        );
+      }
+    }
+
     return this.restaurantsService.removeMenuItem(restaurantId, itemId);
-  }
-
-  // Endpoints para categorías
-  @Get('/categories/all')
-  findCategories() {
-    return this.restaurantsService.findCategories();
-  }
-
-  @Post('/categories')
-  @UseGuards(JwtAuthGuard, RolesGuard)
-  @Roles(Role.SUPER_ADMIN)
-  createCategory(@Body() createCategoryDto: CreateCategoryDto) {
-    return this.restaurantsService.createCategory(
-      createCategoryDto.name,
-      createCategoryDto.description,
-    );
-  }
-
-  @Post('/categories/seed')
-  @UseGuards(JwtAuthGuard, RolesGuard)
-  @Roles(Role.SUPER_ADMIN)
-  seedCategories() {
-    return this.restaurantsService.seedCategories();
   }
 }
