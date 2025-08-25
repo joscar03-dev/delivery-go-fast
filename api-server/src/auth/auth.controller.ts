@@ -24,4 +24,9 @@ export class AuthController {
   refreshToken(@Body() refreshTokenDto: RefreshTokenDto) {
     return this.authService.refreshToken(refreshTokenDto.refreshToken);
   }
+
+  @Post('create-super-admin')
+  createSuperAdmin(@Body() registerDto: RegisterAuthDto) {
+    return this.authService.createSuperAdmin(registerDto);
+  }
 }
