@@ -18,12 +18,16 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
   }
 
   // Este método se llama después de que el token se valida con éxito
-  async validate(payload: { sub: string; email: string }) {
+  async validate(payload: { sub: string; email: string; role: string }) {
     const user = await this.usersService.findOneByEmail(payload.email);
     if (!user) {
       throw new UnauthorizedException();
     }
     // Lo que retornes aquí se adjuntará al objeto request (request.user)
-    return user;
+    // Incluimos el rol del payload para acceso rápido
+    return {
+      ...user,
+      role: payload.role,
+    };
   }
 }
