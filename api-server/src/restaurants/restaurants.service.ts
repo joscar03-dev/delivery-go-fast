@@ -11,6 +11,7 @@ import { UpdateMenuItemDto } from './dto/update-menu-item.dto';
 import { FindRestaurantsDto } from './dto/find-restaurants.dto';
 import { defaultCategories } from '../common/seeds/categories.seed';
 import { GeospatialQueryBuilder } from '../common/utils/geospatial.util';
+import { Point } from 'geojson';
 
 @Injectable()
 export class RestaurantsService {
@@ -28,17 +29,20 @@ export class RestaurantsService {
     const { longitude, latitude, categoryId, ownerId, ...restaurantData } =
       createRestaurantDto;
 
+    // 👇 AQUÍ TRANSFORMAMOS LOS DATOS 👇
+    const locationObject: Point = {
+      type: 'Point',
+      coordinates: [longitude, latitude], // Orden: [longitud, latitud]
+    };
+
     const restaurant = this.restaurantRepository.create({
       ...restaurantData,
-      location: GeospatialQueryBuilder.formatAsPostGISPoint(
-        latitude,
-        longitude,
-      ),
-      category: categoryId ? { id: categoryId } : null,
+      location: locationObject, // Asignamos el objeto transformado
+      category: { id: categoryId },
       owner: { id: ownerId },
     });
 
-    return await this.restaurantRepository.save(restaurant);
+    return this.restaurantRepository.save(restaurant);
   }
 
   async findAll(): Promise<Restaurant[]> {
@@ -90,21 +94,31 @@ export class RestaurantsService {
     const { longitude, latitude, categoryId, ownerId, ...restaurantData } =
       updateRestaurantDto;
 
-    await this.restaurantRepository.save({
+    // El método .preload() es más seguro para actualizaciones.
+    // Carga la entidad existente y luego fusiona los nuevos datos.
+    const restaurantToUpdate = await this.restaurantRepository.preload({
       id,
       ...restaurantData,
+      // 👇 --- INICIO DE LA CORRECCIÓN --- 👇
       ...(longitude &&
         latitude && {
-          location: GeospatialQueryBuilder.formatAsPostGISPoint(
-            latitude,
-            longitude,
-          ),
+          // Creamos el objeto Point directamente en lugar de usar el builder
+          location: {
+            type: 'Point',
+            coordinates: [longitude, latitude],
+          },
         }),
+      // 👆 --- FIN DE LA CORRECCIÓN --- 👆
       ...(categoryId && { category: { id: categoryId } }),
       ...(ownerId && { owner: { id: ownerId } }),
     });
 
-    return this.findOne(id);
+    // Si el restaurante con ese ID no existe, preload devuelve undefined.
+    if (!restaurantToUpdate) {
+      throw new NotFoundException(`Restaurante con ID "${id}" no encontrado`);
+    }
+
+    return this.restaurantRepository.save(restaurantToUpdate);
   }
 
   async remove(id: string): Promise<void> {
