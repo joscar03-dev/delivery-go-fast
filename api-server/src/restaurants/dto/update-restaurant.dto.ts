@@ -35,7 +35,7 @@ export class UpdateRestaurantDto {
 
   @IsUUID()
   @IsOptional()
-  categoryId?: string;
+  restaurantCategoryId?: string;
 
   @IsUUID()
   @IsOptional()
