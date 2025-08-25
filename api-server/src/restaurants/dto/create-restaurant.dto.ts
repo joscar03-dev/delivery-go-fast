@@ -18,7 +18,7 @@ export class CreateRestaurantDto {
   @IsNotEmpty()
   address: string;
 
-  @IsPhoneNumber()
+  @IsPhoneNumber('PE')
   phone: string;
 
   @IsNumber()
