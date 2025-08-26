@@ -10,24 +10,6 @@
 - **MenuItem**: Items del menú asociados a restaurantes
 - **Category**: Categorías para clasificar restaurantes y comidas
 
-#### 🎯 Endpoints Públicos:
-
-- `GET /restaurants` - Lista restaurantes cercanos con consultas geoespaciales
-- `GET /restaurants/:id` - Detalles completos de un restaurante
-- `GET /restaurants/:id/menu` - Menú completo de un restaurante
-- `GET /restaurants/categories/all` - Lista todas las categorías
-
-#### 🔐 Endpoints Administrativos (Rol SUPER_ADMIN):
-
-- `POST /restaurants` - Crear nuevo restaurante
-- `PATCH /restaurants/:id` - Actualizar restaurante
-- `DELETE /restaurants/:id` - Eliminar restaurante
-- `POST /restaurants/:id/menu` - Agregar item al menú
-- `PATCH /restaurants/:restaurantId/menu/:itemId` - Actualizar item del menú
-- `DELETE /restaurants/:restaurantId/menu/:itemId` - Eliminar item del menú
-- `POST /restaurants/categories` - Crear nueva categoría
-- `POST /restaurants/categories/seed` - Poblar categorías por defecto
-
 ### 🗺️ Funcionalidades Geoespaciales:
 
 #### PostGIS Integration:

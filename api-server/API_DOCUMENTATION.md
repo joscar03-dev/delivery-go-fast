@@ -702,3 +702,272 @@ npm run migration:revert
 - Todos los endpoints están instrumentados para logging
 - Se registran errores y métricas de performance
 - Disponible información de debugging en modo desarrollo
+
+---
+
+## 📦 Orders API
+
+### Base URL: `/orders`
+
+Gestiona el sistema completo de pedidos con flujo de estados y permisos por rol.
+
+#### 🛒 Crear un nuevo pedido
+
+```http
+POST /orders
+```
+
+**Autenticación:** Requerida  
+**Roles:** CLIENT  
+**Body:**
+
+```json
+{
+  "restaurantId": "uuid",
+  "items": [
+    {
+      "menuItemId": "uuid",
+      "quantity": 2
+    }
+  ],
+  "notes": "Sin cebolla, por favor",
+  "deliveryAddress": "Calle Principal 123, Ciudad"
+}
+```
+
+**Respuesta:**
+
+```json
+{
+  "id": "uuid",
+  "client": {
+    "id": "uuid",
+    "email": "cliente@email.com",
+    "name": "Juan Pérez"
+  },
+  "restaurant": {
+    "id": "uuid",
+    "name": "Restaurante Ejemplo",
+    "address": "Av. Principal 456"
+  },
+  "status": "pending",
+  "total": 25.5,
+  "notes": "Sin cebolla, por favor",
+  "deliveryAddress": "Calle Principal 123, Ciudad",
+  "items": [
+    {
+      "id": "uuid",
+      "quantity": 2,
+      "unit_price": 12.75,
+      "menuItem": {
+        "id": "uuid",
+        "name": "Pizza Margherita",
+        "price": 12.75
+      }
+    }
+  ],
+  "createdAt": "2025-08-25T15:30:00Z",
+  "updatedAt": "2025-08-25T15:30:00Z"
+}
+```
+
+#### 📋 Listar pedidos
+
+```http
+GET /orders?status=pending&page=1&limit=10
+```
+
+**Autenticación:** Requerida  
+**Roles:** CLIENT, DRIVER, RESTAURANT_OWNER, SUPER_ADMIN  
+**Query Parameters:**
+
+- `status` (opcional): pending, confirmed, preparing, out_for_delivery, delivered, cancelled
+- `restaurantId` (opcional): UUID del restaurante
+- `page` (opcional): Número de página (default: 1)
+- `limit` (opcional): Elementos por página (default: 10)
+
+**Comportamiento por rol:**
+
+- **CLIENT**: Solo ve sus propios pedidos
+- **DRIVER**: Solo ve pedidos asignados a él
+- **RESTAURANT_OWNER**: Solo ve pedidos de sus restaurantes
+- **SUPER_ADMIN**: Ve todos los pedidos
+
+**Respuesta:**
+
+```json
+{
+  "orders": [
+    {
+      "id": "uuid",
+      "client": { "id": "uuid", "name": "Juan Pérez" },
+      "restaurant": { "id": "uuid", "name": "Restaurante Ejemplo" },
+      "driver": null,
+      "status": "pending",
+      "total": 25.5,
+      "createdAt": "2025-08-25T15:30:00Z"
+    }
+  ],
+  "total": 1
+}
+```
+
+#### 🔍 Obtener un pedido específico
+
+```http
+GET /orders/{id}
+```
+
+**Autenticación:** Requerida  
+**Roles:** CLIENT, DRIVER, RESTAURANT_OWNER, SUPER_ADMIN  
+**Parámetros:**
+
+- `id`: UUID del pedido
+
+**Permisos:**
+
+- **CLIENT**: Solo sus propios pedidos
+- **DRIVER**: Solo pedidos asignados
+- **RESTAURANT_OWNER**: Solo pedidos de sus restaurantes
+- **SUPER_ADMIN**: Cualquier pedido
+
+#### 🔄 Actualizar estado de pedido
+
+```http
+PATCH /orders/{id}
+```
+
+**Autenticación:** Requerida  
+**Roles:** CLIENT, DRIVER, RESTAURANT_OWNER, SUPER_ADMIN  
+**Body:**
+
+```json
+{
+  "status": "confirmed",
+  "notes": "Comentarios adicionales"
+}
+```
+
+**Restricciones por rol:**
+
+- **CLIENT**: Solo puede cancelar pedidos en estado "pending"
+- **DRIVER**: Solo puede actualizar a "out_for_delivery" o "delivered"
+- **RESTAURANT_OWNER**: Puede actualizar a "confirmed", "preparing", "cancelled"
+
+#### ❌ Cancelar pedido
+
+```http
+PATCH /orders/{id}/cancel
+```
+
+**Autenticación:** Requerida  
+**Roles:** CLIENT  
+**Restricciones:** Solo pedidos en estado "pending"
+
+#### ✅ Confirmar pedido
+
+```http
+PATCH /orders/{id}/confirm
+```
+
+**Autenticación:** Requerida  
+**Roles:** RESTAURANT_OWNER, SUPER_ADMIN  
+**Acción:** Cambia estado a "confirmed"
+
+#### 👨‍🍳 Marcar como preparando
+
+```http
+PATCH /orders/{id}/preparing
+```
+
+**Autenticación:** Requerida  
+**Roles:** RESTAURANT_OWNER, SUPER_ADMIN  
+**Acción:** Cambia estado a "preparing"
+
+#### 🚗 Marcar como en camino
+
+```http
+PATCH /orders/{id}/out-for-delivery
+```
+
+**Autenticación:** Requerida  
+**Roles:** DRIVER, SUPER_ADMIN  
+**Acción:** Cambia estado a "out_for_delivery"
+
+#### 📦 Marcar como entregado
+
+```http
+PATCH /orders/{id}/delivered
+```
+
+**Autenticación:** Requerida  
+**Roles:** DRIVER, SUPER_ADMIN  
+**Acción:** Cambia estado a "delivered"
+
+#### 👤 Asignar repartidor
+
+```http
+PATCH /orders/{id}/assign-driver
+```
+
+**Autenticación:** Requerida  
+**Roles:** SUPER_ADMIN  
+**Body:**
+
+```json
+{
+  "driverId": "uuid"
+}
+```
+
+**Restricciones:** El pedido debe estar en estado "preparing"
+
+### 📊 Estados del Pedido
+
+```mermaid
+graph TD
+    A[pending] --> B[confirmed]
+    B --> C[preparing]
+    C --> D[out_for_delivery]
+    D --> E[delivered]
+
+    A --> F[cancelled]
+    B --> F
+    C --> F
+```
+
+1. **pending**: Pedido creado, esperando confirmación del restaurante
+2. **confirmed**: Restaurante confirmó el pedido
+3. **preparing**: Cocina está preparando el pedido
+4. **out_for_delivery**: Repartidor está en camino
+5. **delivered**: Pedido entregado al cliente
+6. **cancelled**: Pedido cancelado (en cualquier momento antes de la entrega)
+
+### 🔒 Validaciones de Negocio
+
+#### Al crear un pedido:
+
+- ✅ El restaurante debe existir
+- ✅ Todos los items del menú deben existir y pertenecer al restaurante
+- ✅ El precio total se calcula automáticamente en el backend
+- ✅ Se guarda en una transacción para garantizar atomicidad
+
+#### Al actualizar estado:
+
+- ✅ Solo roles autorizados pueden realizar cada transición
+- ✅ Se valida que la transición de estado sea válida
+- ✅ Se verifican permisos específicos por rol
+
+#### Control de acceso:
+
+- ✅ Cada usuario solo ve pedidos relevantes a su rol
+- ✅ Se valida propiedad en cada operación
+- ✅ Endpoints específicos para cada acción del flujo
+
+### 🚨 Códigos de Error
+
+- **400**: Datos inválidos, transición de estado no permitida
+- **401**: No autenticado
+- **403**: Sin permisos para acceder/modificar el pedido
+- **404**: Pedido, restaurante o item no encontrado
+- **500**: Error interno del servidor
