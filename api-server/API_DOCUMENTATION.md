@@ -1,4 +1,4 @@
-# 📚 API Documentation - Refactorización de Categorías
+# 📚 API Documentation - Sistema de Delivery
 
 ## 🎯 Resumen de Cambios
 
@@ -6,6 +6,203 @@ La API ha sido **completamente refactorizada** para separar las categorías gen�
 
 - **RestaurantCategory**: Categorías para clasificar restaurantes (ej: Comida Rápida, Italiana, Asiática)
 - **MenuCategory**: Categorías para organizar elementos del menú dentro de cada restaurante (ej: Entradas, Platos Principales, Postres)
+
+---
+
+## 🔐 Authentication API
+
+### Base URL: `/auth`
+
+Sistema completo de autenticación y registro con soporte para múltiples roles.
+
+#### 📝 Registro de Cliente (Default)
+
+```http
+POST /auth/register
+```
+
+**Autenticación:** No requerida  
+**Body:**
+
+```json
+{
+  "name": "Juan Pérez",
+  "email": "juan@email.com",
+  "password": "mi_password_segura",
+  "role": "client" // Opcional: client (default), driver, restaurant_owner
+}
+```
+
+**Respuesta:**
+
+```json
+{
+  "message": "Usuario registrado exitosamente",
+  "role": "client"
+}
+```
+
+#### 🚗 Crear Repartidor
+
+```http
+POST /auth/create-driver
+```
+
+**Autenticación:** No requerida  
+**Body:**
+
+```json
+{
+  "name": "Carlos Repartidor",
+  "email": "carlos@email.com",
+  "password": "mi_password_segura"
+}
+```
+
+**Respuesta:**
+
+```json
+{
+  "message": "Repartidor creado exitosamente",
+  "role": "driver"
+}
+```
+
+#### 🏪 Crear Propietario de Restaurante
+
+```http
+POST /auth/create-restaurant-owner
+```
+
+**Autenticación:** No requerida  
+**Body:**
+
+```json
+{
+  "name": "María Propietaria",
+  "email": "maria@email.com",
+  "password": "mi_password_segura"
+}
+```
+
+**Respuesta:**
+
+```json
+{
+  "message": "Propietario de restaurante creado exitosamente",
+  "role": "restaurant_owner"
+}
+```
+
+#### 👑 Crear Super Administrador
+
+```http
+POST /auth/create-super-admin
+```
+
+**Autenticación:** No requerida  
+**Body:**
+
+```json
+{
+  "name": "Admin Sistema",
+  "email": "admin@sistema.com",
+  "password": "super_password_segura"
+}
+```
+
+**Respuesta:**
+
+```json
+{
+  "message": "Super administrador creado exitosamente"
+}
+```
+
+#### 🔑 Iniciar Sesión
+
+```http
+POST /auth/login
+```
+
+**Autenticación:** No requerida  
+**Body:**
+
+```json
+{
+  "email": "juan@email.com",
+  "password": "mi_password_segura"
+}
+```
+
+**Respuesta:**
+
+```json
+{
+  "accessToken": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
+  "refreshToken": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
+}
+```
+
+#### 🔄 Refrescar Token
+
+```http
+POST /auth/refresh
+```
+
+**Autenticación:** No requerida  
+**Body:**
+
+```json
+{
+  "refreshToken": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
+}
+```
+
+**Respuesta:**
+
+```json
+{
+  "accessToken": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
+  "refreshToken": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
+}
+```
+
+### 🎭 Roles del Sistema
+
+#### **CLIENT**
+
+- Puede crear y ver sus propios pedidos
+- Puede cancelar pedidos en estado "pending"
+- Acceso a restaurantes y menús públicos
+
+#### **DRIVER**
+
+- Puede ver pedidos disponibles para entrega
+- Puede aceptar pedidos y actualizar su estado
+- Acceso a sus entregas activas e historial
+
+#### **RESTAURANT_OWNER**
+
+- Puede gestionar sus propios restaurantes
+- Puede crear y gestionar elementos del menú
+- Puede gestionar categorías de menú de sus restaurantes
+- Puede confirmar/rechazar pedidos de sus restaurantes
+
+#### **SUPER_ADMIN**
+
+- Acceso completo a todos los recursos
+- Puede gestionar categorías de restaurantes
+- Puede asignar repartidores a pedidos
+- Acceso administrativo total
+
+### 🔒 Autenticación JWT
+
+Una vez autenticado, incluye el token en el header de todas las peticiones protegidas:
+
+```http
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
+```
 
 ---
 
@@ -971,3 +1168,303 @@ graph TD
 - **403**: Sin permisos para acceder/modificar el pedido
 - **404**: Pedido, restaurante o item no encontrado
 - **500**: Error interno del servidor
+
+---
+
+## 🚗 Deliveries API
+
+### Base URL: `/deliveries`
+
+Sistema completo de gestión de entregas para repartidores.
+
+#### 📍 Ver pedidos disponibles
+
+```http
+GET /deliveries/available?latitude=-12.046374&longitude=-77.042793&radius=5&page=1&limit=10
+```
+
+**Autenticación:** Requerida  
+**Roles:** DRIVER  
+**Query Parameters:**
+
+- `latitude` (opcional): Latitud de la ubicación del repartidor
+- `longitude` (opcional): Longitud de la ubicación del repartidor
+- `radius` (opcional): Radio de búsqueda en kilómetros (default: 5)
+- `page` (opcional): Número de página (default: 1)
+- `limit` (opcional): Elementos por página (default: 10)
+
+**Respuesta:**
+
+```json
+{
+  "orders": [
+    {
+      "id": "uuid",
+      "client": {
+        "id": "uuid",
+        "name": "Juan Pérez",
+        "email": "juan@email.com"
+      },
+      "restaurant": {
+        "id": "uuid",
+        "name": "Restaurante Ejemplo",
+        "address": "Av. Principal 456",
+        "location": {
+          "coordinates": [-77.042793, -12.046374]
+        }
+      },
+      "status": "preparing",
+      "total": 35.5,
+      "deliveryAddress": "Calle Principal 123, Ciudad",
+      "items": [
+        {
+          "id": "uuid",
+          "quantity": 2,
+          "unit_price": 15.0,
+          "menuItem": {
+            "id": "uuid",
+            "name": "Pizza Margherita",
+            "description": "Pizza clásica con tomate y mozzarella"
+          }
+        }
+      ],
+      "createdAt": "2025-08-25T18:00:00Z"
+    }
+  ],
+  "total": 1
+}
+```
+
+#### ✅ Aceptar un pedido
+
+```http
+POST /deliveries/{orderId}/accept
+```
+
+**Autenticación:** Requerida  
+**Roles:** DRIVER  
+**Parámetros:**
+
+- `orderId`: UUID del pedido a aceptar
+
+**Restricciones:**
+
+- El pedido debe estar en estado "preparing"
+- El pedido no debe tener repartidor asignado
+- Solo repartidores pueden aceptar pedidos
+
+**Respuesta:**
+
+```json
+{
+  "id": "uuid",
+  "client": { "id": "uuid", "name": "Juan Pérez" },
+  "restaurant": { "id": "uuid", "name": "Restaurante Ejemplo" },
+  "driver": {
+    "id": "uuid",
+    "name": "Carlos Repartidor",
+    "email": "carlos@email.com"
+  },
+  "status": "out_for_delivery",
+  "total": 35.5,
+  "deliveryAddress": "Calle Principal 123, Ciudad",
+  "createdAt": "2025-08-25T18:00:00Z",
+  "updatedAt": "2025-08-25T18:05:00Z"
+}
+```
+
+#### 📦 Ver mis entregas activas
+
+```http
+GET /deliveries/my-active
+```
+
+**Autenticación:** Requerida  
+**Roles:** DRIVER  
+**Descripción:** Devuelve todos los pedidos asignados al repartidor que están en estado "out_for_delivery"
+
+**Respuesta:**
+
+```json
+[
+  {
+    "id": "uuid",
+    "client": { "id": "uuid", "name": "Juan Pérez" },
+    "restaurant": { "id": "uuid", "name": "Restaurante Ejemplo" },
+    "status": "out_for_delivery",
+    "total": 35.50,
+    "deliveryAddress": "Calle Principal 123, Ciudad",
+    "items": [...],
+    "createdAt": "2025-08-25T18:00:00Z"
+  }
+]
+```
+
+#### 📚 Ver historial de entregas
+
+```http
+GET /deliveries/my-history?page=1&limit=10
+```
+
+**Autenticación:** Requerida  
+**Roles:** DRIVER  
+**Query Parameters:**
+
+- `page` (opcional): Número de página (default: 1)
+- `limit` (opcional): Elementos por página (default: 10)
+
+**Descripción:** Devuelve el historial de pedidos entregados por el repartidor
+
+**Respuesta:**
+
+```json
+{
+  "orders": [
+    {
+      "id": "uuid",
+      "client": { "id": "uuid", "name": "María García" },
+      "restaurant": { "id": "uuid", "name": "Restaurante Plaza" },
+      "status": "delivered",
+      "total": 28.75,
+      "deliveryAddress": "Av. Central 789, Ciudad",
+      "createdAt": "2025-08-25T17:00:00Z",
+      "updatedAt": "2025-08-25T17:45:00Z"
+    }
+  ],
+  "total": 15
+}
+```
+
+### Base URL: `/orders` (Actualizaciones de Estado)
+
+#### 🔄 Actualizar estado de pedido
+
+```http
+PUT /orders/{id}/status
+```
+
+**Autenticación:** Requerida  
+**Roles:** DRIVER  
+**Parámetros:**
+
+- `id`: UUID del pedido
+
+**Body:**
+
+```json
+{
+  "status": "delivered"
+}
+```
+
+**Estados permitidos para repartidores:**
+
+- `out_for_delivery` → `delivered`
+
+**Restricciones:**
+
+- Solo el repartidor asignado al pedido puede actualizar el estado
+- Solo se permiten transiciones válidas de estado
+
+**Respuesta:**
+
+```json
+{
+  "id": "uuid",
+  "client": { "id": "uuid", "name": "Juan Pérez" },
+  "restaurant": { "id": "uuid", "name": "Restaurante Ejemplo" },
+  "driver": { "id": "uuid", "name": "Carlos Repartidor" },
+  "status": "delivered",
+  "total": 35.5,
+  "deliveryAddress": "Calle Principal 123, Ciudad",
+  "createdAt": "2025-08-25T18:00:00Z",
+  "updatedAt": "2025-08-25T18:30:00Z"
+}
+```
+
+### 🌍 Funcionalidades Geoespaciales
+
+#### Búsqueda por proximidad:
+
+- Utiliza PostGIS para calcular distancias geográficas
+- Filtra pedidos disponibles según la ubicación del repartidor
+- Radio configurable en kilómetros
+- Optimizado para consultas espaciales rápidas
+
+#### Ejemplo de consulta SQL generada:
+
+```sql
+SELECT * FROM orders o
+JOIN restaurants r ON o.restaurant_id = r.id
+WHERE o.status = 'preparing'
+  AND o.driver_id IS NULL
+  AND ST_DWithin(
+    r.location::geography,
+    ST_MakePoint(-77.042793, -12.046374)::geography,
+    5000  -- 5 km en metros
+  )
+ORDER BY o.created_at ASC;
+```
+
+### 🔒 Validaciones de Negocio
+
+#### Para pedidos disponibles:
+
+- ✅ Solo pedidos en estado "preparing"
+- ✅ Sin repartidor asignado
+- ✅ Filtrado geográfico opcional
+- ✅ Ordenados por tiempo de creación (FIFO)
+
+#### Para aceptar pedidos:
+
+- ✅ Solo repartidores autenticados
+- ✅ Pedido debe existir y estar disponible
+- ✅ Cambio automático a "out_for_delivery"
+- ✅ Asignación atómica del repartidor
+
+#### Para actualizar estado:
+
+- ✅ Solo el repartidor asignado puede actualizar
+- ✅ Transiciones de estado válidas únicamente
+- ✅ Auditoría de cambios con timestamps
+
+### 🚨 Códigos de Error Específicos
+
+- **400**:
+  - Pedido ya tiene repartidor asignado
+  - Transición de estado no permitida
+  - Pedido no está en estado correcto para la acción
+- **403**:
+  - Solo repartidores pueden acceder
+  - Solo el repartidor asignado puede actualizar
+- **404**: Pedido no encontrado
+- **500**: Error en consulta geoespacial
+
+### 📱 Flujo de Trabajo del Repartidor
+
+```mermaid
+sequenceDiagram
+    participant D as Driver
+    participant API as API
+    participant DB as Database
+
+    D->>API: GET /deliveries/available
+    API->>DB: Query available orders by location
+    DB-->>API: Return nearby orders
+    API-->>D: List of available deliveries
+
+    D->>API: POST /deliveries/{orderId}/accept
+    API->>DB: Assign driver & update status
+    DB-->>API: Order updated
+    API-->>D: Confirmed assignment
+
+    D->>API: GET /deliveries/my-active
+    API->>DB: Get active deliveries for driver
+    DB-->>API: Active deliveries
+    API-->>D: Current deliveries
+
+    D->>API: PUT /orders/{id}/status (delivered)
+    API->>DB: Update order status
+    DB-->>API: Status updated
+    API-->>D: Delivery completed
+```
