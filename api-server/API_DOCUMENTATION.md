@@ -1468,3 +1468,174 @@ sequenceDiagram
     DB-->>API: Status updated
     API-->>D: Delivery completed
 ```
+
+---
+
+## 🌐 WebSockets Geolocation API
+
+### Namespace: `/delivery`
+
+Sistema en tiempo real para tracking de repartidores y actualizaciones de ubicación de pedidos.
+
+#### 🔌 Conexión WebSocket
+
+```javascript
+import io from 'socket.io-client';
+
+const socket = io('http://localhost:3000/delivery', {
+  auth: {
+    token: 'your-jwt-token',
+  },
+  // O usar query params
+  query: {
+    token: 'your-jwt-token',
+  },
+});
+```
+
+#### 🛡️ Autenticación
+
+La conexión WebSocket requiere un token JWT válido que puede enviarse de tres formas:
+
+1. **Header Authorization:**
+
+   ```javascript
+   const socket = io('http://localhost:3000/delivery', {
+     extraHeaders: {
+       Authorization: 'Bearer your-jwt-token',
+     },
+   });
+   ```
+
+2. **Query Parameter:**
+
+   ```javascript
+   const socket = io('http://localhost:3000/delivery?token=your-jwt-token');
+   ```
+
+3. **Custom Header:**
+   ```javascript
+   const socket = io('http://localhost:3000/delivery', {
+     extraHeaders: {
+       'x-auth-token': 'your-jwt-token',
+     },
+   });
+   ```
+
+### 📡 Eventos del Repartidor (Driver)
+
+#### 📍 Actualizar Ubicación del Repartidor
+
+**Evento:** `driverLocationUpdate`  
+**Rol requerido:** DRIVER  
+**Dirección:** Cliente → Servidor
+
+```javascript
+// Enviar ubicación del repartidor
+socket.emit('driverLocationUpdate', {
+  latitude: -12.046374,
+  longitude: -77.042793,
+  heading: 45.5, // Opcional: dirección en grados (0-360)
+  speed: 25.3, // Opcional: velocidad en km/h
+  accuracy: 10.5, // Opcional: precisión en metros
+  orderId: 'uuid', // Opcional: ID del pedido si está en entrega
+});
+
+// Respuesta del servidor
+socket.on('locationUpdated', (data) => {
+  console.log('Location updated:', data);
+  // { success: true, timestamp: '2025-08-25T18:30:00Z' }
+});
+```
+
+### 📱 Eventos del Cliente
+
+#### 👀 Rastrear Pedido
+
+**Evento:** `joinOrderRoom`  
+**Rol requerido:** CLIENT, SUPER_ADMIN
+
+```javascript
+// Unirse al tracking del pedido
+socket.emit('joinOrderRoom', {
+  orderId: 'your-order-uuid',
+});
+
+// Recibir actualizaciones de ubicación en tiempo real
+socket.on('orderLocationUpdate', (data) => {
+  console.log('Driver location update:', data);
+  /*
+  {
+    orderId: 'uuid',
+    driverId: 'uuid', 
+    driverName: 'Carlos Repartidor',
+    latitude: -12.046374,
+    longitude: -77.042793,
+    heading: 45.5,
+    speed: 25.3,
+    estimatedArrival: '2025-08-25T18:45:00Z',
+    status: 'out_for_delivery'
+  }
+  */
+});
+```
+
+### 🔒 Sistema de Salas (Rooms)
+
+#### **Salas Automáticas por Rol:**
+
+- `role_driver` - Todos los repartidores
+- `role_client` - Todos los clientes
+- `available_drivers` - Repartidores disponibles
+- `order_${orderId}` - Sala privada por pedido
+
+#### **Control de Acceso:**
+
+- **CLIENT:** Solo pedidos propios
+- **DRIVER:** Solo pedidos asignados
+- **SUPER_ADMIN:** Todos los pedidos
+
+### 🎯 Ejemplo de Implementación
+
+#### **Repartidor (Driver):**
+
+```javascript
+const socket = io('/delivery', { query: { token: driverToken } });
+
+// Enviar ubicación cada 10 segundos
+setInterval(() => {
+  navigator.geolocation.getCurrentPosition((position) => {
+    socket.emit('driverLocationUpdate', {
+      latitude: position.coords.latitude,
+      longitude: position.coords.longitude,
+      orderId: currentOrderId,
+    });
+  });
+}, 10000);
+```
+
+#### **Cliente:**
+
+```javascript
+const socket = io('/delivery', { query: { token: clientToken } });
+
+// Rastrear mi pedido
+socket.emit('joinOrderRoom', { orderId: myOrderId });
+
+socket.on('orderLocationUpdate', (data) => {
+  updateMapWithDriverLocation(data.latitude, data.longitude);
+  showEstimatedArrival(data.estimatedArrival);
+});
+```
+
+### 🚨 Eventos de Error
+
+```javascript
+socket.on('error', (error) => {
+  // Posibles errores:
+  // - Authentication failed
+  // - Only drivers can update location
+  // - No permission to track this order
+  // - Failed to update location
+});
+```

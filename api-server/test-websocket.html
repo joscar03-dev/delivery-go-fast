@@ -1,0 +1,263 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test WebSocket Geolocalización</title>
+    <script src="https://cdn.socket.io/4.7.4/socket.io.min.js"></script>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; }
+        .container { max-width: 800px; margin: 0 auto; }
+        .section { border: 1px solid #ccc; padding: 15px; margin: 10px 0; border-radius: 5px; }
+        button { padding: 10px 15px; margin: 5px; background: #007bff; color: white; border: none; cursor: pointer; border-radius: 3px; }
+        button:hover { background: #0056b3; }
+        input, select { padding: 8px; margin: 5px; border: 1px solid #ccc; border-radius: 3px; }
+        .log { background: #f8f9fa; border: 1px solid #dee2e6; padding: 10px; margin: 10px 0; height: 200px; overflow-y: scroll; font-family: monospace; }
+        .success { color: #28a745; }
+        .error { color: #dc3545; }
+        .info { color: #17a2b8; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Test WebSocket Geolocalización</h1>
+        
+        <!-- Sección de Configuración -->
+        <div class="section">
+            <h3>Configuración</h3>
+            <input type="text" id="serverUrl" placeholder="URL del servidor" value="http://localhost:3000">
+            <input type="text" id="token" placeholder="JWT Token">
+            <select id="userRole">
+                <option value="driver">Driver</option>
+                <option value="customer">Customer</option>
+                <option value="admin">Admin</option>
+            </select>
+            <button onclick="connect()">Conectar</button>
+            <button onclick="disconnect()">Desconectar</button>
+            <div id="connectionStatus">❌ Desconectado</div>
+        </div>
+
+        <!-- Sección de Driver -->
+        <div class="section">
+            <h3>Funciones de Driver</h3>
+            <div>
+                <input type="number" id="latitude" placeholder="Latitud" value="-12.0464" step="0.0001">
+                <input type="number" id="longitude" placeholder="Longitud" value="-77.0428" step="0.0001">
+                <input type="number" id="heading" placeholder="Rumbo (grados)" value="45" min="0" max="360">
+                <input type="number" id="speed" placeholder="Velocidad (km/h)" value="30" min="0">
+                <button onclick="sendLocationUpdate()">Enviar Ubicación</button>
+            </div>
+            <div>
+                <button onclick="startLocationTracking()">Iniciar Seguimiento Automático</button>
+                <button onclick="stopLocationTracking()">Detener Seguimiento</button>
+            </div>
+        </div>
+
+        <!-- Sección de Customer -->
+        <div class="section">
+            <h3>Funciones de Customer</h3>
+            <div>
+                <input type="text" id="orderId" placeholder="ID de la Orden" value="1">
+                <button onclick="joinOrderRoom()">Unirse a Sala de Orden</button>
+                <button onclick="leaveOrderRoom()">Salir de Sala de Orden</button>
+            </div>
+        </div>
+
+        <!-- Sección de Admin -->
+        <div class="section">
+            <h3>Funciones de Admin</h3>
+            <div>
+                <input type="number" id="adminLat" placeholder="Latitud" value="-12.0464" step="0.0001">
+                <input type="number" id="adminLng" placeholder="Longitud" value="-77.0428" step="0.0001">
+                <input type="number" id="radius" placeholder="Radio (km)" value="5" min="1">
+                <button onclick="getActiveDrivers()">Obtener Drivers Activos</button>
+            </div>
+        </div>
+
+        <!-- Log de Eventos -->
+        <div class="section">
+            <h3>Log de Eventos</h3>
+            <button onclick="clearLog()">Limpiar Log</button>
+            <div id="log" class="log"></div>
+        </div>
+    </div>
+
+    <script>
+        let socket = null;
+        let locationTrackingInterval = null;
+
+        function log(message, type = 'info') {
+            const logDiv = document.getElementById('log');
+            const timestamp = new Date().toLocaleTimeString();
+            const logEntry = document.createElement('div');
+            logEntry.className = type;
+            logEntry.innerHTML = `[${timestamp}] ${message}`;
+            logDiv.appendChild(logEntry);
+            logDiv.scrollTop = logDiv.scrollHeight;
+        }
+
+        function connect() {
+            const serverUrl = document.getElementById('serverUrl').value;
+            const token = document.getElementById('token').value;
+            
+            if (socket) {
+                socket.disconnect();
+            }
+
+            const options = {
+                transports: ['websocket', 'polling']
+            };
+
+            // Agregar token si está disponible
+            if (token) {
+                options.auth = { token };
+                options.extraHeaders = { Authorization: `Bearer ${token}` };
+                options.query = { token };
+            }
+
+            socket = io(`${serverUrl}/delivery`, options);
+
+            // Event listeners
+            socket.on('connect', () => {
+                document.getElementById('connectionStatus').innerHTML = '✅ Conectado';
+                log('Conectado al servidor', 'success');
+            });
+
+            socket.on('disconnect', () => {
+                document.getElementById('connectionStatus').innerHTML = '❌ Desconectado';
+                log('Desconectado del servidor', 'error');
+            });
+
+            socket.on('connect_error', (error) => {
+                log(`Error de conexión: ${error.message}`, 'error');
+            });
+
+            socket.on('orderLocationUpdate', (data) => {
+                log(`📍 Actualización de ubicación de orden: ${JSON.stringify(data)}`, 'info');
+            });
+
+            socket.on('driverLocationUpdate', (data) => {
+                log(`🚗 Actualización de ubicación de driver: ${JSON.stringify(data)}`, 'info');
+            });
+
+            socket.on('activeDrivers', (data) => {
+                log(`👥 Drivers activos: ${JSON.stringify(data)}`, 'info');
+            });
+
+            socket.on('exception', (error) => {
+                log(`⚠️ Excepción: ${JSON.stringify(error)}`, 'error');
+            });
+        }
+
+        function disconnect() {
+            if (socket) {
+                socket.disconnect();
+                socket = null;
+            }
+            stopLocationTracking();
+        }
+
+        function sendLocationUpdate() {
+            if (!socket || !socket.connected) {
+                log('No hay conexión activa', 'error');
+                return;
+            }
+
+            const locationData = {
+                latitude: parseFloat(document.getElementById('latitude').value),
+                longitude: parseFloat(document.getElementById('longitude').value),
+                heading: parseInt(document.getElementById('heading').value) || 0,
+                speed: parseFloat(document.getElementById('speed').value) || 0,
+                accuracy: 10 // Precisión simulada
+            };
+
+            socket.emit('driverLocationUpdate', locationData);
+            log(`📤 Enviando ubicación: ${JSON.stringify(locationData)}`, 'info');
+        }
+
+        function startLocationTracking() {
+            if (locationTrackingInterval) {
+                stopLocationTracking();
+            }
+
+            locationTrackingInterval = setInterval(() => {
+                // Simular movimiento pequeño
+                const lat = parseFloat(document.getElementById('latitude').value);
+                const lng = parseFloat(document.getElementById('longitude').value);
+                
+                // Agregar variación aleatoria pequeña
+                const newLat = lat + (Math.random() - 0.5) * 0.001;
+                const newLng = lng + (Math.random() - 0.5) * 0.001;
+                
+                document.getElementById('latitude').value = newLat.toFixed(6);
+                document.getElementById('longitude').value = newLng.toFixed(6);
+                
+                sendLocationUpdate();
+            }, 5000); // Cada 5 segundos
+
+            log('🔄 Seguimiento automático iniciado', 'success');
+        }
+
+        function stopLocationTracking() {
+            if (locationTrackingInterval) {
+                clearInterval(locationTrackingInterval);
+                locationTrackingInterval = null;
+                log('⏹️ Seguimiento automático detenido', 'info');
+            }
+        }
+
+        function joinOrderRoom() {
+            if (!socket || !socket.connected) {
+                log('No hay conexión activa', 'error');
+                return;
+            }
+
+            const orderId = document.getElementById('orderId').value;
+            socket.emit('joinOrderRoom', { orderId: parseInt(orderId) });
+            log(`🏠 Uniéndose a sala de orden: ${orderId}`, 'info');
+        }
+
+        function leaveOrderRoom() {
+            if (!socket || !socket.connected) {
+                log('No hay conexión activa', 'error');
+                return;
+            }
+
+            const orderId = document.getElementById('orderId').value;
+            socket.emit('leaveOrderRoom', { orderId: parseInt(orderId) });
+            log(`🚪 Saliendo de sala de orden: ${orderId}`, 'info');
+        }
+
+        function getActiveDrivers() {
+            if (!socket || !socket.connected) {
+                log('No hay conexión activa', 'error');
+                return;
+            }
+
+            const data = {
+                latitude: parseFloat(document.getElementById('adminLat').value),
+                longitude: parseFloat(document.getElementById('adminLng').value),
+                radius: parseFloat(document.getElementById('radius').value)
+            };
+
+            socket.emit('getActiveDrivers', data);
+            log(`🔍 Solicitando drivers activos en radio ${data.radius}km`, 'info');
+        }
+
+        function clearLog() {
+            document.getElementById('log').innerHTML = '';
+        }
+
+        // Obtener ubicación actual del navegador
+        if (navigator.geolocation) {
+            navigator.geolocation.getCurrentPosition((position) => {
+                document.getElementById('latitude').value = position.coords.latitude.toFixed(6);
+                document.getElementById('longitude').value = position.coords.longitude.toFixed(6);
+                document.getElementById('adminLat').value = position.coords.latitude.toFixed(6);
+                document.getElementById('adminLng').value = position.coords.longitude.toFixed(6);
+                log('📍 Ubicación actual obtenida del navegador', 'success');
+            });
+        }
+    </script>
+</body>
+</html>
