@@ -12,6 +12,7 @@ import { Logger } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { GeolocationService } from './geolocation.service';
 import { DriverLocationUpdateDto } from './dto/driver-location-update.dto';
+import { GetActiveDriversDto } from './dto/get-active-drivers.dto';
 import { Role } from '../common/enums/role.enum';
 
 interface AuthenticatedSocket extends Socket {
@@ -274,6 +275,51 @@ export class DeliveryGateway
     } catch (error) {
       this.logger.error(`Error checking order room permissions:`, error);
       return false;
+    }
+  }
+
+  @SubscribeMessage('getActiveDrivers')
+  async handleGetActiveDrivers(
+    @ConnectedSocket() client: AuthenticatedSocket,
+    @MessageBody() data: GetActiveDriversDto,
+  ) {
+    try {
+      // Solo los administradores pueden ver todos los drivers activos
+      if (client.userRole !== Role.SUPER_ADMIN) {
+        client.emit('exception', {
+          message:
+            'Acceso denegado. Solo administradores pueden ver drivers activos.',
+          code: 'ACCESS_DENIED',
+        });
+        return;
+      }
+
+      this.logger.log(
+        `Admin ${client.userId} requesting active drivers in area: ${data.latitude}, ${data.longitude} (${data.radius}km)`,
+      );
+
+      const activeDrivers =
+        await this.geolocationService.getActiveDriversInArea(
+          data.latitude,
+          data.longitude,
+          data.radius,
+        );
+
+      // Emitir solo al cliente que lo solicitó
+      client.emit('activeDrivers', activeDrivers);
+
+      this.logger.log(
+        `Sent ${activeDrivers.length} active drivers to admin ${client.userId}`,
+      );
+    } catch (error) {
+      this.logger.error(
+        `Error getting active drivers for admin ${client.userId}:`,
+        error,
+      );
+      client.emit('exception', {
+        message: 'Error al obtener drivers activos',
+        error: error.message,
+      });
     }
   }
 }
