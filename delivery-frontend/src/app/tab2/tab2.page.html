@@ -13,5 +13,20 @@
     </ion-toolbar>
   </ion-header>
 
-  <app-explore-container name="Tab 2 page"></app-explore-container>
+  <ion-list>
+    <ion-item button [routerLink]="['/admin/restaurants']">Panel: Restaurantes</ion-item>
+    <ion-item button [routerLink]="['/admin/users']">Panel: Usuarios</ion-item>
+  </ion-list>
+
+  <!-- <ion-list *ngIf="!loading; else loadingTpl">
+    <ion-item *ngFor="let r of list" [routerLink]="['/restaurant', r.id]" detail>
+      <ion-label>
+        <h2>{{ r.name }}</h2>
+        <p>{{ r.address }}</p>
+      </ion-label>
+    </ion-item>
+  </ion-list> -->
+  <ng-template #loadingTpl>
+    <ion-spinner class="ion-padding"></ion-spinner>
+  </ng-template>
 </ion-content>

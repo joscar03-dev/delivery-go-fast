@@ -1,5 +1,7 @@
 import { Routes } from '@angular/router';
 import { TabsPage } from './tabs.page';
+import { authGuard } from '../guards/auth.guard';
+import { rolesGuard } from '../guards/roles.guard';
 
 export const routes: Routes = [
   {
@@ -13,13 +15,16 @@ export const routes: Routes = [
       },
       {
         path: 'tab2',
+        canMatch: [authGuard, rolesGuard],
+        data: { roles: ['super_admin'] },
         loadComponent: () =>
           import('../tab2/tab2.page').then((m) => m.Tab2Page),
       },
       {
         path: 'tab3',
+        canMatch: [authGuard],
         loadComponent: () =>
-          import('../tab3/tab3.page').then((m) => m.Tab3Page),
+          import('../pages/profile/profile.page').then((m) => m.ProfilePage),
       },
       { path: '', redirectTo: 'tab1', pathMatch: 'full' },
     ],

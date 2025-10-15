@@ -1,0 +1,25 @@
+<ion-header>
+  <ion-toolbar>
+    <ion-title>Restaurantes</ion-title>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content class="ion-padding">
+  <ion-button routerLink="/admin/restaurants/form">Crear restaurante</ion-button>
+  <ion-button color="medium" routerLink="/admin/restaurants/categories">Categorías de restaurantes</ion-button>
+  <ion-button (click)="load()" [disabled]="loading">Recargar</ion-button>
+  <ion-list>
+    <ion-item *ngFor="let r of list">
+      <ion-label>
+        <h2>{{ r.name }}</h2>
+        <p>{{ r.address }} — {{ r.phone }}</p>
+      </ion-label>
+      <ion-button size="small" fill="clear" (click)="open(r)">Ver</ion-button>
+      <ion-button size="small" fill="clear" [routerLink]="['/admin/restaurants/form']" [queryParams]="{ id: r.id }">Editar</ion-button>
+      <ion-button size="small" fill="clear" [routerLink]="['/admin/restaurants', r.id, 'menu-categories']">Menú: Categorías</ion-button>
+      <ion-button size="small" fill="clear" [routerLink]="['/admin/restaurants', r.id, 'menu-items']">Menú: Ítems</ion-button>
+      <ion-button size="small" color="danger" fill="clear" (click)="remove(r)">Eliminar</ion-button>
+    </ion-item>
+  </ion-list>
+  <ion-spinner *ngIf="loading"></ion-spinner>
+</ion-content>

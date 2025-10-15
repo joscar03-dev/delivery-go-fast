@@ -9,6 +9,14 @@ export const routes: Routes = [
     loadChildren: () => import('./tabs/tabs.routes').then((m) => m.routes),
   },
   { path: '', redirectTo: 'tabs', pathMatch: 'full' },
+  // Restaurantes (público)
+  {
+    path: 'restaurant/:id',
+    loadComponent: () =>
+      import('./pages/restaurant-detail/restaurant-detail.page').then(
+        (m) => m.RestaurantDetailPage
+      ),
+  },
   // Perfil
   {
     path: 'profile',
@@ -35,5 +43,49 @@ export const routes: Routes = [
     data: { roles: ['super_admin'] },
     loadComponent: () =>
       import('./pages/admin/users/users.page').then((m) => m.AdminUsersPage),
+  },
+  // Admin Restaurantes
+  {
+    path: 'admin/restaurants',
+    canMatch: [authGuard, rolesGuard],
+    data: { roles: ['super_admin'] },
+    loadComponent: () =>
+      import('./pages/admin/restaurant-list/restaurant-list.page').then(
+        (m) => m.AdminRestaurantListPage
+      ),
+  },
+  {
+    path: 'admin/restaurants/form',
+    canMatch: [authGuard, rolesGuard],
+    data: { roles: ['super_admin'] },
+    loadComponent: () =>
+      import('./pages/admin/restaurant-form/restaurant-form.page').then(
+        (m) => m.AdminRestaurantFormPage
+      ),
+  },
+  {
+    path: 'admin/restaurants/categories',
+    canMatch: [authGuard, rolesGuard],
+    data: { roles: ['super_admin'] },
+    loadComponent: () =>
+      import('./pages/admin/restaurant-categories').then(
+        (m) => m.AdminRestaurantCategoriesPage
+      ),
+  },
+  {
+    path: 'admin/restaurants/:id/menu-categories',
+    canMatch: [authGuard, rolesGuard],
+    data: { roles: ['super_admin'] },
+    loadComponent: () =>
+      import('./pages/admin/menu-categories').then(
+        (m) => m.AdminMenuCategoriesPage
+      ),
+  },
+  {
+    path: 'admin/restaurants/:id/menu-items',
+    canMatch: [authGuard, rolesGuard],
+    data: { roles: ['super_admin'] },
+    loadComponent: () =>
+      import('./pages/admin/menu-items').then((m) => m.AdminMenuItemsPage),
   },
 ];

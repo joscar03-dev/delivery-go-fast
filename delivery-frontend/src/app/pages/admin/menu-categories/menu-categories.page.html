@@ -1,0 +1,47 @@
+<ion-header>
+  <ion-toolbar>
+    <ion-title>Categorías de Menú</ion-title>
+  </ion-toolbar>
+  <ion-toolbar color="light">
+    <ion-breadcrumbs>
+      <ion-breadcrumb routerLink="/tabs/tab2">Admin</ion-breadcrumb>
+      <ion-breadcrumb routerLink="/admin/restaurants">Restaurantes</ion-breadcrumb>
+      <ion-breadcrumb>Categorías de menú</ion-breadcrumb>
+    </ion-breadcrumbs>
+    <ion-buttons slot="end">
+      <ion-button (click)="openCreateModal()">Nueva categoría</ion-button>
+      <ion-button routerLink="/admin/restaurants">Volver al panel</ion-button>
+    </ion-buttons>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content>
+  <ion-item lines="none">
+    <ion-label>
+      <h2>Restaurante: {{ restaurant?.name || '...' }}</h2>
+      <p *ngIf="restaurant?.address">{{ restaurant?.address }}</p>
+    </ion-label>
+  </ion-item>
+  <ion-list *ngIf="!loading; else sk">
+    <ion-item *ngFor="let c of list">
+      <ion-label>
+        <h2>{{ c.name }}</h2>
+        <p>{{ c.description }}</p>
+        <p *ngIf="c.sortOrder != null">Orden: {{ c.sortOrder }}</p>
+        <ion-badge [color]="c.isActive ? 'success' : 'medium'">{{ c.isActive ? 'Activa' : 'Inactiva' }}</ion-badge>
+      </ion-label>
+      <ion-button slot="end" fill="clear" (click)="edit(c)">Editar</ion-button>
+      <ion-button slot="end" fill="clear" color="warning" (click)="toggleActive(c)">{{ c.isActive ? 'Desactivar' : 'Activar' }}</ion-button>
+      <ion-button slot="end" fill="clear" color="danger" (click)="remove(c)">Eliminar</ion-button>
+    </ion-item>
+  </ion-list>
+
+  <ng-template #sk>
+    <ion-item>
+      <ion-label>Cargando...</ion-label>
+      <ion-spinner></ion-spinner>
+    </ion-item>
+  </ng-template>
+
+  <!-- Creación mediante modal; se removió el formulario inline -->
+</ion-content>

@@ -35,3 +35,12 @@
 /* @import "@ionic/angular/css/palettes/dark.always.css"; */
 /* @import "@ionic/angular/css/palettes/dark.class.css"; */
 @import '@ionic/angular/css/palettes/dark.system.css';
+
+/* Fullscreen ionic modal helper */
+.modal-fullscreen {
+	--height: 100% !important;
+	--width: 100% !important;
+	--border-radius: 0 !important;
+	--box-shadow: none !important;
+	inset: 0 !important;
+}

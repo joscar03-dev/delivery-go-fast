@@ -1,0 +1,41 @@
+<ion-header>
+  <ion-toolbar>
+    <ion-title>Restaurante</ion-title>
+  </ion-toolbar>
+  <ion-toolbar color="light">
+    <ion-breadcrumbs>
+      <ion-breadcrumb routerLink="/tabs/tab1">Restaurantes</ion-breadcrumb>
+      <ion-breadcrumb>Detalle</ion-breadcrumb>
+    </ion-breadcrumbs>
+    <ion-buttons slot="end">
+      <ion-button routerLink="/admin/restaurants">Volver al panel</ion-button>
+    </ion-buttons>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content class="ion-padding">
+  <ng-container *ngIf="restaurant as r; else loadingTpl">
+    <h2>{{ r.name }}</h2>
+    <p>{{ r.address }}</p>
+    <p>Tel: {{ r.phone }}</p>
+    <ion-list *ngIf="r.menuCategories?.length">
+      <ion-list-header>Categorías</ion-list-header>
+      <ion-item *ngFor="let c of r.menuCategories">
+        {{ c.name }}
+      </ion-item>
+    </ion-list>
+    <ion-list *ngIf="r.menuItems?.length">
+      <ion-list-header>Platos</ion-list-header>
+      <ion-item *ngFor="let m of r.menuItems">
+        <ion-label>
+          <h3>{{ m.name }}</h3>
+          <p>{{ m.description }}</p>
+        </ion-label>
+        <ion-badge color="success">{{ m.price | number:'1.2-2' }}</ion-badge>
+      </ion-item>
+    </ion-list>
+  </ng-container>
+  <ng-template #loadingTpl>
+    <ion-spinner></ion-spinner>
+  </ng-template>
+</ion-content>

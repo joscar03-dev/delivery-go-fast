@@ -13,5 +13,19 @@
     </ion-toolbar>
   </ion-header>
 
-  <app-explore-container name="Tab 1 page"></app-explore-container>
+  <div class="ion-padding">
+    <ion-chip [outline]="!selectedCategory" (click)="setFilter(null)">Todos</ion-chip>
+    <ion-chip *ngFor="let c of categories" [outline]="selectedCategory !== c.name" (click)="setFilter(c.name)">
+      {{ c.name }}
+    </ion-chip>
+  </div>
+  <ion-list>
+    <ion-item *ngFor="let r of filtered" [routerLink]="['/restaurant', r.id]" detail>
+      <ion-label>
+        <h2>{{ r.name }}</h2>
+        <p>{{ r.address }}</p>
+        <small *ngIf="r.category?.name">{{ r.category?.name }}</small>
+      </ion-label>
+    </ion-item>
+  </ion-list>
 </ion-content>

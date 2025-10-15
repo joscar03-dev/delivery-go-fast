@@ -1,0 +1,79 @@
+<ion-header>
+  <ion-toolbar>
+    <ion-title>Categorías de Restaurantes</ion-title>
+  </ion-toolbar>
+  <ion-toolbar color="light">
+    <ion-breadcrumbs>
+      <ion-breadcrumb routerLink="/tabs/tab2">Admin</ion-breadcrumb>
+      <ion-breadcrumb routerLink="/admin/restaurants">Restaurantes</ion-breadcrumb>
+      <ion-breadcrumb>Categorías</ion-breadcrumb>
+    </ion-breadcrumbs>
+    <ion-buttons slot="end">
+      <ion-button color="primary" (click)="isCreateOpen = true">Nueva categoría</ion-button>
+      <ion-button routerLink="/admin/restaurants">Volver al panel</ion-button>
+    </ion-buttons>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content [fullscreen]="true">
+  <ion-list *ngIf="!loading; else sk">
+    <ion-item *ngFor="let c of list">
+      <ion-label>
+        <h2>{{ c.name }}</h2>
+        <p>{{ c.description }}</p>
+        <p *ngIf="c.icon">Icono: {{ c.icon }}</p>
+        <ion-badge [color]="c.isActive ? 'success' : 'medium'">{{ c.isActive ? 'Activa' : 'Inactiva' }}</ion-badge>
+      </ion-label>
+      <ion-button slot="end" fill="clear" (click)="edit(c)">Editar</ion-button>
+      <ion-button slot="end" fill="clear" color="warning" (click)="toggleActive(c)">
+        {{ c.isActive ? 'Desactivar' : 'Activar' }}
+      </ion-button>
+      <ion-button slot="end" fill="clear" color="danger" (click)="remove(c)">Eliminar</ion-button>
+    </ion-item>
+    <ion-item *ngIf="list.length === 0" lines="none">
+      <ion-label>Sin categorías activas. Crea la primera con “Nueva categoría”.</ion-label>
+    </ion-item>
+  </ion-list>
+
+  <ng-template #sk>
+    <ion-item>
+      <ion-label>Cargando...</ion-label>
+      <ion-spinner name="lines"></ion-spinner>
+    </ion-item>
+  </ng-template>
+
+  <!-- Modal de creación -->
+  <ion-modal
+    [isOpen]="isCreateOpen"
+    (didDismiss)="isCreateOpen = false"
+    [breakpoints]="[1]"
+    [initialBreakpoint]="1"
+  >
+    <ng-template>
+      <ion-header>
+        <ion-toolbar>
+          <ion-title>Nueva categoría</ion-title>
+          <ion-buttons slot="end">
+            <ion-button (click)="isCreateOpen = false">Cerrar</ion-button>
+          </ion-buttons>
+        </ion-toolbar>
+      </ion-header>
+      <ion-content [fullscreen]="true">
+        <form class="ion-padding" [formGroup]="form" (ngSubmit)="create()">
+          <ion-item>
+            <ion-input label="Nombre" labelPlacement="stacked" formControlName="name" required></ion-input>
+          </ion-item>
+          <ion-item>
+            <ion-input label="Descripción" labelPlacement="stacked" formControlName="description"></ion-input>
+          </ion-item>
+          <ion-item>
+            <ion-input label="Icono" labelPlacement="stacked" formControlName="icon"></ion-input>
+          </ion-item>
+          <div class="ion-padding-top">
+            <ion-button type="submit" expand="block" [disabled]="form.invalid">Crear</ion-button>
+          </div>
+        </form>
+      </ion-content>
+    </ng-template>
+  </ion-modal>
+</ion-content>

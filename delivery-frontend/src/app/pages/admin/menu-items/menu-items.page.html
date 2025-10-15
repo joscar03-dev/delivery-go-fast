@@ -1,0 +1,45 @@
+<ion-header>
+  <ion-toolbar>
+    <ion-title>Ítems de Menú</ion-title>
+  </ion-toolbar>
+  <ion-toolbar color="light">
+    <ion-breadcrumbs>
+      <ion-breadcrumb routerLink="/tabs/tab2">Admin</ion-breadcrumb>
+      <ion-breadcrumb routerLink="/admin/restaurants">Restaurantes</ion-breadcrumb>
+      <ion-breadcrumb>Ítems de menú</ion-breadcrumb>
+    </ion-breadcrumbs>
+    <ion-buttons slot="end">
+      <ion-button (click)="openCreateModal()">Nuevo ítem</ion-button>
+      <ion-button routerLink="/admin/restaurants">Volver al panel</ion-button>
+    </ion-buttons>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content>
+  <ion-item lines="none">
+    <ion-label>
+      <h2>Restaurante: {{ restaurant?.name || '...' }}</h2>
+      <p *ngIf="restaurant?.address">{{ restaurant?.address }}</p>
+    </ion-label>
+  </ion-item>
+  <ion-list *ngIf="!loading; else sk">
+  <ion-item *ngFor="let it of list">
+      <ion-label>
+    <h2>{{ it.name }} - {{ it.price | currency:'USD':'symbol':'1.2-2' }}</h2>
+        <p>{{ it.description }}</p>
+        <p *ngIf="it.imageUrl">Imagen: {{ it.imageUrl }}</p>
+    <p *ngIf="it.menuCategoryId">Categoría: {{ getCategoryName(it.menuCategoryId) || it.menuCategoryId }}</p>
+      </ion-label>
+      <ion-button slot="end" fill="clear" (click)="edit(it)">Editar</ion-button>
+      <ion-button slot="end" fill="clear" color="danger" (click)="remove(it)">Eliminar</ion-button>
+    </ion-item>
+  </ion-list>
+
+  <ng-template #sk>
+    <ion-item>
+      <ion-label>Cargando...</ion-label>
+      <ion-spinner></ion-spinner>
+    </ion-item>
+  </ng-template>
+ 
+</ion-content>

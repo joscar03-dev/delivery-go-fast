@@ -1,0 +1,50 @@
+<ion-header>
+  <ion-toolbar>
+    <ion-title>Restaurante (crear/editar)</ion-title>
+  </ion-toolbar>
+  <ion-toolbar color="light">
+    <ion-breadcrumbs>
+      <ion-breadcrumb routerLink="/tabs/tab2">Admin</ion-breadcrumb>
+      <ion-breadcrumb routerLink="/admin/restaurants">Restaurantes</ion-breadcrumb>
+      <ion-breadcrumb>{{ id ? 'Editar' : 'Crear' }}</ion-breadcrumb>
+    </ion-breadcrumbs>
+    <ion-buttons slot="end">
+      <ion-button routerLink="/admin/restaurants">Volver al panel</ion-button>
+    </ion-buttons>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content class="ion-padding">
+  <form [formGroup]="form" (ngSubmit)="save()">
+    <ion-item>
+      <ion-input label="Nombre" labelPlacement="stacked" formControlName="name" required></ion-input>
+    </ion-item>
+    <ion-item>
+      <ion-input label="Dirección" labelPlacement="stacked" formControlName="address" required></ion-input>
+    </ion-item>
+    <ion-item>
+      <ion-input label="Teléfono" labelPlacement="stacked" formControlName="phone" required></ion-input>
+    </ion-item>
+    <ion-item>
+      <ion-input type="number" label="Latitud" labelPlacement="stacked" formControlName="latitude" required></ion-input>
+    </ion-item>
+    <ion-item>
+      <ion-input type="number" label="Longitud" labelPlacement="stacked" formControlName="longitude" required></ion-input>
+    </ion-item>
+    <ion-button type="button" (click)="useMyLocation()" [disabled]="locating">
+      {{ locating ? 'Obteniendo ubicación...' : 'Usar mi ubicación' }}
+    </ion-button>
+    <ion-item>
+      <ion-select label="Categoría" labelPlacement="stacked" formControlName="restaurantCategoryId" [disabled]="loadingCategories">
+        <ion-select-option *ngFor="let c of categories" [value]="c.id">{{ c.name }}</ion-select-option>
+      </ion-select>
+    </ion-item>
+    <ion-item>
+      <ion-select label="Dueño (opcional)" labelPlacement="stacked" formControlName="ownerId" [disabled]="loadingOwners">
+        <ion-select-option [value]="null">— Sin dueño —</ion-select-option>
+        <ion-select-option *ngFor="let o of owners" [value]="o.id">{{ o.label }} ({{ o.role }})</ion-select-option>
+      </ion-select>
+    </ion-item>
+    <ion-button type="submit" [disabled]="form.invalid">Guardar</ion-button>
+  </form>
+</ion-content>
