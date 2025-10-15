@@ -1,10 +1,11 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { User } from './entities/user.entity';
 import { Repository } from 'typeorm';
 import { RegisterAuthDto } from '../auth/dto/register-auth.dto';
 import { Role } from '../auth/entities/role.entity';
 import { Role as RoleEnum } from '../common/enums/role.enum';
+import { UpdateUserDto } from './dto/update-user.dto';
 
 @Injectable()
 export class UsersService {
@@ -57,6 +58,44 @@ export class UsersService {
       where: { email },
       relations: ['role'],
     });
+  }
+
+  async findAllWithRole(): Promise<User[]> {
+    return await this.userRepository.find({ relations: ['role'] });
+  }
+
+  async update(id: string, dto: UpdateUserDto): Promise<User> {
+    const user = await this.userRepository.findOne({
+      where: { id },
+      relations: ['role'],
+    });
+    if (!user) {
+      throw new NotFoundException('User not found');
+    }
+
+    if (dto.role) {
+      let role = await this.roleRepository.findOne({
+        where: { name: dto.role },
+      });
+      if (!role) {
+        role = this.roleRepository.create({ name: dto.role });
+        role = await this.roleRepository.save(role);
+      }
+      user.role = role;
+    }
+
+    if (dto.name !== undefined) user.name = dto.name;
+    if (dto.email !== undefined) user.email = dto.email;
+
+    return await this.userRepository.save(user);
+  }
+
+  async remove(id: string): Promise<void> {
+    const user = await this.userRepository.findOne({ where: { id } });
+    if (!user) {
+      throw new NotFoundException('User not found');
+    }
+    await this.userRepository.remove(user);
   }
 
   async updateRefreshToken(
