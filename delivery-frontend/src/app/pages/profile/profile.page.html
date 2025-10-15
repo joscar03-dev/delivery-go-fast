@@ -1,0 +1,29 @@
+<ion-header>
+  <ion-toolbar>
+    <ion-title>Perfil</ion-title>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content class="ion-padding">
+  <ng-container *ngIf="!loading; else loadingTpl">
+    <ion-card *ngIf="user; else emptyTpl">
+      <ion-card-header>
+        <ion-card-title>{{ user.name || user.email }}</ion-card-title>
+        <ion-card-subtitle>Rol: {{ user.role || '—' }}</ion-card-subtitle>
+      </ion-card-header>
+      <ion-card-content>
+        <p>Email: {{ user.email }}</p>
+        <p>ID: {{ user.id }}</p>
+  <ion-button color="medium" expand="block" id="logoutBtn" (click)="logout()">Cerrar sesión</ion-button>
+      </ion-card-content>
+    </ion-card>
+  </ng-container>
+
+  <ng-template #loadingTpl>
+    <ion-spinner name="crescent"></ion-spinner>
+  </ng-template>
+
+  <ng-template #emptyTpl>
+    <ion-text color="medium">No se pudo cargar el perfil.</ion-text>
+  </ng-template>
+</ion-content>

@@ -1,0 +1,33 @@
+<ion-header>
+  <ion-toolbar>
+    <ion-title>Crear usuario</ion-title>
+    <ion-buttons slot="end">
+      <ion-button (click)="dismiss()">Cerrar</ion-button>
+    </ion-buttons>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content class="ion-padding">
+  <form [formGroup]="form" (ngSubmit)="save()" novalidate>
+    <ion-list lines="full">
+      <ion-item>
+        <ion-input label="Nombre" label-placement="floating" formControlName="name"></ion-input>
+      </ion-item>
+      <ion-item>
+        <ion-input type="email" label="Correo" label-placement="floating" formControlName="email"></ion-input>
+      </ion-item>
+      <ion-item>
+        <ion-select label="Rol" label-placement="floating" formControlName="role" interface="popover">
+          <ion-select-option *ngFor="let r of roles" [value]="r">{{ r }}</ion-select-option>
+        </ion-select>
+      </ion-item>
+      <ion-item>
+        <ion-input type="password" label="Contraseña" label-placement="floating" formControlName="password"></ion-input>
+      </ion-item>
+      <ion-item>
+        <ion-input type="password" label="Confirmar contraseña" label-placement="floating" formControlName="confirmPassword"></ion-input>
+      </ion-item>
+    </ion-list>
+    <ion-button type="submit" expand="block" [disabled]="form.invalid">Crear</ion-button>
+  </form>
+</ion-content>

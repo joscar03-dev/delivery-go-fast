@@ -1,0 +1,32 @@
+<ion-header>
+  <ion-toolbar>
+    <ion-title>Crear cuenta</ion-title>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content class="ion-padding">
+  <form [formGroup]="form" (ngSubmit)="submit()" novalidate>
+    <ion-list lines="full">
+      <ion-item>
+        <ion-input label="Nombre" label-placement="floating" formControlName="name" required></ion-input>
+      </ion-item>
+      <ion-item>
+        <ion-input type="email" label="Correo" label-placement="floating" formControlName="email" required></ion-input>
+      </ion-item>
+      <ion-item>
+        <ion-input type="password" label="Contraseña" label-placement="floating" formControlName="password" required></ion-input>
+      </ion-item>
+      <ion-item>
+        <ion-input type="password" label="Confirmar contraseña" label-placement="floating" formControlName="confirmPassword" required></ion-input>
+      </ion-item>
+    </ion-list>
+
+    <ion-button type="submit" expand="block" [disabled]="form.invalid || loading">
+      {{ loading ? 'Creando…' : 'Crear cuenta' }}
+    </ion-button>
+
+    <div class="aux-links">
+      <a routerLink="/auth/login">Ya tengo una cuenta</a>
+    </div>
+  </form>
+</ion-content>

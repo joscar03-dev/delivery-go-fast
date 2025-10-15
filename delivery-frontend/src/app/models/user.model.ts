@@ -1,0 +1,10 @@
+export interface User {
+  id: string;
+  name: string;
+  email: string;
+  role?: 'client' | 'driver' | 'restaurant_owner' | 'super_admin';
+  avatarUrl?: string;
+  // Tokens opcionales si se guardan en memoria temporal
+  accessToken?: string;
+  refreshToken?: string;
+}

@@ -1,0 +1,36 @@
+<ion-header>
+  <ion-toolbar>
+    <ion-title>Usuarios</ion-title>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content class="ion-padding">
+  <ion-button (click)="create()">Nuevo usuario</ion-button>
+  <ion-button (click)="load()" [disabled]="loading">Recargar</ion-button>
+  <ion-list>
+    <ion-item *ngFor="let u of pagedUsers">
+      <ion-label>
+        <h2>{{ u.name || u.email }}</h2>
+        <p>{{ u.email }} — Rol: {{ u.role || 'client' }}</p>
+      </ion-label>
+      <ion-button fill="clear" (click)="edit(u)">Editar</ion-button>
+      <ion-button color="danger" fill="clear" (click)="remove(u)">
+        Eliminar
+      </ion-button>
+    </ion-item>
+  </ion-list>
+
+  <ion-row class="ion-justify-content-between ion-align-items-center">
+    <ion-col size="auto">
+      <ion-button (click)="prevPage()" [disabled]="page===1">Anterior</ion-button>
+    </ion-col>
+    <ion-col size="auto">
+      <ion-badge>Pag {{ page }}</ion-badge>
+    </ion-col>
+    <ion-col size="auto">
+      <ion-button (click)="nextPage()" [disabled]="page*pageSize >= users.length">Siguiente</ion-button>
+    </ion-col>
+  </ion-row>
+
+  <ion-spinner *ngIf="loading"></ion-spinner>
+</ion-content>

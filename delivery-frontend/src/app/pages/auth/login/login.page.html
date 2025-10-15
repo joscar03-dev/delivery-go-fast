@@ -1,0 +1,47 @@
+<ion-header>
+  <ion-toolbar>
+    <ion-title>Iniciar Sesión</ion-title>
+  </ion-toolbar>
+  </ion-header>
+
+<ion-content class="ion-padding">
+  <form [formGroup]="form" (ngSubmit)="submit()" novalidate>
+    <ion-list lines="full">
+      <ion-item>
+        <ion-input
+          type="email"
+          label="Correo"
+          label-placement="floating"
+          formControlName="email"
+          autocomplete="email"
+          required
+        ></ion-input>
+      </ion-item>
+      <ion-note color="danger" *ngIf="form.controls.email.touched && form.controls.email.invalid">
+        Correo inválido.
+      </ion-note>
+
+      <ion-item>
+        <ion-input
+          type="password"
+          label="Contraseña"
+          label-placement="floating"
+          formControlName="password"
+          autocomplete="current-password"
+          required
+        ></ion-input>
+      </ion-item>
+      <ion-note color="danger" *ngIf="form.controls.password.touched && form.controls.password.invalid">
+        Mínimo 6 caracteres.
+      </ion-note>
+    </ion-list>
+
+    <ion-button type="submit" expand="block" [disabled]="form.invalid || loading">
+      {{ loading ? 'Ingresando…' : 'Ingresar' }}
+    </ion-button>
+
+    <div class="aux-links">
+      <a routerLink="/auth/register">Crear cuenta</a>
+    </div>
+  </form>
+</ion-content>
