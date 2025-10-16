@@ -1,8 +1,6 @@
 <ion-header [translucent]="true">
   <ion-toolbar>
-    <ion-title>
-      Tab 2
-    </ion-title>
+    <ion-title> Panel Admin </ion-title>
   </ion-toolbar>
 </ion-header>
 
@@ -45,15 +43,6 @@
       </ion-row>
     </ion-grid>
   </div>
-
-  <!-- <ion-list *ngIf="!loading; else loadingTpl">
-    <ion-item *ngFor="let r of list" [routerLink]="['/restaurant', r.id]" detail>
-      <ion-label>
-        <h2>{{ r.name }}</h2>
-        <p>{{ r.address }}</p>
-      </ion-label>
-    </ion-item>
-  </ion-list> -->
   <ng-template #loadingTpl>
     <ion-spinner class="ion-padding"></ion-spinner>
   </ng-template>

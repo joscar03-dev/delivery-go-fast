@@ -7,8 +7,6 @@ import {
   IonBackButton,
   IonTitle,
   IonContent,
-  IonBreadcrumbs,
-  IonBreadcrumb,
   IonButton,
   IonItem,
   IonLabel,
@@ -37,15 +35,12 @@ addIcons({
   imports: [
     CommonModule,
     ReactiveFormsModule,
-    RouterLink,
     IonHeader,
     IonToolbar,
     IonButtons,
     IonBackButton,
     IonTitle,
     IonContent,
-    IonBreadcrumbs,
-    IonBreadcrumb,
     IonButton,
     IonItem,
     IonLabel,
@@ -111,6 +106,7 @@ export class AdminRestaurantFormPage {
 
     // Cargar categorías activas para el select
     this.loadingCategories = true;
+    this.form.get('restaurantCategoryId')?.disable();
     this.restaurants.listRestaurantCategories().subscribe({
       next: (list) => {
         this.categories = (list || []).map((c: any) => ({
@@ -118,15 +114,18 @@ export class AdminRestaurantFormPage {
           name: c.name,
         }));
         this.loadingCategories = false;
+        this.form.get('restaurantCategoryId')?.enable();
       },
       error: () => {
         this.categories = [];
         this.loadingCategories = false;
+        this.form.get('restaurantCategoryId')?.enable();
       },
     });
 
     // Cargar posibles owners (usuarios con rol restaurant_owner; opcional incluir super_admin)
     this.loadingOwners = true;
+    this.form.get('ownerId')?.disable();
     this.users.getAllUsers().subscribe({
       next: (list) => {
         const owners = (list || []).filter(
@@ -138,10 +137,12 @@ export class AdminRestaurantFormPage {
           role: u.role,
         }));
         this.loadingOwners = false;
+        this.form.get('ownerId')?.enable();
       },
       error: () => {
         this.owners = [];
         this.loadingOwners = false;
+        this.form.get('ownerId')?.enable();
       },
     });
   }

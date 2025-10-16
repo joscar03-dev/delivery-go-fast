@@ -3,9 +3,8 @@
     <ion-buttons slot="start">
       <ion-back-button defaultHref="/tabs/tab1"></ion-back-button>
     </ion-buttons>
-    <ion-title>Restaurante</ion-title>
+    <ion-title>{{ restaurant?.name || 'Restaurante' }}</ion-title>
   </ion-toolbar>
-  
 </ion-header>
 
 <ion-content class="ion-padding">
@@ -28,23 +27,26 @@
 
     <!-- Filtro por Categorías de Menú -->
     <div class="menu-categories" *ngIf="restaurant.menuCategories?.length">
-      <swiper-container 
-        slides-per-view="auto" 
+      <swiper-container
+        slides-per-view="auto"
         space-between="8"
         free-mode="true"
         class="categories-swiper"
       >
         <swiper-slide class="chip-slide">
-          <ion-chip 
-            [outline]="!selectedMenuCategory" 
+          <ion-chip
+            [outline]="!selectedMenuCategory"
             (click)="filterByCategory(null)"
             color="primary"
           >
             <ion-label>Todos</ion-label>
           </ion-chip>
         </swiper-slide>
-        <swiper-slide class="chip-slide" *ngFor="let c of restaurant.menuCategories">
-          <ion-chip 
+        <swiper-slide
+          class="chip-slide"
+          *ngFor="let c of restaurant.menuCategories"
+        >
+          <ion-chip
             [outline]="selectedMenuCategory !== c.id"
             (click)="filterByCategory(c.id)"
             color="primary"
@@ -66,7 +68,7 @@
         <ion-thumbnail slot="start" *ngIf="m.imageUrl">
           <img [src]="m.imageUrl" [alt]="m.name" />
         </ion-thumbnail>
-        
+
         <!-- Contenido del item -->
         <ion-label>
           <h3>{{ m.name }}</h3>
@@ -78,7 +80,7 @@
             </ion-chip>
           </p>
         </ion-label>
-        
+
         <!-- Precio -->
         <ion-note slot="end" class="price">
           {{ m.price | currency:'USD':'symbol':'1.2-2' }}

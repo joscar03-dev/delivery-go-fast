@@ -52,12 +52,12 @@
       {{ locating ? 'Obteniendo ubicación...' : 'Usar mi ubicación' }}
     </ion-button>
     <ion-item>
-      <ion-select label="Categoría" labelPlacement="stacked" formControlName="restaurantCategoryId" [disabled]="loadingCategories">
+      <ion-select label="Categoría" labelPlacement="stacked" formControlName="restaurantCategoryId">
         <ion-select-option *ngFor="let c of categories" [value]="c.id">{{ c.name }}</ion-select-option>
       </ion-select>
     </ion-item>
     <ion-item>
-      <ion-select label="Dueño (opcional)" labelPlacement="stacked" formControlName="ownerId" [disabled]="loadingOwners">
+      <ion-select label="Dueño (opcional)" labelPlacement="stacked" formControlName="ownerId">
         <ion-select-option [value]="null">— Sin dueño —</ion-select-option>
         <ion-select-option *ngFor="let o of owners" [value]="o.id">{{ o.label }} ({{ o.role }})</ion-select-option>
       </ion-select>

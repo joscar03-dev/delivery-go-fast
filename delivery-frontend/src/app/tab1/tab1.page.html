@@ -1,17 +1,20 @@
-<ion-header [translucent]="true">
+<ion-header>
   <ion-toolbar>
-    <ion-title>
-      Tab 1
-    </ion-title>
+    <ion-title size="large">Go Fast</ion-title>
+    <ion-buttons slot="end">
+      <ion-button fill="clear">
+        <ion-icon name="search"></ion-icon>
+      </ion-button>
+    </ion-buttons>
   </ion-toolbar>
 </ion-header>
 
 <ion-content [fullscreen]="true">
-  <ion-header collapse="condense">
-    <ion-toolbar>
-      <ion-title size="large">Tab 1</ion-title>
-    </ion-toolbar>
-  </ion-header>
+  <!-- Banner/Título principal -->
+  <div class="welcome-banner">
+    <h1>Go Fast</h1>
+    <p>Descubre los mejores restaurantes</p>
+  </div>
 
   <!-- Carrusel de restaurantes con Swiper -->
   <div class="swiper-container">
@@ -19,7 +22,6 @@
       slides-per-view="1.2"
       space-between="10"
       centered-slides="true"
-      loop="true"
       autoplay-delay="3000"
       autoplay-disable-on-interaction="false"
     >
@@ -41,29 +43,43 @@
   </div>
 
   <div class="categories-filter">
-    <swiper-container 
-      slides-per-view="auto" 
+    <swiper-container
+      slides-per-view="auto"
       space-between="8"
       free-mode="true"
       class="categories-swiper"
     >
       <swiper-slide class="chip-slide">
-        <ion-chip [outline]="!selectedCategory" (click)="setFilter(null)">Todos</ion-chip>
+        <ion-chip [outline]="!selectedCategory" (click)="setFilter(null)"
+          >Todos</ion-chip
+        >
       </swiper-slide>
       <swiper-slide class="chip-slide" *ngFor="let c of categories">
-        <ion-chip [outline]="selectedCategory !== c.name" (click)="setFilter(c.name)">
+        <ion-chip
+          [outline]="selectedCategory !== c.name"
+          (click)="setFilter(c.name)"
+        >
           {{ c.name }}
         </ion-chip>
       </swiper-slide>
     </swiper-container>
   </div>
-  <ion-list>
-    <ion-item *ngFor="let r of filtered" [routerLink]="['/restaurant', r.id]" detail>
-      <ion-label>
-        <h2>{{ r.name }}</h2>
-        <p>{{ r.address }}</p>
-        <small *ngIf="r.category?.name">{{ r.category?.name }}</small>
-      </ion-label>
-    </ion-item>
-  </ion-list>
+  <ion-grid>
+    <ion-row>
+      <ion-col size="12" size-md="6" size-lg="4" *ngFor="let r of filtered">
+        <ion-card [routerLink]="['/restaurant', r.id]" button>
+          <img [src]="r.imageUrl || 'assets/shapes.svg'" [alt]="r.name" />
+          <ion-card-header>
+            <ion-card-title>{{ r.name }}</ion-card-title>
+            <ion-card-subtitle>{{ r.address }}</ion-card-subtitle>
+          </ion-card-header>
+          <ion-card-content>
+            <ion-chip *ngIf="r.category?.name" color="primary">
+              {{ r.category?.name }}
+            </ion-chip>
+          </ion-card-content>
+        </ion-card>
+      </ion-col>
+    </ion-row>
+  </ion-grid>
 </ion-content>

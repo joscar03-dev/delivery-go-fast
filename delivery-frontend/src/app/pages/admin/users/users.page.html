@@ -8,8 +8,9 @@
 </ion-header>
 
 <ion-content class="ion-padding">
-  <ion-button (click)="create()">Nuevo usuario</ion-button>
-  <ion-button (click)="load()" [disabled]="loading">Recargar</ion-button>
+  <ion-toolbar>
+    <ion-buttons (click)="create()" slot="end">Nuevo usuario</ion-buttons>
+  </ion-toolbar>
   <ion-list>
     <ion-item *ngFor="let u of pagedUsers">
       <ion-label>

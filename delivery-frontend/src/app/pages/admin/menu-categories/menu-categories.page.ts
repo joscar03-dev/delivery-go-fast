@@ -6,14 +6,14 @@ import {
   AlertController,
   ModalController,
 } from '@ionic/angular/standalone';
-import { ActivatedRoute, RouterLink } from '@angular/router';
+import { ActivatedRoute } from '@angular/router';
 import { ReactiveFormsModule, FormBuilder, Validators } from '@angular/forms';
 import { RestaurantService } from '../../../services/restaurant.service';
 
 @Component({
   selector: 'app-admin-menu-categories',
   standalone: true,
-  imports: [CommonModule, IonicModule, ReactiveFormsModule, RouterLink],
+  imports: [CommonModule, IonicModule, ReactiveFormsModule],
   templateUrl: './menu-categories.page.html',
 })
 export class AdminMenuCategoriesPage implements OnInit {

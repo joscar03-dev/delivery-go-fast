@@ -4,12 +4,11 @@ import { IonicModule } from '@ionic/angular';
 import { ToastController, AlertController } from '@ionic/angular/standalone';
 import { ReactiveFormsModule, FormBuilder, Validators } from '@angular/forms';
 import { RestaurantService } from '../../../services/restaurant.service';
-import { RouterLink } from '@angular/router';
 
 @Component({
   selector: 'app-admin-restaurant-categories',
   standalone: true,
-  imports: [CommonModule, IonicModule, ReactiveFormsModule, RouterLink],
+  imports: [CommonModule, IonicModule, ReactiveFormsModule],
   templateUrl: './restaurant-categories.page.html',
 })
 export class AdminRestaurantCategoriesPage implements OnInit {

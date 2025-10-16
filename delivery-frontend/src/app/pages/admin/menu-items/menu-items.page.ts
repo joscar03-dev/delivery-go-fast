@@ -6,7 +6,7 @@ import {
   AlertController,
   ModalController,
 } from '@ionic/angular/standalone';
-import { ActivatedRoute, RouterLink } from '@angular/router';
+import { ActivatedRoute } from '@angular/router';
 import { ReactiveFormsModule, FormBuilder, Validators } from '@angular/forms';
 import {
   RestaurantService,
@@ -26,7 +26,7 @@ addIcons({
 @Component({
   selector: 'app-admin-menu-items',
   standalone: true,
-  imports: [CommonModule, IonicModule, ReactiveFormsModule, RouterLink],
+  imports: [CommonModule, IonicModule, ReactiveFormsModule],
   templateUrl: './menu-items.page.html',
   styleUrls: ['./menu-items.page.scss'],
 })

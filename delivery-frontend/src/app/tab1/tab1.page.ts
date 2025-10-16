@@ -1,20 +1,39 @@
-import { Component, OnInit, inject, CUSTOM_ELEMENTS_SCHEMA } from '@angular/core';
+import {
+  Component,
+  OnInit,
+  inject,
+  CUSTOM_ELEMENTS_SCHEMA,
+} from '@angular/core';
 import { CommonModule } from '@angular/common';
 import {
   IonHeader,
   IonToolbar,
   IonTitle,
   IonContent,
-  IonList,
-  IonItem,
-  IonLabel,
+  IonButtons,
+  IonButton,
+  IonIcon,
   IonChip,
+  IonGrid,
+  IonRow,
+  IonCol,
+  IonCard,
+  IonCardHeader,
+  IonCardTitle,
+  IonCardSubtitle,
+  IonCardContent,
 } from '@ionic/angular/standalone';
-import { ExploreContainerComponent } from '../explore-container/explore-container.component';
 import { RouterLink, Router } from '@angular/router';
 import { RestaurantService } from '../services/restaurant.service';
 import type { RestaurantModel } from '../models/restaurant.model';
 import { register } from 'swiper/element/bundle';
+import { addIcons } from 'ionicons';
+import { search } from 'ionicons/icons';
+
+// Register icons
+addIcons({
+  search,
+});
 
 register();
 
@@ -29,10 +48,18 @@ register();
     IonToolbar,
     IonTitle,
     IonContent,
-    IonList,
-    IonItem,
-    IonLabel,
+    IonButtons,
+    IonButton,
+    IonIcon,
     IonChip,
+    IonGrid,
+    IonRow,
+    IonCol,
+    IonCard,
+    IonCardHeader,
+    IonCardTitle,
+    IonCardSubtitle,
+    IonCardContent,
     RouterLink,
   ],
 })
