@@ -21,6 +21,10 @@ export class UpdateRestaurantDto {
   @IsOptional()
   phone?: string;
 
+  @IsString()
+  @IsOptional()
+  imageUrl?: string;
+
   @IsNumber()
   @Min(-180)
   @Max(180)

@@ -1,0 +1,30 @@
+ion-thumbnail {
+  --size: 80px;
+  --border-radius: 8px;
+  
+  img {
+    object-fit: cover;
+  }
+}
+
+ion-item {
+  --padding-start: 10px;
+  
+  ion-label {
+    h2 {
+      font-weight: 600;
+      margin-bottom: 5px;
+    }
+    
+    p {
+      font-size: 0.9em;
+      color: var(--ion-color-medium);
+      margin-top: 5px;
+    }
+  }
+}
+
+ion-chip {
+  font-size: 0.85em;
+  height: 24px;
+}

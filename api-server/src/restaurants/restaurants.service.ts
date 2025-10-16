@@ -109,7 +109,13 @@ export class RestaurantsService {
   async findOne(id: string): Promise<Restaurant> {
     const restaurant = await this.restaurantRepository.findOne({
       where: { id },
-      relations: ['category', 'owner', 'menuItems'],
+      relations: [
+        'category',
+        'owner',
+        'menuItems',
+        'menuItems.category', // Cargar también la categoría de cada menu item
+        'menuCategories',
+      ],
     });
 
     if (!restaurant) {

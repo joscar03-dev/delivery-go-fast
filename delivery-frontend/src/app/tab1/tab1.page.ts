@@ -1,4 +1,4 @@
-import { Component, OnInit, inject } from '@angular/core';
+import { Component, OnInit, inject, CUSTOM_ELEMENTS_SCHEMA } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import {
   IonHeader,
@@ -11,14 +11,18 @@ import {
   IonChip,
 } from '@ionic/angular/standalone';
 import { ExploreContainerComponent } from '../explore-container/explore-container.component';
-import { RouterLink } from '@angular/router';
+import { RouterLink, Router } from '@angular/router';
 import { RestaurantService } from '../services/restaurant.service';
 import type { RestaurantModel } from '../models/restaurant.model';
+import { register } from 'swiper/element/bundle';
+
+register();
 
 @Component({
   selector: 'app-tab1',
   templateUrl: 'tab1.page.html',
   styleUrls: ['tab1.page.scss'],
+  schemas: [CUSTOM_ELEMENTS_SCHEMA],
   imports: [
     CommonModule,
     IonHeader,
@@ -34,6 +38,7 @@ import type { RestaurantModel } from '../models/restaurant.model';
 })
 export class Tab1Page implements OnInit {
   private restaurantsSvc = inject(RestaurantService);
+  private router = inject(Router);
   list: RestaurantModel[] = [];
   categories: { id?: string; name: string }[] = [];
   selectedCategory: string | null = null; // name
@@ -60,6 +65,10 @@ export class Tab1Page implements OnInit {
 
   setFilter(name: string | null) {
     this.selectedCategory = name;
+  }
+
+  navigateToRestaurant(id: string) {
+    this.router.navigate(['/restaurant', id]);
   }
 
   get filtered(): RestaurantModel[] {

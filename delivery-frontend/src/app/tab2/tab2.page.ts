@@ -5,13 +5,27 @@ import {
   IonToolbar,
   IonTitle,
   IonContent,
-  IonList,
-  IonItem,
+  IonGrid,
+  IonRow,
+  IonCol,
+  IonCard,
+  IonCardHeader,
+  IonCardTitle,
+  IonCardContent,
+  IonIcon,
   IonSpinner,
 } from '@ionic/angular/standalone';
 import { RouterLink } from '@angular/router';
 import { RestaurantService } from '../services/restaurant.service';
 import type { RestaurantModel } from '../models/restaurant.model';
+import { addIcons } from 'ionicons';
+import { restaurantOutline, peopleOutline } from 'ionicons/icons';
+
+// Register icons
+addIcons({
+  'restaurant-outline': restaurantOutline,
+  'people-outline': peopleOutline,
+});
 
 @Component({
   selector: 'app-tab2',
@@ -23,8 +37,14 @@ import type { RestaurantModel } from '../models/restaurant.model';
     IonToolbar,
     IonTitle,
     IonContent,
-    IonList,
-    IonItem,
+    IonGrid,
+    IonRow,
+    IonCol,
+    IonCard,
+    IonCardHeader,
+    IonCardTitle,
+    IonCardContent,
+    IonIcon,
     IonSpinner,
     RouterLink,
   ],

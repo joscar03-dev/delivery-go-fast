@@ -1,16 +1,13 @@
 <ion-header>
   <ion-toolbar>
+    <ion-buttons slot="start">
+      <ion-back-button defaultHref="/admin/restaurants"></ion-back-button>
+    </ion-buttons>
     <ion-title>Ítems de Menú</ion-title>
   </ion-toolbar>
   <ion-toolbar color="light">
-    <ion-breadcrumbs>
-      <ion-breadcrumb routerLink="/tabs/tab2">Admin</ion-breadcrumb>
-      <ion-breadcrumb routerLink="/admin/restaurants">Restaurantes</ion-breadcrumb>
-      <ion-breadcrumb>Ítems de menú</ion-breadcrumb>
-    </ion-breadcrumbs>
     <ion-buttons slot="end">
       <ion-button (click)="openCreateModal()">Nuevo ítem</ion-button>
-      <ion-button routerLink="/admin/restaurants">Volver al panel</ion-button>
     </ion-buttons>
   </ion-toolbar>
 </ion-header>
@@ -23,15 +20,29 @@
     </ion-label>
   </ion-item>
   <ion-list *ngIf="!loading; else sk">
-  <ion-item *ngFor="let it of list">
+    <ion-item *ngFor="let it of list">
+      <!-- Thumbnail de la imagen si existe -->
+      <ion-thumbnail slot="start" *ngIf="it.imageUrl">
+        <img [src]="it.imageUrl" [alt]="it.name" />
+      </ion-thumbnail>
+      
       <ion-label>
-    <h2>{{ it.name }} - {{ it.price | currency:'USD':'symbol':'1.2-2' }}</h2>
-        <p>{{ it.description }}</p>
-        <p *ngIf="it.imageUrl">Imagen: {{ it.imageUrl }}</p>
-    <p *ngIf="it.menuCategoryId">Categoría: {{ getCategoryName(it.menuCategoryId) || it.menuCategoryId }}</p>
+        <h2>{{ it.name }} - {{ it.price | currency:'USD':'symbol':'1.2-2' }}</h2>
+        <p *ngIf="it.description">{{ it.description }}</p>
+        <p *ngIf="it.menuCategoryId">
+          <ion-chip color="primary" outline>
+            <ion-icon name="pricetag-outline"></ion-icon>
+            <ion-label>{{ getCategoryName(it.menuCategoryId) || it.menuCategoryId }}</ion-label>
+          </ion-chip>
+        </p>
       </ion-label>
-      <ion-button slot="end" fill="clear" (click)="edit(it)">Editar</ion-button>
-      <ion-button slot="end" fill="clear" color="danger" (click)="remove(it)">Eliminar</ion-button>
+      
+      <ion-button slot="end" fill="clear" (click)="edit(it)">
+        <ion-icon name="create-outline"></ion-icon>
+      </ion-button>
+      <ion-button slot="end" fill="clear" color="danger" (click)="remove(it)">
+        <ion-icon name="trash-outline"></ion-icon>
+      </ion-button>
     </ion-item>
   </ion-list>
 

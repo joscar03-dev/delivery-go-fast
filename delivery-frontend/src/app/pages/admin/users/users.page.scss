@@ -1,0 +1,88 @@
+.button-group {
+  display: flex;
+  gap: 10px;
+  margin-bottom: 20px;
+
+  ion-button {
+    flex: 1;
+  }
+}
+
+.users-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: 16px;
+  margin-bottom: 20px;
+
+  ion-card {
+    margin: 0;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+
+    &:hover {
+      transform: translateY(-4px);
+      box-shadow: 0 4px 16px rgba(0, 0, 0, 0.15);
+    }
+
+    ion-card-header {
+      padding-bottom: 8px;
+
+      ion-card-title {
+        font-size: 20px;
+        font-weight: 600;
+        color: var(--ion-color-dark);
+      }
+
+      ion-card-subtitle {
+        font-size: 14px;
+        color: var(--ion-color-medium);
+        margin-top: 4px;
+      }
+    }
+
+    ion-card-content {
+      p {
+        margin: 8px 0;
+        font-size: 14px;
+        color: var(--ion-color-medium-shade);
+
+        strong {
+          color: var(--ion-color-dark);
+        }
+      }
+
+      .card-actions {
+        display: flex;
+        gap: 8px;
+        margin-top: 16px;
+        justify-content: flex-end;
+
+        ion-button {
+          margin: 0;
+        }
+      }
+    }
+  }
+}
+
+.loading-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 40px;
+
+  ion-spinner {
+    transform: scale(1.5);
+  }
+}
+
+// Responsive
+@media (max-width: 768px) {
+  .users-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .button-group {
+    flex-direction: column;
+  }
+}

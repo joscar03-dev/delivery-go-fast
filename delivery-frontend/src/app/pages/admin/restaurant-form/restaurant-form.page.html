@@ -1,16 +1,9 @@
 <ion-header>
   <ion-toolbar>
-    <ion-title>Restaurante (crear/editar)</ion-title>
-  </ion-toolbar>
-  <ion-toolbar color="light">
-    <ion-breadcrumbs>
-      <ion-breadcrumb routerLink="/tabs/tab2">Admin</ion-breadcrumb>
-      <ion-breadcrumb routerLink="/admin/restaurants">Restaurantes</ion-breadcrumb>
-      <ion-breadcrumb>{{ id ? 'Editar' : 'Crear' }}</ion-breadcrumb>
-    </ion-breadcrumbs>
-    <ion-buttons slot="end">
-      <ion-button routerLink="/admin/restaurants">Volver al panel</ion-button>
+    <ion-buttons slot="start">
+      <ion-back-button defaultHref="/admin/restaurants"></ion-back-button>
     </ion-buttons>
+    <ion-title>Restaurante (crear/editar)</ion-title>
   </ion-toolbar>
 </ion-header>
 
@@ -25,6 +18,30 @@
     <ion-item>
       <ion-input label="Teléfono" labelPlacement="stacked" formControlName="phone" required></ion-input>
     </ion-item>
+    
+    <!-- Campo de imagen con preview -->
+    <ion-item>
+      <ion-label position="stacked">Imagen del Restaurante</ion-label>
+      <input 
+        type="file" 
+        accept="image/*" 
+        (change)="onImageSelected($event)"
+        #fileInput
+        style="margin-top: 10px;"
+      />
+    </ion-item>
+    
+    <!-- Preview de la imagen -->
+    <ion-item *ngIf="imagePreview" lines="none">
+      <div style="width: 100%; text-align: center; padding: 10px;">
+        <img [src]="imagePreview" alt="Preview" style="max-width: 300px; max-height: 200px; border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.1);" />
+        <ion-button fill="clear" color="danger" (click)="clearImage()">
+          <ion-icon name="trash-outline"></ion-icon>
+          Eliminar imagen
+        </ion-button>
+      </div>
+    </ion-item>
+    
     <ion-item>
       <ion-input type="number" label="Latitud" labelPlacement="stacked" formControlName="latitude" required></ion-input>
     </ion-item>

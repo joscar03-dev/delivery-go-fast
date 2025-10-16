@@ -28,6 +28,9 @@ export class Restaurant {
   @Column({ type: 'varchar', length: 20 })
   phone: string;
 
+  @Column({ name: 'image_url', type: 'varchar', nullable: true })
+  imageUrl: string;
+
   // 💡 ¡AQUÍ USAMOS POSTGIS!
   // Guardamos la ubicación geográfica como un punto (longitud, latitud).
   @Column({

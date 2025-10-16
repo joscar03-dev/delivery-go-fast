@@ -1,15 +1,59 @@
 import { Component, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { IonicModule, ToastController } from '@ionic/angular';
+import {
+  IonHeader,
+  IonToolbar,
+  IonButtons,
+  IonBackButton,
+  IonTitle,
+  IonContent,
+  IonBreadcrumbs,
+  IonBreadcrumb,
+  IonButton,
+  IonItem,
+  IonLabel,
+  IonInput,
+  IonSelect,
+  IonSelectOption,
+  IonIcon,
+  ToastController,
+} from '@ionic/angular/standalone';
 import { ReactiveFormsModule, FormBuilder, Validators } from '@angular/forms';
 import { RestaurantService } from '../../../services/restaurant.service';
 import { UserService } from '../../../services/user.service';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
+import { ImageCompressor } from '../../../common/utils/image-compressor.util';
+import { addIcons } from 'ionicons';
+import { trashOutline } from 'ionicons/icons';
+
+// Register icons
+addIcons({
+  'trash-outline': trashOutline,
+});
 
 @Component({
   selector: 'app-admin-restaurant-form',
   standalone: true,
-  imports: [CommonModule, IonicModule, ReactiveFormsModule, RouterLink],
+  imports: [
+    CommonModule,
+    ReactiveFormsModule,
+    RouterLink,
+    IonHeader,
+    IonToolbar,
+    IonButtons,
+    IonBackButton,
+    IonTitle,
+    IonContent,
+    IonBreadcrumbs,
+    IonBreadcrumb,
+    IonButton,
+    IonItem,
+    IonLabel,
+    IonInput,
+    IonSelect,
+    IonSelectOption,
+    IonIcon,
+  ],
   templateUrl: './restaurant-form.page.html',
 })
 export class AdminRestaurantFormPage {
@@ -24,6 +68,7 @@ export class AdminRestaurantFormPage {
     name: this.fb.nonNullable.control<string>('', [Validators.required]),
     address: this.fb.nonNullable.control<string>('', [Validators.required]),
     phone: this.fb.nonNullable.control<string>('', [Validators.required]),
+    imageUrl: this.fb.nonNullable.control<string>(''),
     latitude: this.fb.nonNullable.control<number | null>(null, [
       Validators.required,
     ]),
@@ -39,6 +84,7 @@ export class AdminRestaurantFormPage {
   owners: Array<{ id: string; label: string; role?: string }> = [];
   loadingOwners = false;
   locating = false;
+  imagePreview: string | null = null;
 
   constructor() {
     // Leer ID si viene por query para modo edición
@@ -50,11 +96,16 @@ export class AdminRestaurantFormPage {
           name: r.name,
           address: r.address,
           phone: r.phone,
+          imageUrl: r.imageUrl || '',
           latitude: (r as any).location?.coordinates?.[1] ?? null,
           longitude: (r as any).location?.coordinates?.[0] ?? null,
           restaurantCategoryId: (r as any).category?.id ?? null,
           ownerId: (r as any).owner?.id ?? null,
         });
+        // Mostrar preview si ya tiene imagen
+        if (r.imageUrl) {
+          this.imagePreview = r.imageUrl;
+        }
       });
     }
 
@@ -130,6 +181,47 @@ export class AdminRestaurantFormPage {
     );
   }
 
+  onImageSelected(event: Event) {
+    const input = event.target as HTMLInputElement;
+    if (input.files && input.files[0]) {
+      const file = input.files[0];
+
+      // Validar la imagen
+      const validation = ImageCompressor.validateImage(file);
+      if (!validation.isValid) {
+        this.toast
+          .create({
+            message: validation.error || 'Archivo inválido',
+            duration: 2000,
+            color: 'warning',
+          })
+          .then((t) => t.present());
+        return;
+      }
+
+      // Comprimir y redimensionar la imagen
+      ImageCompressor.compressImage(file, 800, 0.7)
+        .then((compressedBase64) => {
+          this.imagePreview = compressedBase64;
+          this.form.patchValue({ imageUrl: compressedBase64 });
+        })
+        .catch((error) => {
+          this.toast
+            .create({
+              message: 'Error al procesar la imagen',
+              duration: 2000,
+              color: 'danger',
+            })
+            .then((t) => t.present());
+        });
+    }
+  }
+
+  clearImage() {
+    this.imagePreview = null;
+    this.form.patchValue({ imageUrl: '' });
+  }
+
   async save() {
     if (this.form.invalid) {
       const t = await this.toast.create({
@@ -146,6 +238,7 @@ export class AdminRestaurantFormPage {
       phone: data.phone,
       latitude: Number(data.latitude),
       longitude: Number(data.longitude),
+      ...(data.imageUrl ? { imageUrl: data.imageUrl } : {}),
       ...(data.restaurantCategoryId
         ? { restaurantCategoryId: data.restaurantCategoryId }
         : {}),

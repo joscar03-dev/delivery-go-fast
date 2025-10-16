@@ -1,6 +1,21 @@
 import { Component, OnInit, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { IonicModule } from '@ionic/angular';
+import {
+  IonHeader,
+  IonToolbar,
+  IonButtons,
+  IonBackButton,
+  IonTitle,
+  IonContent,
+  IonCard,
+  IonCardHeader,
+  IonCardTitle,
+  IonCardSubtitle,
+  IonCardContent,
+  IonButton,
+  IonSpinner,
+  IonText,
+} from '@ionic/angular/standalone';
 import { UserService } from '../../services/user.service';
 import { AuthService } from '../../services/auth.service';
 import type { User } from '../../models/user.model';
@@ -8,7 +23,23 @@ import type { User } from '../../models/user.model';
 @Component({
   selector: 'app-profile',
   standalone: true,
-  imports: [CommonModule, IonicModule],
+  imports: [
+    CommonModule,
+    IonHeader,
+    IonToolbar,
+    IonButtons,
+    IonBackButton,
+    IonTitle,
+    IonContent,
+    IonCard,
+    IonCardHeader,
+    IonCardTitle,
+    IonCardSubtitle,
+    IonCardContent,
+    IonButton,
+    IonSpinner,
+    IonText,
+  ],
   templateUrl: './profile.page.html',
 })
 export class ProfilePage implements OnInit {

@@ -13,11 +13,49 @@
     </ion-toolbar>
   </ion-header>
 
-  <div class="ion-padding">
-    <ion-chip [outline]="!selectedCategory" (click)="setFilter(null)">Todos</ion-chip>
-    <ion-chip *ngFor="let c of categories" [outline]="selectedCategory !== c.name" (click)="setFilter(c.name)">
-      {{ c.name }}
-    </ion-chip>
+  <!-- Carrusel de restaurantes con Swiper -->
+  <div class="swiper-container">
+    <swiper-container
+      slides-per-view="1.2"
+      space-between="10"
+      centered-slides="true"
+      loop="true"
+      autoplay-delay="3000"
+      autoplay-disable-on-interaction="false"
+    >
+      <swiper-slide *ngFor="let r of list" (click)="navigateToRestaurant(r.id)">
+        <div class="restaurant-card">
+          <div class="restaurant-image">
+            <img [src]="r.imageUrl || 'assets/shapes.svg'" [alt]="r.name" />
+          </div>
+          <div class="restaurant-info">
+            <h3>{{ r.name }}</h3>
+            <p>{{ r.address }}</p>
+            <ion-chip *ngIf="r.category?.name" color="primary">
+              {{ r.category?.name }}
+            </ion-chip>
+          </div>
+        </div>
+      </swiper-slide>
+    </swiper-container>
+  </div>
+
+  <div class="categories-filter">
+    <swiper-container 
+      slides-per-view="auto" 
+      space-between="8"
+      free-mode="true"
+      class="categories-swiper"
+    >
+      <swiper-slide class="chip-slide">
+        <ion-chip [outline]="!selectedCategory" (click)="setFilter(null)">Todos</ion-chip>
+      </swiper-slide>
+      <swiper-slide class="chip-slide" *ngFor="let c of categories">
+        <ion-chip [outline]="selectedCategory !== c.name" (click)="setFilter(c.name)">
+          {{ c.name }}
+        </ion-chip>
+      </swiper-slide>
+    </swiper-container>
   </div>
   <ion-list>
     <ion-item *ngFor="let r of filtered" [routerLink]="['/restaurant', r.id]" detail>

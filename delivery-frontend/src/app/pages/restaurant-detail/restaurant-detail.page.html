@@ -1,41 +1,105 @@
 <ion-header>
   <ion-toolbar>
+    <ion-buttons slot="start">
+      <ion-back-button defaultHref="/tabs/tab1"></ion-back-button>
+    </ion-buttons>
     <ion-title>Restaurante</ion-title>
   </ion-toolbar>
-  <ion-toolbar color="light">
-    <ion-breadcrumbs>
-      <ion-breadcrumb routerLink="/tabs/tab1">Restaurantes</ion-breadcrumb>
-      <ion-breadcrumb>Detalle</ion-breadcrumb>
-    </ion-breadcrumbs>
-    <ion-buttons slot="end">
-      <ion-button routerLink="/admin/restaurants">Volver al panel</ion-button>
-    </ion-buttons>
-  </ion-toolbar>
+  
 </ion-header>
 
 <ion-content class="ion-padding">
-  <ng-container *ngIf="restaurant as r; else loadingTpl">
-    <h2>{{ r.name }}</h2>
-    <p>{{ r.address }}</p>
-    <p>Tel: {{ r.phone }}</p>
-    <ion-list *ngIf="r.menuCategories?.length">
-      <ion-list-header>Categorías</ion-list-header>
-      <ion-item *ngFor="let c of r.menuCategories">
-        {{ c.name }}
-      </ion-item>
-    </ion-list>
-    <ion-list *ngIf="r.menuItems?.length">
-      <ion-list-header>Platos</ion-list-header>
-      <ion-item *ngFor="let m of r.menuItems">
+  <ng-container *ngIf="restaurant && !loading; else loadingTpl">
+    <!-- Header del Restaurante -->
+    <div class="restaurant-header">
+      <div class="restaurant-image" *ngIf="restaurant.imageUrl">
+        <img [src]="restaurant.imageUrl" [alt]="restaurant.name" />
+      </div>
+      <h2>{{ restaurant.name }}</h2>
+      <p class="address">
+        <ion-icon name="location-outline"></ion-icon>
+        {{ restaurant.address }}
+      </p>
+      <p class="phone">
+        <ion-icon name="call-outline"></ion-icon>
+        {{ restaurant.phone }}
+      </p>
+    </div>
+
+    <!-- Filtro por Categorías de Menú -->
+    <div class="menu-categories" *ngIf="restaurant.menuCategories?.length">
+      <swiper-container 
+        slides-per-view="auto" 
+        space-between="8"
+        free-mode="true"
+        class="categories-swiper"
+      >
+        <swiper-slide class="chip-slide">
+          <ion-chip 
+            [outline]="!selectedMenuCategory" 
+            (click)="filterByCategory(null)"
+            color="primary"
+          >
+            <ion-label>Todos</ion-label>
+          </ion-chip>
+        </swiper-slide>
+        <swiper-slide class="chip-slide" *ngFor="let c of restaurant.menuCategories">
+          <ion-chip 
+            [outline]="selectedMenuCategory !== c.id"
+            (click)="filterByCategory(c.id)"
+            color="primary"
+          >
+            <ion-icon name="restaurant-outline"></ion-icon>
+            <ion-label>{{ c.name }}</ion-label>
+          </ion-chip>
+        </swiper-slide>
+      </swiper-container>
+    </div>
+
+    <!-- Lista de Platos -->
+    <ion-list *ngIf="filteredMenuItems?.length; else noItemsTpl">
+      <ion-list-header>
+        <ion-label>Menú</ion-label>
+      </ion-list-header>
+      <ion-item *ngFor="let m of filteredMenuItems" lines="full">
+        <!-- Thumbnail de la imagen -->
+        <ion-thumbnail slot="start" *ngIf="m.imageUrl">
+          <img [src]="m.imageUrl" [alt]="m.name" />
+        </ion-thumbnail>
+        
+        <!-- Contenido del item -->
         <ion-label>
           <h3>{{ m.name }}</h3>
-          <p>{{ m.description }}</p>
+          <p *ngIf="m.description">{{ m.description }}</p>
+          <p *ngIf="getItemCategoryName(m)">
+            <ion-chip color="secondary" size="small">
+              <ion-icon name="pricetag-outline"></ion-icon>
+              <ion-label>{{ getItemCategoryName(m) }}</ion-label>
+            </ion-chip>
+          </p>
         </ion-label>
-        <ion-badge color="success">{{ m.price | number:'1.2-2' }}</ion-badge>
+        
+        <!-- Precio -->
+        <ion-note slot="end" class="price">
+          {{ m.price | currency:'USD':'symbol':'1.2-2' }}
+        </ion-note>
       </ion-item>
     </ion-list>
+
+    <!-- Mensaje cuando no hay items -->
+    <ng-template #noItemsTpl>
+      <div class="no-items">
+        <ion-icon name="restaurant-outline" size="large"></ion-icon>
+        <p>No hay platos disponibles</p>
+      </div>
+    </ng-template>
   </ng-container>
+
+  <!-- Loading Template -->
   <ng-template #loadingTpl>
-    <ion-spinner></ion-spinner>
+    <div class="loading">
+      <ion-spinner></ion-spinner>
+      <p>Cargando...</p>
+    </div>
   </ng-template>
 </ion-content>

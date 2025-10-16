@@ -1,11 +1,11 @@
 import { Component, OnInit, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { IonicModule } from '@ionic/angular';
 import {
-  IonicModule,
   AlertController,
   ToastController,
   ModalController,
-} from '@ionic/angular';
+} from '@ionic/angular/standalone';
 import { ReactiveFormsModule, FormBuilder, Validators } from '@angular/forms';
 import { UserService, RoleName } from '../../../services/user.service';
 import type { User } from '../../../models/user.model';

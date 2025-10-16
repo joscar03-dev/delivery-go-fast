@@ -1,0 +1,163 @@
+.restaurant-header {
+  text-align: center;
+  margin-bottom: 20px;
+
+  .restaurant-image {
+    width: 100%;
+    max-width: 400px;
+    margin: 0 auto 20px;
+    border-radius: 12px;
+    overflow: hidden;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+
+    img {
+      width: 100%;
+      height: auto;
+      display: block;
+    }
+  }
+
+  h2 {
+    font-size: 28px;
+    font-weight: bold;
+    margin: 10px 0;
+    color: var(--ion-color-dark);
+  }
+
+  .address,
+  .phone {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    font-size: 16px;
+    color: var(--ion-color-medium);
+    margin: 8px 0;
+
+    ion-icon {
+      font-size: 20px;
+    }
+  }
+}
+
+.menu-categories {
+  padding: 15px 0;
+  margin-bottom: 10px;
+
+  .categories-swiper {
+    width: 100%;
+    height: auto;
+    padding: 0;
+
+    .chip-slide {
+      width: auto;
+
+      ion-chip {
+        cursor: pointer;
+        transition: all 0.3s ease;
+        margin: 0;
+
+        &:hover {
+          transform: translateY(-2px);
+        }
+
+        &:not([outline]) {
+          font-weight: 600;
+        }
+      }
+    }
+  }
+}
+
+ion-list {
+  ion-thumbnail {
+    --size: 100px;
+    --border-radius: 10px;
+    margin-right: 12px;
+
+    img {
+      object-fit: cover;
+      width: 100%;
+      height: 100%;
+    }
+  }
+
+  ion-item {
+    --padding-start: 0;
+    --inner-padding-end: 0;
+    margin-bottom: 10px;
+
+    ion-label {
+      h3 {
+        font-size: 18px;
+        font-weight: 600;
+        margin-bottom: 5px;
+        color: var(--ion-color-dark);
+      }
+
+      p {
+        font-size: 14px;
+        color: var(--ion-color-medium);
+        margin-top: 5px;
+        white-space: normal;
+      }
+
+      ion-chip {
+        margin-top: 8px;
+        font-size: 12px;
+        height: 24px;
+      }
+    }
+
+    .price {
+      font-size: 20px;
+      font-weight: bold;
+      color: var(--ion-color-success);
+      margin-left: 10px;
+    }
+  }
+
+  ion-list-header {
+    font-size: 20px;
+    font-weight: bold;
+    margin-bottom: 10px;
+    padding-left: 0;
+  }
+}
+
+.no-items {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 60px 20px;
+  text-align: center;
+
+  ion-icon {
+    color: var(--ion-color-medium);
+    margin-bottom: 15px;
+  }
+
+  p {
+    color: var(--ion-color-medium);
+    font-size: 16px;
+  }
+}
+
+.loading {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 60px 20px;
+  text-align: center;
+
+  ion-spinner {
+    margin-bottom: 15px;
+  }
+
+  p {
+    color: var(--ion-color-medium);
+    font-size: 16px;
+  }
+}

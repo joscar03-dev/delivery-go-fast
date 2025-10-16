@@ -1,14 +1,77 @@
 import { Component, OnInit, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { IonicModule, ToastController, AlertController } from '@ionic/angular';
+import {
+  IonHeader,
+  IonToolbar,
+  IonButtons,
+  IonBackButton,
+  IonMenuButton,
+  IonTitle,
+  IonContent,
+  IonButton,
+  IonList,
+  IonItem,
+  IonLabel,
+  IonSpinner,
+  IonIcon,
+  IonActionSheet,
+  IonMenu,
+  ToastController,
+  AlertController,
+} from '@ionic/angular/standalone';
 import { Router, RouterLink } from '@angular/router';
 import { RestaurantService } from '../../../services/restaurant.service';
 import type { RestaurantModel } from '../../../models/restaurant.model';
+import { addIcons } from 'ionicons';
+import {
+  ellipsisVertical,
+  eye,
+  create,
+  restaurant,
+  list,
+  trash,
+  close,
+  addCircle,
+  pricetags,
+  refresh,
+} from 'ionicons/icons';
+
+// Register icons
+addIcons({
+  'ellipsis-vertical': ellipsisVertical,
+  eye: eye,
+  create: create,
+  restaurant: restaurant,
+  list: list,
+  trash: trash,
+  close: close,
+  'add-circle': addCircle,
+  pricetags: pricetags,
+  refresh: refresh,
+});
 
 @Component({
   selector: 'app-admin-restaurant-list',
   standalone: true,
-  imports: [CommonModule, IonicModule, RouterLink],
+  imports: [
+    CommonModule,
+    RouterLink,
+    IonHeader,
+    IonToolbar,
+    IonButtons,
+    IonBackButton,
+    IonMenuButton,
+    IonTitle,
+    IonContent,
+    IonButton,
+    IonList,
+    IonItem,
+    IonLabel,
+    IonSpinner,
+    IonIcon,
+    IonActionSheet,
+    IonMenu,
+  ],
   templateUrl: './restaurant-list.page.html',
 })
 export class AdminRestaurantListPage implements OnInit {
@@ -61,6 +124,54 @@ export class AdminRestaurantListPage implements OnInit {
       ],
     });
     await alert.present();
+  }
+
+  getActionSheetButtons(r: RestaurantModel) {
+    return [
+      {
+        text: 'Ver Restaurante',
+        icon: 'eye',
+        handler: () => {
+          this.open(r);
+        },
+      },
+      {
+        text: 'Editar',
+        icon: 'create',
+        handler: () => {
+          this.router.navigate(['/admin/restaurants/form'], {
+            queryParams: { id: r.id },
+          });
+        },
+      },
+      {
+        text: 'Menú: Categorías',
+        icon: 'restaurant',
+        handler: () => {
+          this.router.navigate(['/admin/restaurants', r.id, 'menu-categories']);
+        },
+      },
+      {
+        text: 'Menú: Ítems',
+        icon: 'list',
+        handler: () => {
+          this.router.navigate(['/admin/restaurants', r.id, 'menu-items']);
+        },
+      },
+      {
+        text: 'Eliminar',
+        role: 'destructive',
+        icon: 'trash',
+        handler: () => {
+          this.remove(r);
+        },
+      },
+      {
+        text: 'Cancelar',
+        role: 'cancel',
+        icon: 'close',
+      },
+    ];
   }
 
   private async confirmRemove(id: string) {

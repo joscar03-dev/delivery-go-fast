@@ -1,11 +1,11 @@
 import { Component, OnInit, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { IonicModule } from '@ionic/angular';
 import {
-  IonicModule,
   ToastController,
   AlertController,
   ModalController,
-} from '@ionic/angular';
+} from '@ionic/angular/standalone';
 import { ActivatedRoute, RouterLink } from '@angular/router';
 import { ReactiveFormsModule, FormBuilder, Validators } from '@angular/forms';
 import {
@@ -13,12 +13,22 @@ import {
   CreateMenuItemDto,
   UpdateMenuItemDto,
 } from '../../../services/restaurant.service';
+import { addIcons } from 'ionicons';
+import { createOutline, trashOutline, pricetagOutline } from 'ionicons/icons';
+
+// Register icons
+addIcons({
+  'create-outline': createOutline,
+  'trash-outline': trashOutline,
+  'pricetag-outline': pricetagOutline,
+});
 
 @Component({
   selector: 'app-admin-menu-items',
   standalone: true,
   imports: [CommonModule, IonicModule, ReactiveFormsModule, RouterLink],
   templateUrl: './menu-items.page.html',
+  styleUrls: ['./menu-items.page.scss'],
 })
 export class AdminMenuItemsPage implements OnInit {
   private route = inject(ActivatedRoute);
@@ -349,11 +359,31 @@ export class AdminMenuItemsPage implements OnInit {
           ></ion-input>
         </ion-item>
         <ion-item>
-          <ion-input
-            label="URL de imagen"
-            labelPlacement="stacked"
-            formControlName="imageUrl"
-          ></ion-input>
+          <ion-label position="stacked">Imagen del Producto</ion-label>
+          <input
+            type="file"
+            accept="image/*"
+            (change)="onImageSelected($event)"
+            style="margin-top: 10px;"
+          />
+        </ion-item>
+        <ion-item *ngIf="imagePreview" lines="none">
+          <div style="width: 100%; text-align: center; padding: 10px;">
+            <img
+              [src]="imagePreview"
+              alt="Preview"
+              style="max-width: 200px; max-height: 150px; border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.1);"
+            />
+            <ion-button
+              fill="clear"
+              color="danger"
+              (click)="clearImage()"
+              size="small"
+            >
+              <ion-icon name="trash-outline"></ion-icon>
+              Eliminar
+            </ion-button>
+          </div>
         </ion-item>
         <ion-item>
           <ion-select
@@ -409,8 +439,10 @@ export class AdminMenuItemsPage implements OnInit {
 export class CreateMenuItemModalComponent {
   private fb = inject(FormBuilder);
   private modal = inject(ModalController);
+  private toast = inject(ToastController);
 
   categories: Array<{ id: string; name: string }> = [];
+  imagePreview: string | null = null;
 
   form = this.fb.nonNullable.group({
     name: this.fb.nonNullable.control<string>('', [Validators.required]),
@@ -429,6 +461,49 @@ export class CreateMenuItemModalComponent {
   dismiss() {
     this.modal.dismiss(null, 'cancel');
   }
+
+  onImageSelected(event: Event) {
+    const input = event.target as HTMLInputElement;
+    if (input.files && input.files[0]) {
+      const file = input.files[0];
+
+      if (!file.type.startsWith('image/')) {
+        this.toast
+          .create({
+            message: 'Por favor selecciona un archivo de imagen',
+            duration: 2000,
+            color: 'warning',
+          })
+          .then((t) => t.present());
+        return;
+      }
+
+      if (file.size > 5 * 1024 * 1024) {
+        this.toast
+          .create({
+            message: 'La imagen no debe superar los 5MB',
+            duration: 2000,
+            color: 'warning',
+          })
+          .then((t) => t.present());
+        return;
+      }
+
+      const reader = new FileReader();
+      reader.onload = (e: ProgressEvent<FileReader>) => {
+        const base64 = e.target?.result as string;
+        this.imagePreview = base64;
+        this.form.patchValue({ imageUrl: base64 });
+      };
+      reader.readAsDataURL(file);
+    }
+  }
+
+  clearImage() {
+    this.imagePreview = null;
+    this.form.patchValue({ imageUrl: null });
+  }
+
   submit() {
     if (this.form.invalid) return;
     const raw = this.form.getRawValue();
@@ -493,11 +568,31 @@ export class CreateMenuItemModalComponent {
           ></ion-input>
         </ion-item>
         <ion-item>
-          <ion-input
-            label="URL de imagen"
-            labelPlacement="stacked"
-            formControlName="imageUrl"
-          ></ion-input>
+          <ion-label position="stacked">Imagen del Producto</ion-label>
+          <input
+            type="file"
+            accept="image/*"
+            (change)="onImageSelected($event)"
+            style="margin-top: 10px;"
+          />
+        </ion-item>
+        <ion-item *ngIf="imagePreview" lines="none">
+          <div style="width: 100%; text-align: center; padding: 10px;">
+            <img
+              [src]="imagePreview"
+              alt="Preview"
+              style="max-width: 200px; max-height: 150px; border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.1);"
+            />
+            <ion-button
+              fill="clear"
+              color="danger"
+              (click)="clearImage()"
+              size="small"
+            >
+              <ion-icon name="trash-outline"></ion-icon>
+              Eliminar
+            </ion-button>
+          </div>
         </ion-item>
         <ion-item>
           <ion-select
@@ -553,9 +648,11 @@ export class CreateMenuItemModalComponent {
 export class EditMenuItemModalComponent implements OnInit {
   private fb = inject(FormBuilder);
   private modal = inject(ModalController);
+  private toast = inject(ToastController);
 
   item: any;
   categories: Array<{ id: string; name: string }> = [];
+  imagePreview: string | null = null;
 
   form = this.fb.nonNullable.group({
     name: this.fb.nonNullable.control<string>('', [Validators.required]),
@@ -580,11 +677,57 @@ export class EditMenuItemModalComponent implements OnInit {
         imageUrl: this.item.imageUrl ?? null,
         menuCategoryId: this.item.menuCategoryId ?? null,
       });
+      // Mostrar preview si ya tiene imagen
+      if (this.item.imageUrl) {
+        this.imagePreview = this.item.imageUrl;
+      }
     }
   }
 
   dismiss() {
     this.modal.dismiss(null, 'cancel');
+  }
+
+  onImageSelected(event: Event) {
+    const input = event.target as HTMLInputElement;
+    if (input.files && input.files[0]) {
+      const file = input.files[0];
+
+      if (!file.type.startsWith('image/')) {
+        this.toast
+          .create({
+            message: 'Por favor selecciona un archivo de imagen',
+            duration: 2000,
+            color: 'warning',
+          })
+          .then((t) => t.present());
+        return;
+      }
+
+      if (file.size > 5 * 1024 * 1024) {
+        this.toast
+          .create({
+            message: 'La imagen no debe superar los 5MB',
+            duration: 2000,
+            color: 'warning',
+          })
+          .then((t) => t.present());
+        return;
+      }
+
+      const reader = new FileReader();
+      reader.onload = (e: ProgressEvent<FileReader>) => {
+        const base64 = e.target?.result as string;
+        this.imagePreview = base64;
+        this.form.patchValue({ imageUrl: base64 });
+      };
+      reader.readAsDataURL(file);
+    }
+  }
+
+  clearImage() {
+    this.imagePreview = null;
+    this.form.patchValue({ imageUrl: null });
   }
 
   submit() {

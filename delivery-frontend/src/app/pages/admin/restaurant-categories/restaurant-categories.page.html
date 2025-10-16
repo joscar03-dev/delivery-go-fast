@@ -1,16 +1,13 @@
 <ion-header>
   <ion-toolbar>
+    <ion-buttons slot="start">
+      <ion-back-button defaultHref="/admin/restaurants"></ion-back-button>
+    </ion-buttons>
     <ion-title>Categorías de Restaurantes</ion-title>
   </ion-toolbar>
   <ion-toolbar color="light">
-    <ion-breadcrumbs>
-      <ion-breadcrumb routerLink="/tabs/tab2">Admin</ion-breadcrumb>
-      <ion-breadcrumb routerLink="/admin/restaurants">Restaurantes</ion-breadcrumb>
-      <ion-breadcrumb>Categorías</ion-breadcrumb>
-    </ion-breadcrumbs>
     <ion-buttons slot="end">
       <ion-button color="primary" (click)="isCreateOpen = true">Nueva categoría</ion-button>
-      <ion-button routerLink="/admin/restaurants">Volver al panel</ion-button>
     </ion-buttons>
   </ion-toolbar>
 </ion-header>
