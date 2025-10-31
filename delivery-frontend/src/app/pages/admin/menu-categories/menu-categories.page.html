@@ -25,11 +25,21 @@
         <h2>{{ c.name }}</h2>
         <p>{{ c.description }}</p>
         <p *ngIf="c.sortOrder != null">Orden: {{ c.sortOrder }}</p>
-        <ion-badge [color]="c.isActive ? 'success' : 'medium'">{{ c.isActive ? 'Activa' : 'Inactiva' }}</ion-badge>
+        <ion-badge [color]="c.isActive ? 'success' : 'medium'"
+          >{{ c.isActive ? 'Activa' : 'Inactiva' }}</ion-badge
+        >
       </ion-label>
       <ion-button slot="end" fill="clear" (click)="edit(c)">Editar</ion-button>
-      <ion-button slot="end" fill="clear" color="warning" (click)="toggleActive(c)">{{ c.isActive ? 'Desactivar' : 'Activar' }}</ion-button>
-      <ion-button slot="end" fill="clear" color="danger" (click)="remove(c)">Eliminar</ion-button>
+      <ion-button
+        slot="end"
+        fill="clear"
+        color="warning"
+        (click)="toggleActive(c)"
+        >{{ c.isActive ? 'Desactivar' : 'Activar' }}</ion-button
+      >
+      <ion-button slot="end" fill="clear" color="danger" (click)="remove(c)"
+        >Eliminar</ion-button
+      >
     </ion-item>
   </ion-list>
 

@@ -7,7 +7,9 @@
   </ion-toolbar>
   <ion-toolbar color="light">
     <ion-buttons slot="end">
-      <ion-button color="primary" (click)="isCreateOpen = true">Nueva categoría</ion-button>
+      <ion-button color="primary" (click)="isCreateOpen = true"
+        >Nueva categoría</ion-button
+      >
     </ion-buttons>
   </ion-toolbar>
 </ion-header>
@@ -19,16 +21,28 @@
         <h2>{{ c.name }}</h2>
         <p>{{ c.description }}</p>
         <p *ngIf="c.icon">Icono: {{ c.icon }}</p>
-        <ion-badge [color]="c.isActive ? 'success' : 'medium'">{{ c.isActive ? 'Activa' : 'Inactiva' }}</ion-badge>
+        <ion-badge [color]="c.isActive ? 'success' : 'medium'"
+          >{{ c.isActive ? 'Activa' : 'Inactiva' }}</ion-badge
+        >
       </ion-label>
       <ion-button slot="end" fill="clear" (click)="edit(c)">Editar</ion-button>
-      <ion-button slot="end" fill="clear" color="warning" (click)="toggleActive(c)">
+      <ion-button
+        slot="end"
+        fill="clear"
+        color="warning"
+        (click)="toggleActive(c)"
+      >
         {{ c.isActive ? 'Desactivar' : 'Activar' }}
       </ion-button>
-      <ion-button slot="end" fill="clear" color="danger" (click)="remove(c)">Eliminar</ion-button>
+      <ion-button slot="end" fill="clear" color="danger" (click)="remove(c)"
+        >Eliminar</ion-button
+      >
     </ion-item>
     <ion-item *ngIf="list.length === 0" lines="none">
-      <ion-label>Sin categorías activas. Crea la primera con “Nueva categoría”.</ion-label>
+      <ion-label
+        >Sin categorías activas. Crea la primera con “Nueva
+        categoría”.</ion-label
+      >
     </ion-item>
   </ion-list>
 
@@ -58,16 +72,31 @@
       <ion-content [fullscreen]="true">
         <form class="ion-padding" [formGroup]="form" (ngSubmit)="create()">
           <ion-item>
-            <ion-input label="Nombre" labelPlacement="stacked" formControlName="name" required></ion-input>
+            <ion-input
+              label="Nombre"
+              labelPlacement="stacked"
+              formControlName="name"
+              required
+            ></ion-input>
           </ion-item>
           <ion-item>
-            <ion-input label="Descripción" labelPlacement="stacked" formControlName="description"></ion-input>
+            <ion-input
+              label="Descripción"
+              labelPlacement="stacked"
+              formControlName="description"
+            ></ion-input>
           </ion-item>
           <ion-item>
-            <ion-input label="Icono" labelPlacement="stacked" formControlName="icon"></ion-input>
+            <ion-input
+              label="Icono"
+              labelPlacement="stacked"
+              formControlName="icon"
+            ></ion-input>
           </ion-item>
           <div class="ion-padding-top">
-            <ion-button type="submit" expand="block" [disabled]="form.invalid">Crear</ion-button>
+            <ion-button type="submit" expand="block" [disabled]="form.invalid"
+              >Crear</ion-button
+            >
           </div>
         </form>
       </ion-content>

@@ -1,0 +1,74 @@
+<ion-header>
+  <ion-toolbar>
+    <ion-buttons slot="start">
+      <ion-back-button defaultHref="/tabs/tab1"></ion-back-button>
+    </ion-buttons>
+    <ion-title>Mis Pedidos</ion-title>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content>
+  <!-- Pull to refresh -->
+  <ion-refresher slot="fixed" (ionRefresh)="refresh($event)">
+    <ion-refresher-content
+      pullingIcon="refresh-outline"
+      pullingText="Arrastra para actualizar"
+      refreshingSpinner="crescent"
+      refreshingText="Actualizando..."
+    >
+    </ion-refresher-content>
+  </ion-refresher>
+
+  <!-- Loading spinner -->
+  <div *ngIf="loading" class="loading-container">
+    <ion-spinner></ion-spinner>
+    <p>Cargando pedidos...</p>
+  </div>
+
+  <!-- Lista de pedidos -->
+  <div *ngIf="!loading && orders.length > 0" class="orders-container">
+    <ion-list>
+      <ion-item
+        *ngFor="let order of orders"
+        button
+        (click)="goToOrderDetail(order.id)"
+        lines="full"
+      >
+        <ion-label>
+          <div class="order-header">
+            <h3>{{ order.restaurant?.name || 'Restaurante no disponible' }}</h3>
+            <ion-chip [color]="getStatusColor(order.status)" size="small">
+              {{ getStatusText(order.status) }}
+            </ion-chip>
+          </div>
+
+          <div class="order-info">
+            <p class="order-date">
+              <ion-icon name="time-outline"></ion-icon>
+              {{ formatDate(order.createdAt) }}
+            </p>
+            <p class="order-items">
+              {{ order.items?.length || 0 }} producto(s)
+            </p>
+          </div>
+
+          <div class="order-total">
+            <strong>{{ order.total | currency:'USD':'symbol':'1.2-2' }}</strong>
+          </div>
+        </ion-label>
+
+        <ion-icon name="receipt-outline" slot="end" color="medium"></ion-icon>
+      </ion-item>
+    </ion-list>
+  </div>
+
+  <!-- Estado vacío -->
+  <div *ngIf="!loading && orders.length === 0" class="empty-state">
+    <ion-icon name="receipt-outline" size="large"></ion-icon>
+    <h2>No tienes pedidos aún</h2>
+    <p>Cuando realices tu primer pedido, aparecerá aquí</p>
+    <ion-button routerLink="/tabs/tab1" fill="outline">
+      Explorar Restaurantes
+    </ion-button>
+  </div>
+</ion-content>

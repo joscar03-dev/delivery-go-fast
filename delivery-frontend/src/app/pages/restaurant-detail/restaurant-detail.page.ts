@@ -19,12 +19,17 @@ import {
   IonListHeader,
   IonItem,
   IonThumbnail,
-  IonNote,
   IonSpinner,
+  IonButton,
+  IonToast,
 } from '@ionic/angular/standalone';
-import { ActivatedRoute, RouterLink } from '@angular/router';
+import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { RestaurantService } from '../../services/restaurant.service';
-import type { RestaurantModel } from '../../models/restaurant.model';
+import { CartService } from '../../services/cart.service';
+import type {
+  RestaurantModel,
+  MenuItemModel,
+} from '../../models/restaurant.model';
 import { register } from 'swiper/element/bundle';
 import { addIcons } from 'ionicons';
 import {
@@ -32,6 +37,7 @@ import {
   callOutline,
   restaurantOutline,
   pricetagOutline,
+  addOutline,
 } from 'ionicons/icons';
 
 // Register Swiper custom elements
@@ -43,6 +49,7 @@ addIcons({
   'call-outline': callOutline,
   'restaurant-outline': restaurantOutline,
   'pricetag-outline': pricetagOutline,
+  'add-outline': addOutline,
 });
 
 @Component({
@@ -63,8 +70,9 @@ addIcons({
     IonListHeader,
     IonItem,
     IonThumbnail,
-    IonNote,
     IonSpinner,
+    IonButton,
+    IonToast,
   ],
   schemas: [CUSTOM_ELEMENTS_SCHEMA],
   templateUrl: './restaurant-detail.page.html',
@@ -73,9 +81,13 @@ addIcons({
 export class RestaurantDetailPage implements OnInit {
   private route = inject(ActivatedRoute);
   private restaurants = inject(RestaurantService);
+  private cartService = inject(CartService);
+  private router = inject(Router);
   restaurant?: RestaurantModel;
   loading = false;
   selectedMenuCategory: string | null = null;
+  showToast = false;
+  toastMessage = '';
 
   ngOnInit(): void {
     const id = this.route.snapshot.paramMap.get('id');
@@ -136,5 +148,20 @@ export class RestaurantDetailPage implements OnInit {
     // Si no, buscar por ID
     const categoryId = this.getItemCategoryId(item);
     return this.getCategoryName(categoryId);
+  }
+
+  addToCart(menuItem: MenuItemModel): void {
+    if (!this.restaurant) return;
+    // En lugar de añadir directo, navegar a la página de detalle/customización
+    this.router.navigate([
+      '/restaurants',
+      this.restaurant.id,
+      'menu',
+      menuItem.id,
+    ]);
+  }
+
+  onToastDismiss(): void {
+    this.showToast = false;
   }
 }

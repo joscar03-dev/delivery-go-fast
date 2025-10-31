@@ -25,18 +25,26 @@
       <ion-thumbnail slot="start" *ngIf="it.imageUrl">
         <img [src]="it.imageUrl" [alt]="it.name" />
       </ion-thumbnail>
-      
+
       <ion-label>
-        <h2>{{ it.name }} - {{ it.price | currency:'USD':'symbol':'1.2-2' }}</h2>
+        <h2>
+          {{ it.name }} - {{ it.price | currency:'USD':'symbol':'1.2-2' }}
+        </h2>
         <p *ngIf="it.description">{{ it.description }}</p>
         <p *ngIf="it.menuCategoryId">
           <ion-chip color="primary" outline>
             <ion-icon name="pricetag-outline"></ion-icon>
-            <ion-label>{{ getCategoryName(it.menuCategoryId) || it.menuCategoryId }}</ion-label>
+            <ion-label
+              >{{ getCategoryName(it.menuCategoryId) || it.menuCategoryId
+              }}</ion-label
+            >
           </ion-chip>
         </p>
       </ion-label>
-      
+
+      <ion-button slot="end" fill="clear" (click)="openOptions(it)">
+        <ion-icon name="options-outline"></ion-icon>
+      </ion-button>
       <ion-button slot="end" fill="clear" (click)="edit(it)">
         <ion-icon name="create-outline"></ion-icon>
       </ion-button>
@@ -52,5 +60,4 @@
       <ion-spinner></ion-spinner>
     </ion-item>
   </ng-template>
- 
 </ion-content>

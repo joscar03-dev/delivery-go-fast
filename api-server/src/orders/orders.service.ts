@@ -10,6 +10,7 @@ import { Order } from './entities/order.entity';
 import { OrderItem } from './entities/order-item.entity';
 import { MenuItem } from '../restaurants/entities/menu-item.entity';
 import { Restaurant } from '../restaurants/entities/restaurant.entity';
+import { MenuOption } from '../restaurants/entities/menu-option.entity';
 import { CreateOrderDto } from './dto/create-order.dto';
 import { UpdateOrderDto } from './dto/update-order.dto';
 import { FindOrdersDto } from './dto/find-orders.dto';
@@ -27,6 +28,8 @@ export class OrdersService {
     private readonly menuItemRepository: Repository<MenuItem>,
     @InjectRepository(Restaurant)
     private readonly restaurantRepository: Repository<Restaurant>,
+    @InjectRepository(MenuOption)
+    private readonly menuOptionRepository: Repository<MenuOption>,
     private readonly dataSource: DataSource,
   ) {}
 
@@ -82,14 +85,53 @@ export class OrdersService {
 
       for (const itemDto of items) {
         const menuItem = menuItems.find((mi) => mi.id === itemDto.menuItemId);
-        const subtotal = Number(menuItem.price) * itemDto.quantity;
-        total += subtotal;
+        const baseUnit = Number(menuItem.price);
+
+        // Calcular extraPrice por opciones seleccionadas (por unidad)
+        let extrasUnit = 0;
+        try {
+          // Estructura esperada: { groups: [{ options: [{ id }] }] } o bien array de IDs
+          const optionIds: string[] = [];
+          const opts: any = itemDto.options;
+          if (Array.isArray(opts)) {
+            for (const id of opts)
+              if (typeof id === 'string') optionIds.push(id);
+          } else if (
+            opts &&
+            typeof opts === 'object' &&
+            Array.isArray(opts.groups)
+          ) {
+            for (const g of opts.groups) {
+              if (g && Array.isArray(g.options)) {
+                for (const o of g.options) if (o?.id) optionIds.push(o.id);
+              }
+            }
+          }
+
+          if (optionIds.length) {
+            const dbOptions = await manager.find(MenuOption, {
+              where: { id: In(optionIds) },
+            });
+            for (const o of dbOptions) {
+              extrasUnit += Number(o.extraPrice) || 0;
+            }
+          }
+        } catch (e) {
+          // Si algo falla, los extras quedan en 0 para no bloquear la orden
+          extrasUnit = extrasUnit || 0;
+        }
+
+        const unitTotal = baseUnit + extrasUnit;
+        const lineTotal = unitTotal * itemDto.quantity;
+        total += lineTotal;
 
         const orderItem = manager.create(OrderItem, {
           order: savedOrder,
           menuItem: { id: menuItem.id },
           quantity: itemDto.quantity,
-          unit_price: menuItem.price,
+          unit_price: menuItem.price, // guardamos precio base; extras se reflejan en el total de la orden
+          comment: itemDto.comment,
+          options: itemDto.options,
         });
 
         orderItems.push(orderItem);

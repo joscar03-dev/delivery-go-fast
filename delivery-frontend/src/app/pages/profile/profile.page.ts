@@ -21,16 +21,23 @@ import {
   IonItem,
   IonToggle,
   IonIcon,
+  IonLabel,
 } from '@ionic/angular/standalone';
 import { UserService } from '../../services/user.service';
 import { AuthService } from '../../services/auth.service';
 import type { User } from '../../models/user.model';
 import { addIcons } from 'ionicons';
-import { moonOutline } from 'ionicons/icons';
+import {
+  moonOutline,
+  receiptOutline,
+  chevronForwardOutline,
+} from 'ionicons/icons';
 
 // Register icons
 addIcons({
   'moon-outline': moonOutline,
+  'receipt-outline': receiptOutline,
+  'chevron-forward-outline': chevronForwardOutline,
 });
 
 @Component({
@@ -58,6 +65,7 @@ addIcons({
     IonItem,
     IonToggle,
     IonIcon,
+    IonLabel,
   ],
   templateUrl: './profile.page.html',
 })

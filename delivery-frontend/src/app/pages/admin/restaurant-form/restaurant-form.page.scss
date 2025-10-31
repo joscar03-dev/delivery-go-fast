@@ -1,0 +1,94 @@
+/* Estilos para el formulario de restaurante */
+
+.form-container {
+  max-width: 600px;
+  margin: 0 auto;
+  padding: 16px;
+  background: var(--ion-color-light-tint);
+  border-radius: 12px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+}
+
+.custom-item {
+  --background: #fff;
+  --border-radius: 8px;
+  --padding-start: 12px;
+  --inner-padding-end: 12px;
+  margin-bottom: 16px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+}
+
+.image-upload-container {
+  background: #fff;
+  border-radius: 8px;
+  padding: 16px;
+  text-align: center;
+  margin-bottom: 16px;
+  border: 2px dashed var(--ion-color-medium-tint);
+  transition: border-color 0.3s;
+
+  ion-label {
+    display: block;
+    font-weight: bold;
+    margin-bottom: 12px;
+    color: var(--ion-color-dark-shade);
+  }
+
+  .image-upload-button {
+    background: var(--ion-color-light);
+    color: var(--ion-color-primary);
+    border-radius: 8px;
+    padding: 12px 20px;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    font-weight: 500;
+    transition: background 0.3s;
+    border: none;
+
+    &:hover {
+      background: var(--ion-color-light-shade);
+    }
+
+    ion-icon {
+      font-size: 20px;
+    }
+  }
+}
+
+.image-preview-wrapper {
+  position: relative;
+  margin-bottom: 16px;
+  text-align: center;
+
+  .image-preview {
+    max-width: 100%;
+    height: auto;
+    max-height: 250px;
+    border-radius: 12px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  }
+
+  .delete-image-button {
+    position: absolute;
+    top: 8px;
+    right: 8px;
+    --background: rgba(255, 255, 255, 0.8);
+    --border-radius: 50%;
+    --box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+  }
+}
+
+.location-button {
+  margin-top: 8px;
+  margin-bottom: 16px;
+}
+
+.save-button-container {
+  margin-top: 24px;
+
+  ion-button {
+    --box-shadow: 0 4px 10px rgba(var(--ion-color-primary-rgb), 0.4);
+  }
+}

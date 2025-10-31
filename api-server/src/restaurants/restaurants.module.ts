@@ -10,6 +10,10 @@ import { RestaurantCategoriesService } from './services/restaurant-categories.se
 import { RestaurantCategoriesController } from './controllers/restaurant-categories.controller';
 import { MenuCategoriesService } from './services/menu-categories.service';
 import { MenuCategoriesController } from './controllers/menu-categories.controller';
+import { MenuOptionGroupsService } from './services/menu-option-groups.service';
+import { MenuOptionGroupsController } from './controllers/menu-option-groups.controller';
+import { MenuOptionGroup } from './entities/menu-option-group.entity';
+import { MenuOption } from './entities/menu-option.entity';
 
 @Module({
   imports: [
@@ -18,22 +22,27 @@ import { MenuCategoriesController } from './controllers/menu-categories.controll
       MenuItem,
       RestaurantCategory,
       MenuCategory,
+      MenuOptionGroup,
+      MenuOption,
     ]),
   ],
   controllers: [
     RestaurantsController,
     RestaurantCategoriesController,
     MenuCategoriesController,
+    MenuOptionGroupsController,
   ],
   providers: [
     RestaurantsService,
     RestaurantCategoriesService,
     MenuCategoriesService,
+    MenuOptionGroupsService,
   ],
   exports: [
     RestaurantsService,
     RestaurantCategoriesService,
     MenuCategoriesService,
+    MenuOptionGroupsService,
   ],
 })
 export class RestaurantsModule {}

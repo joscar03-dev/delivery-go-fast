@@ -213,7 +213,7 @@ export class RestaurantsService {
   async findMenuItems(restaurantId: string): Promise<MenuItem[]> {
     const restaurant = await this.findOne(restaurantId);
     return await this.menuItemRepository.find({
-      where: { restaurant: { id: restaurant.id } },
+      where: { restaurant: { id: restaurant.id }, isActive: true },
       relations: ['category'],
     });
   }
@@ -265,7 +265,11 @@ export class RestaurantsService {
 
   async removeMenuItem(restaurantId: string, itemId: string): Promise<void> {
     const menuItem = await this.findMenuItem(restaurantId, itemId);
-    await this.menuItemRepository.remove(menuItem);
+
+    // En lugar de eliminar el ítem, marcarlo como inactivo
+    // Esto preserva la integridad referencial con pedidos existentes
+    menuItem.isActive = false;
+    await this.menuItemRepository.save(menuItem);
   }
 
   // Métodos para categorías de restaurante

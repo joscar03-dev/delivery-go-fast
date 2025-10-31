@@ -25,6 +25,9 @@ export class MenuItem {
   @Column({ name: 'image_url', type: 'varchar', nullable: true })
   imageUrl: string;
 
+  @Column({ name: 'is_active', type: 'boolean', default: true })
+  isActive: boolean;
+
   // Relación: Un item del menú pertenece a un restaurante
   @ManyToOne(() => Restaurant)
   @JoinColumn({ name: 'restaurant_id' })

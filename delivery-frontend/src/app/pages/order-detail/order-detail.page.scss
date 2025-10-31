@@ -1,0 +1,155 @@
+.loading-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 2rem;
+  
+  p {
+    margin-top: 1rem;
+    color: var(--ion-color-medium);
+  }
+}
+
+.status-card {
+  .status-info {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    margin-bottom: 1rem;
+    
+    ion-icon {
+      font-size: 2rem;
+    }
+    
+    h2 {
+      margin: 0;
+      color: var(--ion-color-dark);
+    }
+    
+    p {
+      margin: 0.25rem 0 0 0;
+      color: var(--ion-color-medium);
+    }
+  }
+}
+
+ion-card-title {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  color: var(--ion-color-primary);
+  
+  ion-icon {
+    font-size: 1.2rem;
+  }
+}
+
+.item-details {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 0.5rem;
+  
+  .quantity, .price {
+    color: var(--ion-color-medium);
+    font-size: 0.9rem;
+  }
+}
+
+.item-total {
+  text-align: right;
+  
+  strong {
+    font-size: 1.1rem;
+    color: var(--ion-color-primary);
+  }
+}
+
+.price-breakdown {
+  margin-top: 6px;
+  padding: 6px 8px;
+  background: var(--ion-color-light-tint);
+  border-radius: 8px;
+  .row {
+    display: flex;
+    justify-content: space-between;
+    font-size: 0.85rem;
+    color: var(--ion-color-medium);
+    & + .row {
+      margin-top: 2px;
+    }
+  }
+  .total {
+    color: var(--ion-color-dark);
+    font-weight: 600;
+    margin-top: 4px;
+  }
+}
+
+.options {
+  margin-top: 6px;
+  .group {
+    margin: 6px 0;
+  }
+  .group-name {
+    font-weight: 600;
+    font-size: 0.9rem;
+    color: var(--ion-color-dark);
+  }
+  .chips {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    margin-top: 4px;
+  }
+  .chip {
+    background: var(--ion-color-light);
+    border: 1px solid var(--ion-color-medium);
+    color: var(--ion-color-dark);
+    border-radius: 12px;
+    padding: 2px 8px;
+    font-size: 0.8rem;
+  }
+}
+
+.total-card {
+  background: var(--ion-color-light);
+  
+  .total-section {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    
+    .total-label {
+      font-size: 1.2rem;
+      font-weight: 600;
+      color: var(--ion-color-dark);
+    }
+    
+    .total-amount {
+      font-size: 1.5rem;
+      font-weight: 700;
+      color: var(--ion-color-primary);
+    }
+  }
+}
+
+.error-state {
+  text-align: center;
+  padding: 2rem;
+  margin-top: 2rem;
+  
+  ion-icon {
+    margin-bottom: 1rem;
+  }
+  
+  h2 {
+    color: var(--ion-color-dark);
+    margin-bottom: 0.5rem;
+  }
+  
+  p {
+    color: var(--ion-color-medium);
+    margin-bottom: 2rem;
+  }
+}

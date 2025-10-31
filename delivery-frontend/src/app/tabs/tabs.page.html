@@ -5,6 +5,21 @@
       <ion-label>Restaurantes</ion-label>
     </ion-tab-button>
 
+    <!-- Carrito -->
+    <ion-tab-button (click)="goToCart()">
+      <ion-icon aria-hidden="true" name="basket-outline"></ion-icon>
+      <ion-label>Carrito</ion-label>
+      <ion-badge *ngIf="cartItemCount() > 0" color="danger" class="cart-badge">
+        {{ cartItemCount() }}
+      </ion-badge>
+    </ion-tab-button>
+
+    <!-- Mis Pedidos -->
+    <ion-tab-button (click)="goToOrderHistory()">
+      <ion-icon aria-hidden="true" name="receipt-outline"></ion-icon>
+      <ion-label>Mis Pedidos</ion-label>
+    </ion-tab-button>
+
     <ion-tab-button *ngIf="isSuperAdmin()" tab="tab2" href="/tabs/tab2">
       <ion-icon aria-hidden="true" name="ellipse"></ion-icon>
       <ion-label>Admin</ion-label>

@@ -1,0 +1,195 @@
+<ion-header>
+  <ion-toolbar>
+    <ion-buttons slot="start">
+      <ion-back-button defaultHref="/order-history"></ion-back-button>
+    </ion-buttons>
+    <ion-title>Detalle del Pedido</ion-title>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content class="ion-padding">
+  <!-- Loading -->
+  <div *ngIf="loading" class="loading-container">
+    <ion-spinner></ion-spinner>
+    <p>Cargando detalles...</p>
+  </div>
+
+  <!-- Order Details -->
+  <div *ngIf="!loading && order">
+    <!-- Estado del pedido -->
+    <ion-card class="status-card">
+      <ion-card-content>
+        <div class="status-info">
+          <ion-icon
+            [name]="getStatusIcon(order.status)"
+            [color]="getStatusColor(order.status)"
+          ></ion-icon>
+          <div>
+            <h2>{{ getStatusText(order.status) }}</h2>
+            <p>Pedido realizado el {{ formatDate(order.createdAt) }}</p>
+          </div>
+        </div>
+        <ion-chip [color]="getStatusColor(order.status)">
+          #{{ order.id.substring(0, 8) }}
+        </ion-chip>
+      </ion-card-content>
+    </ion-card>
+
+    <!-- Información del restaurante -->
+    <ion-card>
+      <ion-card-header>
+        <ion-card-title>
+          <ion-icon name="restaurant-outline"></ion-icon>
+          Restaurante
+        </ion-card-title>
+      </ion-card-header>
+      <ion-card-content>
+        <h3>{{ order.restaurant?.name || 'Restaurante no disponible' }}</h3>
+        <p *ngIf="order.restaurant?.address">
+          <ion-icon name="location-outline"></ion-icon>
+          {{ order.restaurant?.address }}
+        </p>
+      </ion-card-content>
+    </ion-card>
+
+    <!-- Dirección de entrega -->
+    <ion-card *ngIf="order.deliveryAddress">
+      <ion-card-header>
+        <ion-card-title>
+          <ion-icon name="location-outline"></ion-icon>
+          Dirección de Entrega
+        </ion-card-title>
+      </ion-card-header>
+      <ion-card-content>
+        <p>{{ order.deliveryAddress }}</p>
+      </ion-card-content>
+    </ion-card>
+
+    <!-- Items del pedido -->
+    <ion-card>
+      <ion-card-header>
+        <ion-card-title>
+          <ion-icon name="receipt-outline"></ion-icon>
+          Productos ({{ order.items?.length || 0 }})
+        </ion-card-title>
+      </ion-card-header>
+      <ion-card-content>
+        <ion-list>
+          <ion-item *ngFor="let item of order.items" lines="none">
+            <!-- Imagen del producto -->
+            <ion-thumbnail slot="start" *ngIf="item.menuItem?.image">
+              <img [src]="item.menuItem?.image" [alt]="item.menuItem?.name" />
+            </ion-thumbnail>
+
+            <ion-label>
+              <h3>{{ item.menuItem?.name || 'Producto no disponible' }}</h3>
+              <p *ngIf="item.menuItem?.description">
+                {{ item.menuItem?.description }}
+              </p>
+              <p *ngIf="item.comment" class="muted">Nota: {{ item.comment }}</p>
+              <!-- Opciones seleccionadas -->
+              <div *ngIf="optionGroups(item).length">
+                <div class="options">
+                  <div class="group" *ngFor="let g of optionGroups(item)">
+                    <span class="group-name">{{ g.groupName }}</span>
+                    <div class="chips">
+                      <span class="chip" *ngFor="let o of g.options">
+                        {{ o.name }}
+                        <small *ngIf="o.extraPrice"
+                          >(+{{ o.extraPrice | currency:'USD':'symbol':'1.2-2'
+                          }})</small
+                        >
+                      </span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <div class="item-details">
+                <span class="quantity">Cantidad: {{ item.quantity }}</span>
+                <span class="price">
+                  {{ unitTotal(item) | currency:'USD':'symbol':'1.2-2' }} c/u
+                </span>
+              </div>
+              <div class="price-breakdown">
+                <div class="row">
+                  <span>Base</span>
+                  <span
+                    >{{ baseUnit(item) | currency:'USD':'symbol':'1.2-2'
+                    }}</span
+                  >
+                </div>
+                <div class="row" *ngIf="extrasUnit(item) > 0">
+                  <span>Extras</span>
+                  <span
+                    >+ {{ extrasUnit(item) | currency:'USD':'symbol':'1.2-2'
+                    }}</span
+                  >
+                </div>
+                <div class="row total">
+                  <span>Precio unitario</span>
+                  <span
+                    >{{ unitTotal(item) | currency:'USD':'symbol':'1.2-2'
+                    }}</span
+                  >
+                </div>
+              </div>
+            </ion-label>
+
+            <div slot="end" class="item-total">
+              <strong
+                >{{ lineTotal(item) | currency:'USD':'symbol':'1.2-2' }}</strong
+              >
+            </div>
+          </ion-item>
+        </ion-list>
+      </ion-card-content>
+    </ion-card>
+
+    <!-- Notas del pedido -->
+    <ion-card *ngIf="order.notes">
+      <ion-card-header>
+        <ion-card-title>Notas</ion-card-title>
+      </ion-card-header>
+      <ion-card-content>
+        <p>{{ order.notes }}</p>
+      </ion-card-content>
+    </ion-card>
+
+    <!-- Total -->
+    <ion-card class="total-card">
+      <ion-card-content>
+        <div class="total-section">
+          <span class="total-label">Total del Pedido</span>
+          <span class="total-amount"
+            >{{ order.total | currency:'USD':'symbol':'1.2-2' }}</span
+          >
+        </div>
+      </ion-card-content>
+    </ion-card>
+
+    <!-- Información del repartidor (si está asignado) -->
+    <ion-card *ngIf="order.driver">
+      <ion-card-header>
+        <ion-card-title>Repartidor</ion-card-title>
+      </ion-card-header>
+      <ion-card-content>
+        <p><strong>{{ order.driver.name }}</strong></p>
+        <p *ngIf="order.driver.email">{{ order.driver.email }}</p>
+      </ion-card-content>
+    </ion-card>
+  </div>
+
+  <!-- Error state -->
+  <div *ngIf="!loading && !order" class="error-state">
+    <ion-icon
+      name="close-circle-outline"
+      size="large"
+      color="danger"
+    ></ion-icon>
+    <h2>Pedido no encontrado</h2>
+    <p>No se pudo cargar la información del pedido</p>
+    <ion-button routerLink="/order-history" fill="outline">
+      Volver al historial
+    </ion-button>
+  </div>
+</ion-content>

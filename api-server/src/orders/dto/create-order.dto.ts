@@ -18,6 +18,13 @@ export class CreateOrderItemDto {
   @IsInt()
   @Min(1)
   quantity: number;
+
+  @IsOptional()
+  @IsString()
+  comment?: string;
+
+  @IsOptional()
+  options?: any; // opciones libres (checkboxes/selecciones), se almacena como JSON
 }
 
 export class CreateOrderDto {

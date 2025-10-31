@@ -191,4 +191,96 @@ export class RestaurantService {
       {}
     );
   }
+
+  // Grupos de opciones (por restaurante)
+  listOptionGroups(restaurantId: string): Observable<any[]> {
+    return this.http.get<any[]>(
+      `${this.base}/restaurants/${restaurantId}/menu-option-groups`
+    );
+  }
+
+  createOptionGroup(restaurantId: string, data: any): Observable<any> {
+    return this.http.post<any>(
+      `${this.base}/restaurants/${restaurantId}/menu-option-groups`,
+      data
+    );
+  }
+
+  addOptionToGroup(
+    restaurantId: string,
+    groupId: string,
+    data: any
+  ): Observable<any> {
+    return this.http.post<any>(
+      `${this.base}/restaurants/${restaurantId}/menu-option-groups/${groupId}/options`,
+      data
+    );
+  }
+
+  updateOptionInGroup(
+    restaurantId: string,
+    groupId: string,
+    optionId: string,
+    data: Partial<{ name: string; extraPrice: number; isActive: boolean }>
+  ): Observable<any> {
+    return this.http.patch<any>(
+      `${this.base}/restaurants/${restaurantId}/menu-option-groups/${groupId}/options/${optionId}`,
+      data
+    );
+  }
+
+  removeOptionFromGroup(
+    restaurantId: string,
+    groupId: string,
+    optionId: string
+  ): Observable<void> {
+    return this.http.delete<void>(
+      `${this.base}/restaurants/${restaurantId}/menu-option-groups/${groupId}/options/${optionId}`
+    );
+  }
+
+  attachGroupToItem(
+    restaurantId: string,
+    groupId: string,
+    menuItemId: string
+  ): Observable<void> {
+    return this.http.post<void>(
+      `${this.base}/restaurants/${restaurantId}/menu-option-groups/${groupId}/attach/${menuItemId}`,
+      {}
+    );
+  }
+
+  detachGroupFromItem(
+    restaurantId: string,
+    groupId: string,
+    menuItemId: string
+  ): Observable<void> {
+    return this.http.post<void>(
+      `${this.base}/restaurants/${restaurantId}/menu-option-groups/${groupId}/detach/${menuItemId}`,
+      {}
+    );
+  }
+
+  updateOptionGroup(
+    restaurantId: string,
+    groupId: string,
+    data: Partial<{
+      name: string;
+      description?: string;
+      minSelect?: number;
+      maxSelect?: number;
+      isRequired?: boolean;
+    }>
+  ): Observable<any> {
+    return this.http.patch<any>(
+      `${this.base}/restaurants/${restaurantId}/menu-option-groups/${groupId}`,
+      data
+    );
+  }
+
+  removeOptionGroup(restaurantId: string, groupId: string): Observable<void> {
+    return this.http.delete<void>(
+      `${this.base}/restaurants/${restaurantId}/menu-option-groups/${groupId}`
+    );
+  }
 }

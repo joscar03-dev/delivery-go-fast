@@ -19,6 +19,14 @@ export class OrderItem {
   @Column({ type: 'decimal', precision: 10, scale: 2 })
   unit_price: number;
 
+  // Comentario específico del ítem (ej: sin cebolla)
+  @Column({ type: 'text', nullable: true })
+  comment?: string;
+
+  // Opciones/selecciones adicionales (JSON)
+  @Column({ type: 'jsonb', nullable: true })
+  options?: any;
+
   // Relación: Un item de pedido pertenece a una orden
   @ManyToOne(() => Order)
   @JoinColumn({ name: 'order_id' })

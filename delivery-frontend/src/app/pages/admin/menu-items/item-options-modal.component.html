@@ -1,0 +1,143 @@
+<ion-header>
+  <ion-toolbar>
+    <ion-title>Opciones de {{ item?.name }}</ion-title>
+    <ion-buttons slot="end">
+      <ion-button (click)="dismiss()">Cerrar</ion-button>
+    </ion-buttons>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content class="ion-padding">
+  <div class="ion-margin-bottom">
+    <ion-button
+      expand="block"
+      (click)="showGroupForm = !showGroupForm"
+      fill="outline"
+    >
+      <ion-icon
+        slot="start"
+        [name]="showGroupForm ? 'remove-circle-outline' : 'add-circle-outline'"
+      ></ion-icon>
+      {{ showGroupForm ? "Ocultar formulario" : "Crear grupo" }}
+    </ion-button>
+  </div>
+  <!-- Formulario crear grupo (arriba, colapsable) -->
+  <div
+    *ngIf="showGroupForm"
+    class="ion-padding"
+    style="
+      border: 1px solid var(--ion-color-light-shade);
+      border-radius: 8px;
+      margin-bottom: 12px;
+    "
+  >
+    <h4>Crear grupo</h4>
+    <form [formGroup]="groupForm" (ngSubmit)="createGroup()">
+      <ion-item>
+        <ion-input
+          label="Nombre"
+          labelPlacement="stacked"
+          formControlName="name"
+        ></ion-input>
+      </ion-item>
+      <ion-item>
+        <ion-input
+          label="Descripción"
+          labelPlacement="stacked"
+          formControlName="description"
+        ></ion-input>
+      </ion-item>
+      <ion-item>
+        <ion-input
+          type="number"
+          label="Mínimo"
+          labelPlacement="stacked"
+          formControlName="minSelect"
+        ></ion-input>
+      </ion-item>
+      <ion-item>
+        <ion-input
+          type="number"
+          label="Máximo"
+          labelPlacement="stacked"
+          formControlName="maxSelect"
+        ></ion-input>
+      </ion-item>
+      <ion-item>
+        <ion-toggle formControlName="isRequired">Requerido</ion-toggle>
+      </ion-item>
+      <ion-button type="submit" [disabled]="groupForm.invalid" expand="block"
+        >Crear grupo</ion-button
+      >
+    </form>
+  </div>
+
+  <ng-container *ngIf="groups && isAccordionVisible; else loadingTpl">
+    <!-- Single-open: sin 'multiple' -->
+    <ion-accordion-group expand="inset">
+      <ion-accordion
+        *ngFor="let g of groups; trackBy: trackById"
+        [value]="g.id"
+      >
+        <ion-item slot="header" lines="full">
+          <ion-label>
+            <h3>{{ g.name }}</h3>
+            <p *ngIf="g.description">{{ g.description }}</p>
+            <small>
+              Reglas: {{ g.isRequired ? "Requerido" : "Opcional" }}, mínimo
+              {{ g.minSelect }}, máximo {{ g.maxSelect || "∞" }}
+            </small>
+          </ion-label>
+          <ion-button slot="end" fill="clear" (click)="openGroupActions(g)">
+            <ion-icon name="ellipsis-vertical"></ion-icon>
+          </ion-button>
+        </ion-item>
+        <div class="ion-padding" slot="content">
+          <ion-list inset>
+            <ion-item *ngFor="let o of g.options">
+              <ion-label>
+                <div style="display: flex; align-items: center; gap: 8px">
+                  <strong>{{ o.name }}</strong>
+                  <ion-badge
+                    color="medium"
+                    *ngIf="o.extraPrice && o.extraPrice !== 0"
+                  >
+                    +{{ o.extraPrice | currency : "USD" : "symbol" : "1.2-2" }}
+                  </ion-badge>
+                  <ion-badge
+                    [color]="o.isActive === false ? 'warning' : 'success'"
+                  >
+                    {{ o.isActive === false ? "Inactiva" : "Activa" }}
+                  </ion-badge>
+                </div>
+              </ion-label>
+              <ion-toggle
+                style="margin-right: 8px"
+                [checked]="o.isActive !== false"
+                (ionChange)="toggleOptionActive(g, o, $event.detail.checked)"
+              ></ion-toggle>
+              <ion-button
+                slot="end"
+                fill="clear"
+                (click)="openOptionActions(g, o)"
+              >
+                <ion-icon name="ellipsis-vertical"></ion-icon>
+              </ion-button>
+            </ion-item>
+            <ion-item *ngIf="!g.options?.length">
+              <ion-label color="medium">Sin opciones aún</ion-label>
+            </ion-item>
+          </ion-list>
+        </div>
+      </ion-accordion>
+    </ion-accordion-group>
+    <div class="ion-text-center" *ngIf="!groups?.length">
+      <ion-note>No hay grupos creados aún.</ion-note>
+    </div>
+  </ng-container>
+  <ng-template #loadingTpl>
+    <div class="ion-text-center" style="padding: 20px">
+      <ion-spinner></ion-spinner>
+    </div>
+  </ng-template>
+</ion-content>

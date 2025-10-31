@@ -1,0 +1,146 @@
+<ion-header>
+  <ion-toolbar>
+    <ion-buttons slot="start">
+      <ion-back-button defaultHref="/tabs/tab1"></ion-back-button>
+    </ion-buttons>
+    <ion-title>Detalle del producto</ion-title>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content class="ion-padding">
+  <ng-container *ngIf="item && !loading; else loadingTpl">
+    <div class="item-header">
+      <img *ngIf="item.imageUrl" [src]="item.imageUrl" [alt]="item.name" />
+      <h2>{{ item.name }}</h2>
+      <p *ngIf="item.description">{{ item.description }}</p>
+      <h3>
+        {{ displayedUnitPrice | currency:'USD':'symbol':'1.2-2' }}
+        <ion-note
+          *ngIf="extraPriceTotal>0"
+          color="medium"
+          style="margin-left: 8px"
+        >
+          (+{{ extraPriceTotal | currency:'USD':'symbol':'1.2-2' }} en opciones)
+        </ion-note>
+      </h3>
+    </div>
+
+    <!-- Cantidad -->
+    <ion-item>
+      <ion-label position="stacked">Cantidad</ion-label>
+      <ion-input type="number" min="1" [(ngModel)]="quantity"></ion-input>
+    </ion-item>
+
+    <!-- Comentario -->
+    <ion-item lines="full">
+      <ion-label position="stacked">Comentario (opcional)</ion-label>
+      <ion-textarea
+        rows="3"
+        placeholder="Ej: Sin cebolla"
+        [(ngModel)]="comment"
+      ></ion-textarea>
+    </ion-item>
+
+    <!-- Grupos de opciones -->
+    <ion-list *ngIf="groups?.length">
+      <ion-list-header>
+        <ion-label>Personaliza tu pedido</ion-label>
+      </ion-list-header>
+      <div
+        *ngFor="let g of groups"
+        class="group-card"
+        [class.invalid]="!groupValid(g)"
+      >
+        <div class="group-head">
+          <div class="titles">
+            <h3>{{ g.name }}</h3>
+            <p *ngIf="g.description" class="muted">{{ g.description }}</p>
+          </div>
+          <div class="rules">
+            <span class="rule" [class.req]="g.isRequired"
+              >{{ g.isRequired ? 'Requerido' : 'Opcional' }}</span
+            >
+            <span class="rule">min {{ g.minSelect }}</span>
+            <span class="rule">max {{ g.maxSelect || '∞' }}</span>
+          </div>
+        </div>
+
+        <!-- Si maxSelect === 1 -> radios; si no -> checkboxes -->
+        <ng-container *ngIf="g.maxSelect === 1; else multipleTpl">
+          <ion-radio-group
+            (ionChange)="onRadioChange(g.id, $event.detail.value)"
+          >
+            <ion-item *ngFor="let o of g.options">
+              <ion-label>
+                <div class="opt-row">
+                  <span>{{ o.name }}</span>
+                  <span class="chip-price" *ngIf="o.extraPrice"
+                    >+{{ o.extraPrice | currency:'USD':'symbol':'1.2-2' }}</span
+                  >
+                </div>
+              </ion-label>
+              <ion-radio slot="end" [value]="o.id"></ion-radio>
+            </ion-item>
+          </ion-radio-group>
+        </ng-container>
+        <ng-template #multipleTpl>
+          <ion-item *ngFor="let o of g.options">
+            <ion-label>
+              <div class="opt-row">
+                <span>{{ o.name }}</span>
+                <span class="chip-price" *ngIf="o.extraPrice"
+                  >+{{ o.extraPrice | currency:'USD':'symbol':'1.2-2' }}</span
+                >
+              </div>
+            </ion-label>
+            <ion-checkbox
+              slot="end"
+              [checked]="isChecked(g.id, o.id)"
+              (ionChange)="onCheckboxChange(g, o, $event.detail.checked)"
+            ></ion-checkbox>
+          </ion-item>
+        </ng-template>
+
+        <div class="group-foot" *ngIf="!groupValid(g)">
+          <ion-note color="danger"
+            >Revisa tu selección para este grupo</ion-note
+          >
+        </div>
+      </div>
+    </ion-list>
+
+    <div class="actions">
+      <ion-button
+        expand="block"
+        [disabled]="!allValid()"
+        (click)="addToCart(false)"
+      >
+        Agregar al carrito
+      </ion-button>
+      <ion-button
+        expand="block"
+        color="primary"
+        [disabled]="!allValid()"
+        (click)="addToCart(true)"
+      >
+        <ion-icon name="cart-outline" slot="start"></ion-icon>
+        Agregar e ir a pagar
+      </ion-button>
+    </div>
+  </ng-container>
+
+  <ng-template #loadingTpl>
+    <div class="loading">
+      <ion-spinner></ion-spinner>
+      <p>Cargando...</p>
+    </div>
+  </ng-template>
+</ion-content>
+
+<ion-toast
+  [isOpen]="showToast"
+  [message]="toastMessage"
+  duration="1500"
+  position="bottom"
+  (didDismiss)="showToast=false"
+></ion-toast>

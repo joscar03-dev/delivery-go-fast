@@ -20,6 +20,19 @@
       </ion-card-content>
     </ion-card>
 
+    <!-- Acciones de Usuario -->
+    <ion-list-header>Mis Pedidos</ion-list-header>
+    <ion-list [inset]="true">
+      <ion-item button routerLink="/order-history" lines="none">
+        <ion-icon name="receipt-outline" slot="start"></ion-icon>
+        <ion-label>
+          <h2>Historial de Pedidos</h2>
+          <p>Ver todos mis pedidos anteriores</p>
+        </ion-label>
+        <ion-icon name="chevron-forward-outline" slot="end"></ion-icon>
+      </ion-item>
+    </ion-list>
+
     <!-- Configuración de Apariencia -->
     <ion-list-header>Apariencia</ion-list-header>
     <ion-list [inset]="true">

@@ -7,6 +7,9 @@ import {
   IonBackButton,
   IonTitle,
   IonContent,
+  IonGrid,
+  IonRow,
+  IonCol,
   IonButton,
   IonItem,
   IonLabel,
@@ -22,11 +25,19 @@ import { UserService } from '../../../services/user.service';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { ImageCompressor } from '../../../common/utils/image-compressor.util';
 import { addIcons } from 'ionicons';
-import { trashOutline } from 'ionicons/icons';
+import {
+  trashOutline,
+  cloudUploadOutline,
+  locationOutline,
+  saveOutline,
+} from 'ionicons/icons';
 
 // Register icons
 addIcons({
   'trash-outline': trashOutline,
+  'cloud-upload-outline': cloudUploadOutline,
+  'location-outline': locationOutline,
+  'save-outline': saveOutline,
 });
 
 @Component({
@@ -41,6 +52,9 @@ addIcons({
     IonBackButton,
     IonTitle,
     IonContent,
+    IonGrid,
+    IonRow,
+    IonCol,
     IonButton,
     IonItem,
     IonLabel,
@@ -50,6 +64,7 @@ addIcons({
     IonIcon,
   ],
   templateUrl: './restaurant-form.page.html',
+  styleUrls: ['./restaurant-form.page.scss'],
 })
 export class AdminRestaurantFormPage {
   private fb = inject(FormBuilder);

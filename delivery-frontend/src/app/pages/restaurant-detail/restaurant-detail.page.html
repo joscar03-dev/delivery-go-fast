@@ -79,12 +79,24 @@
               <ion-label>{{ getItemCategoryName(m) }}</ion-label>
             </ion-chip>
           </p>
+          <!-- Precio -->
+          <div class="price-section">
+            <span class="price"
+              >{{ m.price | currency:'USD':'symbol':'1.2-2' }}</span
+            >
+          </div>
         </ion-label>
 
-        <!-- Precio -->
-        <ion-note slot="end" class="price">
-          {{ m.price | currency:'USD':'symbol':'1.2-2' }}
-        </ion-note>
+        <!-- Botón Añadir al Carrito -->
+        <ion-button
+          slot="end"
+          fill="outline"
+          size="small"
+          (click)="addToCart(m)"
+        >
+          <ion-icon name="add-outline" slot="start"></ion-icon>
+          Añadir
+        </ion-button>
       </ion-item>
     </ion-list>
 
@@ -105,3 +117,13 @@
     </div>
   </ng-template>
 </ion-content>
+
+<!-- Toast para confirmación -->
+<ion-toast
+  [isOpen]="showToast"
+  [message]="toastMessage"
+  duration="2000"
+  position="bottom"
+  color="success"
+  (didDismiss)="onToastDismiss()"
+></ion-toast>

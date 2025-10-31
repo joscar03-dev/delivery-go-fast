@@ -1,0 +1,22 @@
+{
+	"version": "2.0.0",
+	"tasks": [
+		{
+			"label": "Build backend and frontend",
+			"type": "shell",
+			"command": "pwsh -NoProfile -Command \"cd 'c:\\laragon\\www\\delivery-go-fast\\api-server'; npm run build --silent; if($LASTEXITCODE -ne 0){exit $LASTEXITCODE}; cd '..\\delivery-frontend'; npm run build --silent\"",
+			"problemMatcher": [
+				"$tsc"
+			],
+			"group": "build"
+		},
+		{
+			"label": "Build backend and frontend",
+			"type": "shell",
+			"command": "pwsh -NoProfile -Command \"cd 'c:\\laragon\\www\\delivery-go-fast\\api-server'; npm run build --silent; if($LASTEXITCODE -ne 0){exit $LASTEXITCODE}; cd '..\\delivery-frontend'; npm run build --silent\"",
+			"problemMatcher": [
+				"$tsc"
+			]
+		}
+	]
+}
