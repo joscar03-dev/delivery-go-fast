@@ -3,6 +3,8 @@ import {
   NotFoundException,
   BadRequestException,
   ForbiddenException,
+  Inject,
+  forwardRef,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository, DataSource, In } from 'typeorm';
@@ -16,6 +18,7 @@ import { UpdateOrderDto } from './dto/update-order.dto';
 import { FindOrdersDto } from './dto/find-orders.dto';
 import { OrderStatus } from '../common/enums/order-status.enum';
 import { Role } from '../common/enums/role.enum';
+import { DeliveryGateway } from '../geolocation/delivery.gateway';
 
 @Injectable()
 export class OrdersService {
@@ -31,6 +34,8 @@ export class OrdersService {
     @InjectRepository(MenuOption)
     private readonly menuOptionRepository: Repository<MenuOption>,
     private readonly dataSource: DataSource,
+    @Inject(forwardRef(() => DeliveryGateway))
+    private readonly deliveryGateway: DeliveryGateway,
   ) {}
 
   async create(
@@ -144,7 +149,7 @@ export class OrdersService {
       await manager.save(Order, savedOrder);
 
       // Retornar el pedido completo con sus relaciones
-      return await manager.findOne(Order, {
+      const completedOrder = await manager.findOne(Order, {
         where: { id: savedOrder.id },
         relations: [
           'client',
@@ -154,6 +159,13 @@ export class OrdersService {
           'items.menuItem',
         ],
       });
+
+      // Emitir evento de nuevo pedido creado vía Socket.IO
+      if (completedOrder) {
+        this.emitNewOrderEvent(completedOrder);
+      }
+
+      return completedOrder;
     });
   }
 
@@ -169,6 +181,7 @@ export class OrdersService {
       .createQueryBuilder('order')
       .leftJoinAndSelect('order.client', 'client')
       .leftJoinAndSelect('order.restaurant', 'restaurant')
+      .leftJoinAndSelect('restaurant.owner', 'restaurantOwner')
       .leftJoinAndSelect('order.driver', 'driver')
       .leftJoinAndSelect('order.items', 'items')
       .leftJoinAndSelect('items.menuItem', 'menuItem');
@@ -179,7 +192,7 @@ export class OrdersService {
     } else if (userRole === Role.DRIVER) {
       queryBuilder.where('order.driver.id = :userId', { userId });
     } else if (userRole === Role.RESTAURANT_OWNER) {
-      queryBuilder.where('restaurant.owner.id = :userId', { userId });
+      queryBuilder.where('restaurantOwner.id = :userId', { userId });
     }
     // SUPER_ADMIN puede ver todos los pedidos
 
@@ -249,6 +262,7 @@ export class OrdersService {
     userRole: Role,
   ): Promise<Order> {
     const order = await this.findOne(id, userId, userRole);
+    const previousStatus = order.status;
 
     // Solo el repartidor puede actualizar el estado de entrega
     if (updateOrderDto.status && userRole === Role.DRIVER) {
@@ -266,6 +280,7 @@ export class OrdersService {
       const allowedRestaurantStatuses = [
         OrderStatus.CONFIRMED,
         OrderStatus.PREPARING,
+        OrderStatus.READY_FOR_PICKUP,
         OrderStatus.CANCELLED,
       ];
       if (!allowedRestaurantStatuses.includes(updateOrderDto.status)) {
@@ -285,6 +300,99 @@ export class OrdersService {
     }
 
     Object.assign(order, updateOrderDto);
+    const updatedOrder = await this.orderRepository.save(order);
+
+    // Emitir evento si cambió el estado
+    if (updateOrderDto.status && updateOrderDto.status !== previousStatus) {
+      this.emitOrderStatusUpdate(
+        updatedOrder.id,
+        updatedOrder.status,
+        previousStatus,
+      );
+    }
+
+    return updatedOrder;
+  }
+
+  /**
+   * Confirma un pedido y establece el tiempo estimado de preparación
+   */
+  async confirmOrder(
+    id: string,
+    estimatedPrepTime: number,
+    userId: string,
+    userRole: Role,
+  ): Promise<Order> {
+    const order = await this.findOne(id, userId, userRole);
+
+    if (order.status !== OrderStatus.PENDING) {
+      throw new BadRequestException(
+        'Order must be in PENDING status to confirm',
+      );
+    }
+
+    // Si no se proporciona tiempo, usar el tiempo promedio del restaurante
+    if (!estimatedPrepTime) {
+      const restaurant = await this.restaurantRepository.findOne({
+        where: { id: order.restaurant.id },
+      });
+      estimatedPrepTime = restaurant?.averagePrepTime || 15;
+    }
+
+    const now = new Date();
+    const estimatedReadyTime = new Date(
+      now.getTime() + estimatedPrepTime * 60000,
+    );
+
+    const previousStatus = order.status;
+    order.status = OrderStatus.CONFIRMED;
+    order.confirmedAt = now;
+    order.estimatedPrepTime = estimatedPrepTime;
+    order.estimatedReadyTime = estimatedReadyTime;
+
+    const updatedOrder = await this.orderRepository.save(order);
+
+    // Emitir evento de cambio de estado
+    this.emitOrderStatusUpdate(
+      updatedOrder.id,
+      updatedOrder.status,
+      previousStatus,
+    );
+
+    return updatedOrder;
+  }
+
+  /**
+   * Ajusta el tiempo de preparación agregando minutos adicionales
+   */
+  async adjustPrepTime(
+    id: string,
+    additionalMinutes: number,
+    userId: string,
+    userRole: Role,
+  ): Promise<Order> {
+    const order = await this.findOne(id, userId, userRole);
+
+    if (
+      order.status !== OrderStatus.CONFIRMED &&
+      order.status !== OrderStatus.PREPARING
+    ) {
+      throw new BadRequestException(
+        'Can only adjust prep time for confirmed or preparing orders',
+      );
+    }
+
+    if (!order.estimatedReadyTime) {
+      throw new BadRequestException('Order does not have estimated ready time');
+    }
+
+    // Agregar tiempo adicional
+    order.estimatedPrepTime =
+      (order.estimatedPrepTime || 0) + additionalMinutes;
+    order.estimatedReadyTime = new Date(
+      order.estimatedReadyTime.getTime() + additionalMinutes * 60000,
+    );
+
     return await this.orderRepository.save(order);
   }
 
@@ -304,9 +412,61 @@ export class OrdersService {
       );
     }
 
+    const previousStatus = order.status;
     order.driver = { id: driverId } as any;
     order.status = OrderStatus.OUT_FOR_DELIVERY;
+    const updatedOrder = await this.orderRepository.save(order);
 
-    return await this.orderRepository.save(order);
+    // Emitir evento de cambio de estado
+    this.emitOrderStatusUpdate(
+      updatedOrder.id,
+      updatedOrder.status,
+      previousStatus,
+    );
+
+    return updatedOrder;
+  }
+
+  /**
+   * Emite un evento Socket.IO cuando cambia el estado de un pedido
+   */
+  private emitOrderStatusUpdate(
+    orderId: string,
+    newStatus: OrderStatus,
+    previousStatus?: OrderStatus,
+  ): void {
+    try {
+      this.deliveryGateway.server.emit('order-status-updated', {
+        orderId,
+        status: newStatus,
+        previousStatus,
+      });
+    } catch (error) {
+      console.error('Error emitting order status update:', error);
+    }
+  }
+
+  /**
+   * Emite un evento Socket.IO cuando se crea un nuevo pedido
+   */
+  private emitNewOrderEvent(order: Order): void {
+    try {
+      // Emitir a todos los usuarios conectados (restaurante y drivers)
+      this.deliveryGateway.server.emit('new-order-available', {
+        orderId: order.id,
+        orderNumber: order.id.substring(0, 8), // Primeros 8 caracteres del ID
+        restaurantName: order.restaurant?.name || 'Desconocido',
+        totalAmount: Number(order.total) || 0,
+        deliveryAddress: order.deliveryAddress || 'Sin dirección',
+        restaurantId: order.restaurant?.id,
+        status: order.status,
+      });
+
+      console.log(
+        `✅ Evento 'new-order-available' emitido para pedido ${order.id}`,
+      );
+    } catch (error) {
+      console.error('Error emitting new order event:', error);
+    }
   }
 }

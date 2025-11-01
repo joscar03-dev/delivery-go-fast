@@ -120,6 +120,18 @@ export class GeolocationService {
     };
   }
 
+  /**
+   * Obtiene la orden con sus relaciones para verificar permisos de WebSocket
+   * @param orderId ID de la orden
+   * @returns Order con driver y client cargados, o null si no existe
+   */
+  async getOrderForPermissionCheck(orderId: string): Promise<Order | null> {
+    return await this.orderRepository.findOne({
+      where: { id: orderId },
+      relations: ['driver', 'client'],
+    });
+  }
+
   private calculateEstimatedArrival(driverLocation: DriverLocation): Date {
     // Lógica simple para calcular tiempo estimado de llegada
     // En producción, usarías APIs de mapas como Google Maps o OpenStreetMap

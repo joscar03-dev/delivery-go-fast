@@ -49,6 +49,18 @@ export class Order {
   @Column({ type: 'text', nullable: true })
   deliveryAddress: string;
 
+  // Tiempo estimado de preparación en minutos (definido por el restaurante)
+  @Column({ name: 'estimated_prep_time', type: 'int', nullable: true })
+  estimatedPrepTime?: number;
+
+  // Fecha/hora estimada cuando el pedido estará listo (calculado: confirmedAt + estimatedPrepTime)
+  @Column({ name: 'estimated_ready_time', type: 'timestamptz', nullable: true })
+  estimatedReadyTime?: Date;
+
+  // Fecha/hora cuando el restaurante confirmó el pedido
+  @Column({ name: 'confirmed_at', type: 'timestamptz', nullable: true })
+  confirmedAt?: Date;
+
   // Relación: Un pedido tiene muchos items
   @OneToMany(() => OrderItem, (orderItem) => orderItem.order, {
     cascade: true,

@@ -1,4 +1,4 @@
-import { Module } from '@nestjs/common';
+import { Module, forwardRef } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { Order } from './entities/order.entity';
 import { OrderItem } from './entities/order-item.entity';
@@ -8,6 +8,7 @@ import { Restaurant } from '../restaurants/entities/restaurant.entity';
 import { MenuOption } from '../restaurants/entities/menu-option.entity';
 import { OrdersService } from './orders.service';
 import { OrdersController } from './orders.controller';
+import { GeolocationModule } from '../geolocation/geolocation.module';
 
 @Module({
   imports: [
@@ -19,6 +20,7 @@ import { OrdersController } from './orders.controller';
       Restaurant,
       MenuOption,
     ]),
+    forwardRef(() => GeolocationModule),
   ],
   controllers: [OrdersController],
   providers: [OrdersService],

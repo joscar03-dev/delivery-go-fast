@@ -90,11 +90,15 @@ export class OrdersController {
   // Endpoint para que los restaurantes confirmen pedidos
   @Patch(':id/confirm')
   @Roles(Role.RESTAURANT_OWNER, Role.SUPER_ADMIN)
-  confirm(@Param('id', ParseUUIDPipe) id: string, @Request() req) {
+  confirm(
+    @Param('id', ParseUUIDPipe) id: string,
+    @Body('estimatedPrepTime') estimatedPrepTime: number,
+    @Request() req,
+  ) {
     const currentUser = req.user;
-    return this.ordersService.update(
+    return this.ordersService.confirmOrder(
       id,
-      { status: 'confirmed' as any },
+      estimatedPrepTime,
       currentUser.id,
       currentUser.role,
     );
@@ -108,6 +112,36 @@ export class OrdersController {
     return this.ordersService.update(
       id,
       { status: 'preparing' as any },
+      currentUser.id,
+      currentUser.role,
+    );
+  }
+
+  // Endpoint para marcar pedido como listo para recoger
+  @Patch(':id/ready-for-pickup')
+  @Roles(Role.RESTAURANT_OWNER, Role.SUPER_ADMIN)
+  readyForPickup(@Param('id', ParseUUIDPipe) id: string, @Request() req) {
+    const currentUser = req.user;
+    return this.ordersService.update(
+      id,
+      { status: 'ready_for_pickup' as any },
+      currentUser.id,
+      currentUser.role,
+    );
+  }
+
+  // Endpoint para ajustar tiempo de preparación
+  @Patch(':id/adjust-prep-time')
+  @Roles(Role.RESTAURANT_OWNER, Role.SUPER_ADMIN)
+  adjustPrepTime(
+    @Param('id', ParseUUIDPipe) id: string,
+    @Body('additionalMinutes') additionalMinutes: number,
+    @Request() req,
+  ) {
+    const currentUser = req.user;
+    return this.ordersService.adjustPrepTime(
+      id,
+      additionalMinutes,
       currentUser.id,
       currentUser.role,
     );

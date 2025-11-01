@@ -205,7 +205,17 @@ export class DeliveryGateway
   }
 
   private extractTokenFromClient(client: Socket): string | null {
-    // Intentar extraer token de diferentes lugares
+    // Intentar extraer token desde el objeto auth (Socket.IO cliente)
+    const authToken = client.handshake.auth?.token as string;
+    if (authToken) {
+      // Si viene con 'Bearer ', extraerlo
+      if (authToken.startsWith('Bearer ')) {
+        return authToken.substring(7);
+      }
+      return authToken;
+    }
+
+    // Intentar extraer token de diferentes lugares (compatibilidad)
     const authHeader = client.handshake.headers.authorization;
     if (authHeader && authHeader.startsWith('Bearer ')) {
       return authHeader.substring(7);
@@ -252,23 +262,29 @@ export class DeliveryGateway
         return true;
       }
 
-      const locationUpdate =
-        await this.geolocationService.getOrderLocationUpdate(orderId);
+      // Verificar directamente con el Order en vez de depender de DriverLocation
+      const order =
+        await this.geolocationService.getOrderForPermissionCheck(orderId);
 
-      if (!locationUpdate) {
+      if (!order) {
+        this.logger.warn(`Order ${orderId} not found for permission check`);
         return false;
       }
 
       // El cliente puede ver su propio pedido
       if (userRole === Role.CLIENT) {
-        // Aquí deberías verificar que el userId corresponde al cliente del pedido
-        // Por simplicidad, permitimos por ahora (en producción, verificar con OrderService)
-        return true;
+        return order.client && order.client.id === userId;
       }
 
       // El repartidor puede ver pedidos asignados a él
       if (userRole === Role.DRIVER) {
-        return locationUpdate.driverId === userId;
+        const canJoin = order.driver && order.driver.id === userId;
+        if (!canJoin) {
+          this.logger.warn(
+            `Driver ${userId} tried to join order ${orderId} but is not assigned (assigned driver: ${order.driver?.id})`,
+          );
+        }
+        return canJoin;
       }
 
       return false;

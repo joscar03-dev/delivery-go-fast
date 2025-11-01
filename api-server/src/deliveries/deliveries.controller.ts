@@ -36,6 +36,19 @@ export class DeliveriesController {
     );
   }
 
+  @Get('pending')
+  @Roles(Role.DRIVER)
+  findPendingDeliveries(
+    @Query() findAvailableDeliveriesDto: FindAvailableDeliveriesDto,
+    @Request() req,
+  ) {
+    const currentUser = req.user;
+    return this.deliveriesService.findPendingDeliveries(
+      findAvailableDeliveriesDto,
+      currentUser.id,
+    );
+  }
+
   @Post(':orderId/accept')
   @Roles(Role.DRIVER)
   acceptOrder(

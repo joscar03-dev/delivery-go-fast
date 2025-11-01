@@ -5,7 +5,7 @@ import {
   ForbiddenException,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { Repository, In } from 'typeorm';
 import { Order } from '../orders/entities/order.entity';
 import { User } from '../users/entities/user.entity';
 import { FindAvailableDeliveriesDto } from './dto/find-available-deliveries.dto';
@@ -53,7 +53,13 @@ export class DeliveriesService {
       .leftJoinAndSelect('order.restaurant', 'restaurant')
       .leftJoinAndSelect('order.items', 'items')
       .leftJoinAndSelect('items.menuItem', 'menuItem')
-      .where('order.status = :status', { status: OrderStatus.PREPARING })
+      .where('order.status IN (:...statuses)', {
+        statuses: [
+          OrderStatus.CONFIRMED,
+          OrderStatus.PREPARING,
+          OrderStatus.READY_FOR_PICKUP,
+        ],
+      })
       .andWhere('order.driver IS NULL'); // Solo pedidos sin repartidor asignado
 
     // Si se proporcionan coordenadas, filtrar por proximidad
@@ -74,6 +80,70 @@ export class DeliveriesService {
 
     queryBuilder
       .orderBy('order.createdAt', 'ASC') // Primeros en llegar, primeros en ser servidos
+      .skip(skip)
+      .take(limit);
+
+    const [orders, total] = await queryBuilder.getManyAndCount();
+
+    return { orders, total };
+  }
+
+  /**
+   * Obtiene pedidos PENDING para que drivers puedan planificar
+   * (solo lectura, no pueden aceptarlos hasta que restaurant confirme)
+   */
+  async findPendingDeliveries(
+    findAvailableDeliveriesDto: FindAvailableDeliveriesDto,
+    driverId: string,
+  ): Promise<{ orders: Order[]; total: number }> {
+    const {
+      latitude,
+      longitude,
+      radius,
+      page = 1,
+      limit = 10,
+    } = findAvailableDeliveriesDto;
+    const skip = (page - 1) * limit;
+
+    // Verificar que el usuario sea un repartidor
+    const driver = await this.userRepository.findOne({
+      where: { id: driverId },
+      relations: ['role'],
+    });
+
+    if (!driver || driver.role.name !== Role.DRIVER) {
+      throw new ForbiddenException(
+        'Only drivers can access pending deliveries',
+      );
+    }
+
+    const queryBuilder = this.orderRepository
+      .createQueryBuilder('order')
+      .leftJoinAndSelect('order.client', 'client')
+      .leftJoinAndSelect('order.restaurant', 'restaurant')
+      .leftJoinAndSelect('order.items', 'items')
+      .leftJoinAndSelect('items.menuItem', 'menuItem')
+      .where('order.status = :status', { status: OrderStatus.PENDING })
+      .andWhere('order.driver IS NULL'); // Solo pedidos sin repartidor
+
+    // Si se proporcionan coordenadas, filtrar por proximidad
+    if (latitude && longitude && radius) {
+      queryBuilder.andWhere(
+        `ST_DWithin(
+          restaurant.location::geography,
+          ST_MakePoint(:longitude, :latitude)::geography,
+          :radiusMeters
+        )`,
+        {
+          longitude,
+          latitude,
+          radiusMeters: radius * 1000,
+        },
+      );
+    }
+
+    queryBuilder
+      .orderBy('order.createdAt', 'DESC') // Más recientes primero
       .skip(skip)
       .take(limit);
 
@@ -103,10 +173,15 @@ export class DeliveriesService {
       throw new NotFoundException(`Order with ID ${orderId} not found`);
     }
 
-    // Verificar que el pedido esté en estado PREPARING
-    if (order.status !== OrderStatus.PREPARING) {
+    // Verificar que el pedido esté en estado que permite ser aceptado por driver
+    const acceptableStatuses = [
+      OrderStatus.CONFIRMED,
+      OrderStatus.PREPARING,
+      OrderStatus.READY_FOR_PICKUP,
+    ];
+    if (!acceptableStatuses.includes(order.status)) {
       throw new BadRequestException(
-        'Order must be in PREPARING status to be accepted',
+        'Order must be CONFIRMED, PREPARING, or READY_FOR_PICKUP to be accepted',
       );
     }
 
@@ -115,9 +190,12 @@ export class DeliveriesService {
       throw new BadRequestException('Order already has a driver assigned');
     }
 
-    // Asignar el repartidor y cambiar el estado
+    // Asignar el repartidor y cambiar el estado a PREPARING si está CONFIRMED
     order.driver = driver;
-    order.status = OrderStatus.OUT_FOR_DELIVERY;
+    if (order.status === OrderStatus.CONFIRMED) {
+      order.status = OrderStatus.PREPARING;
+    }
+    // Si ya está en PREPARING o READY_FOR_PICKUP, mantener ese estado
 
     return await this.orderRepository.save(order);
   }
@@ -187,13 +265,18 @@ export class DeliveriesService {
       throw new ForbiddenException('Only drivers can access their deliveries');
     }
 
+    // Incluir todos los pedidos asignados al driver que aún no están entregados
     return await this.orderRepository.find({
       where: {
         driver: { id: driverId },
-        status: OrderStatus.OUT_FOR_DELIVERY,
+        status: In([
+          OrderStatus.PREPARING,
+          OrderStatus.READY_FOR_PICKUP,
+          OrderStatus.OUT_FOR_DELIVERY,
+        ]),
       },
       relations: ['client', 'restaurant', 'items', 'items.menuItem'],
-      order: { createdAt: 'DESC' },
+      order: { createdAt: 'ASC' }, // Más antiguos primero (orden de prioridad)
     });
   }
 

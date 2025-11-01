@@ -31,6 +31,10 @@ export class Restaurant {
   @Column({ name: 'image_url', type: 'varchar', nullable: true })
   imageUrl: string;
 
+  // Tiempo promedio de preparación en minutos (por defecto 15 min)
+  @Column({ name: 'average_prep_time', type: 'int', default: 15 })
+  averagePrepTime: number;
+
   // 💡 ¡AQUÍ USAMOS POSTGIS!
   // Guardamos la ubicación geográfica como un punto (longitud, latitud).
   @Column({

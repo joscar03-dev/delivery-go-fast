@@ -19,17 +19,18 @@ import { UpdateMenuOptionDto } from '../dto/update-menu-option.dto';
 import { UpdateMenuOptionGroupDto } from '../dto/update-menu-option-group.dto';
 
 @Controller('restaurants/:restaurantId/menu-option-groups')
-@UseGuards(JwtAuthGuard, RolesGuard)
-@Roles(Role.SUPER_ADMIN, Role.RESTAURANT_OWNER)
 export class MenuOptionGroupsController {
   constructor(private readonly service: MenuOptionGroupsService) {}
 
+  // Endpoint público - Los clientes necesitan ver las opciones para hacer pedidos
   @Get()
   list(@Param('restaurantId') restaurantId: string) {
     return this.service.list(restaurantId);
   }
 
   @Post()
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(Role.SUPER_ADMIN, Role.RESTAURANT_OWNER)
   create(
     @Param('restaurantId') restaurantId: string,
     @Body() dto: CreateMenuOptionGroupDto,
@@ -38,6 +39,8 @@ export class MenuOptionGroupsController {
   }
 
   @Post(':groupId/options')
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(Role.SUPER_ADMIN, Role.RESTAURANT_OWNER)
   addOption(
     @Param('groupId') groupId: string,
     @Body() dto: CreateMenuOptionDto,
@@ -46,6 +49,8 @@ export class MenuOptionGroupsController {
   }
 
   @Patch(':groupId/options/:optionId')
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(Role.SUPER_ADMIN, Role.RESTAURANT_OWNER)
   updateOption(
     @Param('groupId') groupId: string,
     @Param('optionId') optionId: string,
@@ -55,6 +60,8 @@ export class MenuOptionGroupsController {
   }
 
   @Delete(':groupId/options/:optionId')
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(Role.SUPER_ADMIN, Role.RESTAURANT_OWNER)
   removeOption(
     @Param('groupId') groupId: string,
     @Param('optionId') optionId: string,
@@ -63,6 +70,8 @@ export class MenuOptionGroupsController {
   }
 
   @Patch(':groupId')
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(Role.SUPER_ADMIN, Role.RESTAURANT_OWNER)
   update(
     @Param('groupId') groupId: string,
     @Body() dto: UpdateMenuOptionGroupDto,
@@ -71,11 +80,15 @@ export class MenuOptionGroupsController {
   }
 
   @Delete(':groupId')
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(Role.SUPER_ADMIN, Role.RESTAURANT_OWNER)
   remove(@Param('groupId') groupId: string) {
     return this.service.remove(groupId);
   }
 
   @Post(':groupId/attach/:menuItemId')
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(Role.SUPER_ADMIN, Role.RESTAURANT_OWNER)
   attach(
     @Param('groupId') groupId: string,
     @Param('menuItemId') menuItemId: string,
@@ -84,6 +97,8 @@ export class MenuOptionGroupsController {
   }
 
   @Post(':groupId/detach/:menuItemId')
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(Role.SUPER_ADMIN, Role.RESTAURANT_OWNER)
   detach(
     @Param('groupId') groupId: string,
     @Param('menuItemId') menuItemId: string,
