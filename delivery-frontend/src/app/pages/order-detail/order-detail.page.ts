@@ -1,4 +1,4 @@
-import { Component, OnInit, inject } from '@angular/core';
+import { Component, OnInit, OnDestroy, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import {
@@ -20,10 +20,13 @@ import {
   IonCardTitle,
   IonCardContent,
   IonThumbnail,
+  IonBadge,
 } from '@ionic/angular/standalone';
 import { ActivatedRoute } from '@angular/router';
 import { OrderService } from '../../services/order.service';
+import { SocketService } from '../../services/socket.service';
 import { Order, OrderStatus } from '../../models/order.model';
+import { Subscription } from 'rxjs';
 import { addIcons } from 'ionicons';
 import {
   timeOutline,
@@ -32,6 +35,10 @@ import {
   receiptOutline,
   checkmarkCircleOutline,
   closeCircleOutline,
+  bicycleOutline,
+  navigateOutline,
+  speedometerOutline,
+  refreshOutline,
 } from 'ionicons/icons';
 
 addIcons({
@@ -41,6 +48,10 @@ addIcons({
   'receipt-outline': receiptOutline,
   'checkmark-circle-outline': checkmarkCircleOutline,
   'close-circle-outline': closeCircleOutline,
+  'bicycle-outline': bicycleOutline,
+  'navigate-outline': navigateOutline,
+  'speedometer-outline': speedometerOutline,
+  'refresh-outline': refreshOutline,
 });
 
 @Component({
@@ -67,16 +78,31 @@ addIcons({
     IonCardTitle,
     IonCardContent,
     IonThumbnail,
+    IonBadge,
     CommonModule,
     FormsModule,
   ],
 })
-export class OrderDetailPage implements OnInit {
+export class OrderDetailPage implements OnInit, OnDestroy {
   private route = inject(ActivatedRoute);
   private orderService = inject(OrderService);
+  private socketService = inject(SocketService);
 
   order: Order | null = null;
   loading = false;
+
+  // Tracking en tiempo real del repartidor
+  driverLocation: {
+    latitude: number;
+    longitude: number;
+    heading?: number;
+    speed?: number;
+    estimatedArrival?: string;
+    lastUpdate?: Date;
+  } | null = null;
+  isSocketConnected = false;
+
+  private subscriptions: Subscription[] = [];
 
   ngOnInit() {
     const orderId = this.route.snapshot.paramMap.get('id');
@@ -85,15 +111,124 @@ export class OrderDetailPage implements OnInit {
     }
   }
 
+  ngOnDestroy() {
+    // Limpiar suscripciones
+    this.subscriptions.forEach((sub) => sub.unsubscribe());
+
+    // Salir de la sala del pedido
+    if (this.order) {
+      this.socketService.leaveOrderRoom(this.order.id);
+    }
+  }
+
   async loadOrderDetail(orderId: string): Promise<void> {
     this.loading = true;
     try {
       this.order =
         (await this.orderService.getOrderDetail(orderId).toPromise()) || null;
+
+      // Si el pedido está en delivery, configurar WebSocket para tracking
+      if (this.order && this.order.status === OrderStatus.OUT_FOR_DELIVERY) {
+        this.setupDriverTracking(orderId);
+      }
     } catch (error) {
       console.error('Error loading order detail:', error);
     } finally {
       this.loading = false;
+    }
+  }
+
+  /**
+   * Configura el tracking del repartidor vía WebSocket
+   */
+  private setupDriverTracking(orderId: string) {
+    // Conectar al WebSocket si no está conectado
+    if (!this.socketService.isConnected()) {
+      const token = localStorage.getItem('access_token');
+      if (token) {
+        this.socketService.connect(token);
+      }
+    }
+
+    // Suscribirse al estado de conexión
+    const connectionSub = this.socketService.isConnected$.subscribe(
+      (connected) => {
+        this.isSocketConnected = connected;
+        if (connected) {
+          console.log('🔌 Socket conectado - Uniéndose a sala del pedido');
+          this.socketService.joinOrderRoom(orderId);
+        }
+      }
+    );
+    this.subscriptions.push(connectionSub);
+
+    // Escuchar cambios de estado del pedido en tiempo real
+    const statusUpdateSub = this.socketService.orderStatusUpdated$.subscribe(
+      (update) => {
+        if (update && update.orderId === orderId) {
+          console.log(
+            '🔄 Estado del pedido actualizado, recargando...',
+            update
+          );
+          this.loadOrderDetail(orderId);
+        }
+      }
+    );
+    this.subscriptions.push(statusUpdateSub);
+
+    // Escuchar actualizaciones de ubicación del repartidor
+    this.socketService.on('orderLocationUpdate', (data: any) => {
+      console.log('📍 Actualización de ubicación recibida:', data);
+      this.driverLocation = {
+        latitude: data.latitude,
+        longitude: data.longitude,
+        heading: data.heading,
+        speed: data.speed,
+        estimatedArrival: data.estimatedArrival,
+        lastUpdate: new Date(),
+      };
+    });
+
+    // Escuchar confirmación de unirse a la sala
+    this.socketService.on('joinedOrderRoom', (data: any) => {
+      console.log('✅ Unido a sala del pedido:', data);
+    });
+
+    // Escuchar errores
+    this.socketService.on('error', (error: any) => {
+      console.error('❌ Error del socket:', error);
+    });
+  }
+
+  /**
+   * Abre Google Maps con la ubicación del repartidor
+   */
+  openDriverLocation() {
+    if (this.driverLocation) {
+      const url = `https://www.google.com/maps?q=${this.driverLocation.latitude},${this.driverLocation.longitude}`;
+      window.open(url, '_blank');
+    }
+  }
+
+  /**
+   * Formatea el tiempo estimado de llegada
+   */
+  getEstimatedArrivalText(): string {
+    if (!this.driverLocation?.estimatedArrival) {
+      return 'Calculando...';
+    }
+
+    const arrivalTime = new Date(this.driverLocation.estimatedArrival);
+    const now = new Date();
+    const diffMs = arrivalTime.getTime() - now.getTime();
+    const diffMins = Math.round(diffMs / 60000);
+
+    if (diffMins < 1) {
+      return 'Llegando ahora';
+    } else if (diffMins === 1) {
+      return '1 minuto';
+    } else {
+      return `${diffMins} minutos`;
     }
   }
 

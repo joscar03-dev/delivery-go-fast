@@ -1,0 +1,74 @@
+ion-item {
+  margin-bottom: 1rem;
+  
+  &.ion-invalid {
+    --border-color: var(--ion-color-danger);
+  }
+}
+
+.error-message {
+  color: var(--ion-color-danger);
+  font-size: 0.75rem;
+  padding: 0.25rem 0 0 0;
+}
+
+.location-section {
+  margin-top: 2rem;
+  padding: 1rem;
+  background: var(--ion-color-light);
+  border-radius: 8px;
+  
+  h3 {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    margin: 0 0 0.5rem 0;
+    color: var(--ion-color-primary);
+    font-size: 1rem;
+    
+    ion-icon {
+      font-size: 1.25rem;
+    }
+  }
+  
+  .description {
+    font-size: 0.875rem;
+    color: var(--ion-color-medium);
+    margin-bottom: 1rem;
+  }
+  
+  .coordinates-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1rem;
+    margin-top: 1rem;
+  }
+}
+
+.error-alert {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 1rem;
+  margin-top: 1rem;
+  background: var(--ion-color-danger-tint);
+  color: var(--ion-color-danger-contrast);
+  border-radius: 8px;
+  
+  ion-icon {
+    font-size: 1.5rem;
+  }
+}
+
+.loading-section {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 2rem;
+  
+  p {
+    margin-top: 1rem;
+    color: var(--ion-color-medium);
+  }
+}

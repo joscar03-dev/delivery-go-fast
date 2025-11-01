@@ -1,0 +1,149 @@
+<ion-header>
+  <ion-toolbar>
+    <ion-buttons slot="start">
+      <ion-button (click)="cancel()">
+        <ion-icon name="close-outline"></ion-icon>
+      </ion-button>
+    </ion-buttons>
+    <ion-title>{{ isEdit ? "Editar" : "Nueva" }} Dirección</ion-title>
+    <ion-buttons slot="end">
+      <ion-button
+        (click)="save()"
+        [disabled]="loading || addressForm.invalid"
+        color="primary"
+      >
+        <ion-icon name="save-outline"></ion-icon>
+      </ion-button>
+    </ion-buttons>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content class="ion-padding">
+  <form [formGroup]="addressForm">
+    <!-- Tipo de dirección -->
+    <ion-item>
+      <ion-label position="stacked">Tipo de Dirección</ion-label>
+      <ion-select formControlName="type" interface="action-sheet">
+        <ion-select-option
+          *ngFor="let type of addressTypes"
+          [value]="type.value"
+        >
+          {{ type.label }}
+        </ion-select-option>
+      </ion-select>
+    </ion-item>
+
+    <!-- Calle -->
+    <ion-item [class.ion-invalid]="hasError('street')">
+      <ion-label position="stacked">Calle / Dirección *</ion-label>
+      <ion-input
+        type="text"
+        formControlName="street"
+        placeholder="Ej: Av. Principal 123"
+      ></ion-input>
+      <div class="error-message" *ngIf="hasError('street')">
+        {{ getErrorMessage("street") }}
+      </div>
+    </ion-item>
+
+    <!-- Ciudad -->
+    <ion-item [class.ion-invalid]="hasError('city')">
+      <ion-label position="stacked">Ciudad *</ion-label>
+      <ion-input
+        type="text"
+        formControlName="city"
+        placeholder="Ej: Arequipa"
+      ></ion-input>
+      <div class="error-message" *ngIf="hasError('city')">
+        {{ getErrorMessage("city") }}
+      </div>
+    </ion-item>
+
+    <!-- Código Postal -->
+    <ion-item [class.ion-invalid]="hasError('postalCode')">
+      <ion-label position="stacked">Código Postal *</ion-label>
+      <ion-input
+        type="text"
+        formControlName="postalCode"
+        placeholder="Ej: 04001"
+      ></ion-input>
+      <div class="error-message" *ngIf="hasError('postalCode')">
+        {{ getErrorMessage("postalCode") }}
+      </div>
+    </ion-item>
+
+    <!-- Referencia -->
+    <ion-item>
+      <ion-label position="stacked">Referencia (opcional)</ion-label>
+      <ion-textarea
+        formControlName="reference"
+        placeholder="Ej: Casa blanca con reja verde, al lado del parque"
+        rows="3"
+      ></ion-textarea>
+    </ion-item>
+
+    <!-- Ubicación GPS -->
+    <div class="location-section">
+      <h3>
+        <ion-icon name="location-outline"></ion-icon>
+        Ubicación GPS (opcional)
+      </h3>
+      <p class="description">
+        Esto ayuda a los repartidores a encontrar tu dirección más fácilmente
+      </p>
+
+      <ion-button
+        expand="block"
+        fill="outline"
+        (click)="getCurrentLocation()"
+        [disabled]="loading"
+      >
+        <ion-icon slot="start" name="locate-outline"></ion-icon>
+        Usar mi ubicación actual
+      </ion-button>
+
+      <div class="coordinates-row">
+        <ion-item>
+          <ion-label position="stacked">Latitud</ion-label>
+          <ion-input
+            type="number"
+            formControlName="latitude"
+            placeholder="-16.409047"
+            step="0.000001"
+          ></ion-input>
+        </ion-item>
+
+        <ion-item>
+          <ion-label position="stacked">Longitud</ion-label>
+          <ion-input
+            type="number"
+            formControlName="longitude"
+            placeholder="-71.537451"
+            step="0.000001"
+          ></ion-input>
+        </ion-item>
+      </div>
+    </div>
+
+    <!-- Marcar como predeterminada -->
+    <ion-item lines="none">
+      <ion-label>
+        <h3>Marcar como dirección predeterminada</h3>
+        <p>Esta será la dirección que aparecerá por defecto en tus pedidos</p>
+      </ion-label>
+      <ion-toggle formControlName="isDefault" color="primary"></ion-toggle>
+    </ion-item>
+
+    <!-- Mensaje de error general -->
+    <div class="error-alert" *ngIf="errorMessage">
+      <ion-icon name="alert-circle-outline"></ion-icon>
+      {{ errorMessage }}
+    </div>
+
+    <!-- Loading spinner -->
+    <div class="loading-section" *ngIf="loading">
+      <ion-spinner></ion-spinner>
+      <p>{{ isEdit ? "Actualizando" : "Guardando" }} dirección...</p>
+    </div>
+  </form>
+</ion-content>

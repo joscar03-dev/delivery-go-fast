@@ -1,0 +1,198 @@
+<ion-header>
+  <ion-toolbar>
+    <ion-buttons slot="start">
+      <ion-back-button
+        defaultHref="/delivery-driver/my-deliveries"
+      ></ion-back-button>
+    </ion-buttons>
+    <ion-title>Detalle de Entrega</ion-title>
+    <ion-buttons slot="end">
+      <ion-chip
+        [color]="isSocketConnected ? 'success' : 'danger'"
+        style="margin-right: 8px"
+      >
+        <ion-icon
+          [name]="isSocketConnected ? 'wifi' : 'wifi-outline'"
+        ></ion-icon>
+        <ion-label
+          >{{ isSocketConnected ? 'Conectado' : 'Desconectado' }}</ion-label
+        >
+      </ion-chip>
+    </ion-buttons>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content [fullscreen]="true">
+  <!-- Estado de carga -->
+  <div *ngIf="isLoadingData" class="ion-text-center ion-padding">
+    <ion-spinner></ion-spinner>
+    <p>Cargando detalles del pedido...</p>
+  </div>
+
+  <!-- Contenido del pedido activo -->
+  <div *ngIf="!isLoadingData && activeOrder">
+    <!-- Información del pedido -->
+    <ion-card class="order-info-card">
+      <ion-card-header>
+        <ion-card-subtitle
+          >Pedido #{{ activeOrder.id.substring(0, 8) }}</ion-card-subtitle
+        >
+        <ion-card-title>{{ activeOrder.restaurant.name }}</ion-card-title>
+      </ion-card-header>
+
+      <ion-card-content>
+        <!-- Progreso del estado -->
+        <div class="status-progress">
+          <h3>Estado del pedido</h3>
+          <div class="status-timeline">
+            <div
+              *ngFor="let step of statusFlow; let i = index"
+              class="status-step"
+              [class.completed]="i <= getCurrentStatusIndex()"
+              [class.active]="step.status === currentStatus"
+            >
+              <div class="step-icon">
+                <ion-icon [name]="step.icon"></ion-icon>
+              </div>
+              <div class="step-label">{{ step.label }}</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Botones de acción rápida -->
+        <div class="action-buttons">
+          <!-- Si el pedido está READY_FOR_PICKUP, el driver puede recogerlo -->
+          <ion-button
+            *ngIf="currentStatus === OrderStatus.READY_FOR_PICKUP"
+            expand="block"
+            color="primary"
+            (click)="updateStatus(OrderStatus.OUT_FOR_DELIVERY)"
+          >
+            <ion-icon slot="start" name="bicycle"></ion-icon>
+            Marcar como Recogido (Iniciar Entrega)
+          </ion-button>
+
+          <!-- Si está OUT_FOR_DELIVERY, puede marcar como entregado -->
+          <ion-button
+            *ngIf="currentStatus === OrderStatus.OUT_FOR_DELIVERY"
+            expand="block"
+            color="success"
+            (click)="updateStatus(OrderStatus.DELIVERED)"
+          >
+            <ion-icon slot="start" name="checkmark-done"></ion-icon>
+            Marcar como Entregado
+          </ion-button>
+
+          <!-- Mensaje informativo si el pedido aún está en preparación -->
+          <ion-card
+            *ngIf="currentStatus === OrderStatus.PREPARING || currentStatus === OrderStatus.CONFIRMED"
+            color="warning"
+            class="info-card"
+          >
+            <ion-card-content>
+              <div class="info-message">
+                <ion-icon name="time-outline"></ion-icon>
+                <div>
+                  <strong>Pedido en preparación</strong>
+                  <p>
+                    El restaurante está preparando el pedido. Podrás recogerlo
+                    cuando marquen como "Listo para recoger".
+                  </p>
+                </div>
+              </div>
+            </ion-card-content>
+          </ion-card>
+        </div>
+      </ion-card-content>
+    </ion-card>
+
+    <!-- Información del restaurante -->
+    <ion-card class="location-card">
+      <ion-card-header>
+        <ion-card-title>
+          <ion-icon name="restaurant-outline"></ion-icon>
+          Recoger en
+        </ion-card-title>
+      </ion-card-header>
+      <ion-card-content>
+        <p class="address">{{ activeOrder.restaurant.address }}</p>
+        <ion-button
+          expand="block"
+          fill="outline"
+          (click)="navigateToRestaurant()"
+          *ngIf="activeOrder.restaurant.location"
+        >
+          <ion-icon slot="start" name="navigate-outline"></ion-icon>
+          Abrir en Maps
+        </ion-button>
+      </ion-card-content>
+    </ion-card>
+
+    <!-- Dirección de entrega -->
+    <ion-card class="location-card">
+      <ion-card-header>
+        <ion-card-title>
+          <ion-icon name="location-outline"></ion-icon>
+          Entregar en
+        </ion-card-title>
+      </ion-card-header>
+      <ion-card-content>
+        <p class="address">{{ activeOrder.deliveryAddress }}</p>
+        <!-- TODO: Agregar deliveryLocation al backend para habilitar navegación -->
+        <!-- <ion-button
+          expand="block"
+          fill="outline"
+          (click)="navigateToDeliveryAddress()"
+          *ngIf="activeOrder.deliveryLocation"
+        >
+          <ion-icon slot="start" name="navigate-outline"></ion-icon>
+          Abrir en Maps
+        </ion-button> -->
+      </ion-card-content>
+    </ion-card>
+
+    <!-- Detalles del pedido -->
+    <ion-card class="items-card">
+      <ion-card-header>
+        <ion-card-title>
+          <ion-icon name="bag-outline"></ion-icon>
+          Detalles del pedido
+        </ion-card-title>
+      </ion-card-header>
+      <ion-card-content>
+        <ion-list lines="full">
+          <ion-item *ngFor="let item of activeOrder.items">
+            <ion-label>
+              <h3>{{ item.quantity }}x {{ item.menuItem.name }}</h3>
+              <p *ngIf="item.menuItem.description">
+                {{ item.menuItem.description }}
+              </p>
+            </ion-label>
+            <ion-note slot="end">
+              {{ item.price | currency : "USD" : "symbol" : "1.2-2" }}
+            </ion-note>
+          </ion-item>
+        </ion-list>
+        <div class="total-section">
+          <strong>Total:</strong>
+          <strong class="total-amount">
+            {{ activeOrder.total | currency : "USD" : "symbol" : "1.2-2" }}
+          </strong>
+        </div>
+      </ion-card-content>
+    </ion-card>
+  </div>
+
+  <!-- Sin pedido activo -->
+  <div
+    *ngIf="!isLoadingData && !activeOrder"
+    class="ion-text-center ion-padding empty-state"
+  >
+    <ion-icon name="bicycle-outline" size="large" color="medium"></ion-icon>
+    <h2>No hay entregas activas</h2>
+    <p>Ve a pedidos disponibles para aceptar una entrega</p>
+    <ion-button routerLink="/delivery-driver/available" expand="block">
+      Ver Pedidos Disponibles
+    </ion-button>
+  </div>
+</ion-content>

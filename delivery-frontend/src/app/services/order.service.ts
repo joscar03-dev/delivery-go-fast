@@ -2,7 +2,11 @@ import { Injectable } from '@angular/core';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { map } from 'rxjs/operators';
-import { Order, CreateOrderDto, OrderHistoryResponse } from '../models/order.model';
+import {
+  Order,
+  CreateOrderDto,
+  OrderHistoryResponse,
+} from '../models/order.model';
 import { environment } from '../../environments/environment';
 import { AuthService } from './auth.service';
 
@@ -32,14 +36,16 @@ export class OrderService {
     console.log('OrderService: Haciendo petición a:', this.apiUrl);
     console.log('OrderService: Headers:', this.getHeaders());
 
-    return this.http.get<OrderHistoryResponse>(this.apiUrl, {
-      headers: this.getHeaders(),
-    }).pipe(
-      map(response => {
-        console.log('OrderService: Respuesta completa:', response);
-        return response.orders || [];
+    return this.http
+      .get<OrderHistoryResponse>(this.apiUrl, {
+        headers: this.getHeaders(),
       })
-    );
+      .pipe(
+        map((response) => {
+          console.log('OrderService: Respuesta completa:', response);
+          return response.orders || [];
+        })
+      );
   }
 
   getOrderDetail(orderId: string): Observable<Order> {
@@ -66,5 +72,90 @@ export class OrderService {
         headers: this.getHeaders(),
       }
     );
+  }
+
+  // Métodos específicos para RESTAURANT_OWNER
+
+  /**
+   * Confirma un pedido con tiempo estimado de preparación
+   */
+  confirmOrder(orderId: string, estimatedPrepTime: number): Observable<Order> {
+    return this.http.patch<Order>(
+      `${this.apiUrl}/${orderId}/confirm`,
+      { estimatedPrepTime },
+      {
+        headers: this.getHeaders(),
+      }
+    );
+  }
+
+  /**
+   * Marca un pedido como en preparación (cambia estado de CONFIRMED a PREPARING)
+   */
+  startPreparing(orderId: string): Observable<Order> {
+    return this.http.patch<Order>(
+      `${this.apiUrl}/${orderId}/preparing`,
+      {},
+      {
+        headers: this.getHeaders(),
+      }
+    );
+  }
+
+  /**
+   * Marca un pedido como listo para recoger
+   */
+  markAsReadyForPickup(orderId: string): Observable<Order> {
+    return this.http.patch<Order>(
+      `${this.apiUrl}/${orderId}/ready-for-pickup`,
+      {},
+      {
+        headers: this.getHeaders(),
+      }
+    );
+  }
+
+  /**
+   * Ajusta el tiempo de preparación agregando minutos adicionales
+   */
+  adjustPrepTime(
+    orderId: string,
+    additionalMinutes: number
+  ): Observable<Order> {
+    return this.http.patch<Order>(
+      `${this.apiUrl}/${orderId}/adjust-prep-time`,
+      { additionalMinutes },
+      {
+        headers: this.getHeaders(),
+      }
+    );
+  }
+
+  /**
+   * Obtiene pedidos filtrados por estado (para restaurant owner)
+   */
+  getOrdersByStatus(
+    status?: string,
+    restaurantId?: string
+  ): Observable<Order[]> {
+    let url = this.apiUrl;
+    const params: string[] = [];
+
+    if (status) {
+      params.push(`status=${status}`);
+    }
+    if (restaurantId) {
+      params.push(`restaurantId=${restaurantId}`);
+    }
+
+    if (params.length > 0) {
+      url += `?${params.join('&')}`;
+    }
+
+    return this.http
+      .get<OrderHistoryResponse>(url, {
+        headers: this.getHeaders(),
+      })
+      .pipe(map((response) => response.orders || []));
   }
 }

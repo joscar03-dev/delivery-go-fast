@@ -65,6 +65,74 @@
       </ion-card-content>
     </ion-card>
 
+    <!-- Tracking del repartidor (solo si el pedido está en camino) -->
+    <ion-card
+      *ngIf="order.status === 'out_for_delivery'"
+      class="driver-tracking-card"
+    >
+      <ion-card-header>
+        <ion-card-title>
+          <ion-icon name="bicycle-outline"></ion-icon>
+          Tu pedido está en camino
+        </ion-card-title>
+      </ion-card-header>
+      <ion-card-content>
+        <!-- Estado de conexión -->
+        <div class="connection-status">
+          <ion-badge [color]="isSocketConnected ? 'success' : 'danger'">
+            {{ isSocketConnected ? '● En vivo' : '● Desconectado' }}
+          </ion-badge>
+        </div>
+
+        <!-- Información del repartidor si está disponible -->
+        <div *ngIf="driverLocation" class="driver-info">
+          <div class="info-row">
+            <ion-icon name="time-outline"></ion-icon>
+            <span
+              >Tiempo estimado:
+              <strong>{{ getEstimatedArrivalText() }}</strong></span
+            >
+          </div>
+
+          <div class="info-row" *ngIf="driverLocation.speed">
+            <ion-icon name="speedometer-outline"></ion-icon>
+            <span>Velocidad: {{ driverLocation.speed.toFixed(1) }} km/h</span>
+          </div>
+
+          <div class="info-row" *ngIf="driverLocation.lastUpdate">
+            <ion-icon name="refresh-outline"></ion-icon>
+            <span
+              >Última actualización: {{ driverLocation.lastUpdate |
+              date:'shortTime' }}</span
+            >
+          </div>
+
+          <ion-button
+            expand="block"
+            (click)="openDriverLocation()"
+            class="map-button"
+          >
+            <ion-icon slot="start" name="navigate-outline"></ion-icon>
+            Ver ubicación en el mapa
+          </ion-button>
+        </div>
+
+        <!-- Esperando ubicación -->
+        <div
+          *ngIf="!driverLocation && isSocketConnected"
+          class="waiting-location"
+        >
+          <ion-spinner name="crescent"></ion-spinner>
+          <p>Esperando ubicación del repartidor...</p>
+        </div>
+
+        <!-- Sin conexión -->
+        <div *ngIf="!isSocketConnected" class="no-connection">
+          <p>No se puede obtener la ubicación en tiempo real</p>
+        </div>
+      </ion-card-content>
+    </ion-card>
+
     <!-- Items del pedido -->
     <ion-card>
       <ion-card-header>

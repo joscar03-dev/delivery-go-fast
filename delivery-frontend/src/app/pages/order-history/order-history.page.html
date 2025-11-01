@@ -4,6 +4,19 @@
       <ion-back-button defaultHref="/tabs/tab1"></ion-back-button>
     </ion-buttons>
     <ion-title>Mis Pedidos</ion-title>
+    <ion-buttons slot="end">
+      <!-- Indicador de conexión Socket.IO -->
+      <ion-chip
+        [color]="isSocketConnected ? 'success' : 'danger'"
+        size="small"
+        style="margin-right: 8px"
+      >
+        <ion-icon name="wifi-outline"></ion-icon>
+        <ion-label
+          >{{ isSocketConnected ? 'En línea' : 'Sin conexión' }}</ion-label
+        >
+      </ion-chip>
+    </ion-buttons>
   </ion-toolbar>
 </ion-header>
 

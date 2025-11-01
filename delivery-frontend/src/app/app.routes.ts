@@ -118,4 +118,54 @@ export const routes: Routes = [
         (m) => m.OrderDetailPage
       ),
   },
+  // Módulo de Repartidores (Delivery Driver) - Con Tabs
+  {
+    path: 'delivery-driver',
+    canMatch: [authGuard, rolesGuard],
+    data: { roles: ['driver'] },
+    loadComponent: () =>
+      import('./pages/delivery-driver/driver-tabs/driver-tabs.page').then(
+        (m) => m.DriverTabsPage
+      ),
+    children: [
+      {
+        path: 'available',
+        loadComponent: () =>
+          import(
+            './pages/delivery-driver/available-deliveries/available-deliveries.page'
+          ).then((m) => m.AvailableDeliveriesPage),
+      },
+      {
+        path: 'my-deliveries',
+        loadComponent: () =>
+          import(
+            './pages/delivery-driver/my-deliveries/my-deliveries.page'
+          ).then((m) => m.MyDeliveriesPage),
+      },
+      {
+        path: '',
+        redirectTo: 'available',
+        pathMatch: 'full',
+      },
+    ],
+  },
+  {
+    path: 'delivery-driver/delivery-detail/:id',
+    canMatch: [authGuard, rolesGuard],
+    data: { roles: ['driver'] },
+    loadComponent: () =>
+      import(
+        './pages/delivery-driver/delivery-detail/active-delivery.page'
+      ).then((m) => m.DeliveryDetailPage),
+  },
+  // Módulo de Restaurante (Restaurant Owner)
+  {
+    path: 'restaurant-orders',
+    canMatch: [authGuard, rolesGuard],
+    data: { roles: ['restaurant_owner'] },
+    loadComponent: () =>
+      import('./pages/restaurant-orders/restaurant-orders.page').then(
+        (m) => m.RestaurantOrdersPage
+      ),
+  },
 ];

@@ -1,3 +1,52 @@
+.address-card {
+  margin-bottom: 1.5rem;
+  
+  ion-card-title {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 1rem;
+    
+    ion-icon {
+      color: var(--ion-color-primary);
+    }
+  }
+  
+  .address-info {
+    margin-bottom: 1rem;
+    
+    h3 {
+      margin: 0 0 0.5rem 0;
+      font-size: 1rem;
+      font-weight: 600;
+      color: var(--ion-color-dark);
+    }
+    
+    p {
+      margin: 0.25rem 0;
+      color: var(--ion-color-medium);
+      font-size: 0.9rem;
+    }
+    
+    .reference {
+      font-style: italic;
+      font-size: 0.85rem;
+    }
+  }
+  
+  .no-address {
+    color: var(--ion-color-medium);
+    font-size: 0.9rem;
+    margin-bottom: 1rem;
+    text-align: center;
+  }
+  
+  ion-button {
+    margin-top: 0.5rem;
+    --border-radius: 8px;
+  }
+}
+
 .restaurant-info {
   margin-bottom: 1rem;
   padding: 1rem;

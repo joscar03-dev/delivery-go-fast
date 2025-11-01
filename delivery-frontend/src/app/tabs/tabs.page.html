@@ -20,6 +20,21 @@
       <ion-label>Mis Pedidos</ion-label>
     </ion-tab-button>
 
+    <!-- Tab para Repartidores -->
+    <ion-tab-button *ngIf="isDeliveryDriver()" (click)="goToDeliveries()">
+      <ion-icon aria-hidden="true" name="bicycle-outline"></ion-icon>
+      <ion-label>Entregas</ion-label>
+    </ion-tab-button>
+
+    <!-- Tab para Restaurant Owners -->
+    <ion-tab-button
+      *ngIf="isRestaurantOwner()"
+      (click)="goToRestaurantOrders()"
+    >
+      <ion-icon aria-hidden="true" name="restaurant-outline"></ion-icon>
+      <ion-label>Pedidos</ion-label>
+    </ion-tab-button>
+
     <ion-tab-button *ngIf="isSuperAdmin()" tab="tab2" href="/tabs/tab2">
       <ion-icon aria-hidden="true" name="ellipse"></ion-icon>
       <ion-label>Admin</ion-label>

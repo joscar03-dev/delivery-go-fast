@@ -1,0 +1,85 @@
+<ion-header>
+  <ion-toolbar>
+    <ion-buttons slot="start">
+      <ion-button (click)="cancel()">
+        <ion-icon name="close-outline"></ion-icon>
+      </ion-button>
+    </ion-buttons>
+    <ion-title>Seleccionar Dirección</ion-title>
+    <ion-buttons slot="end">
+      <ion-button
+        (click)="confirm()"
+        [disabled]="!selectedAddress"
+        color="primary"
+      >
+        Confirmar
+      </ion-button>
+    </ion-buttons>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content class="ion-padding">
+  <!-- Loading -->
+  <div *ngIf="loading" class="loading-section">
+    <ion-spinner name="crescent"></ion-spinner>
+    <p>Cargando direcciones...</p>
+  </div>
+
+  <!-- Lista de direcciones -->
+  <div *ngIf="!loading && addresses.length > 0">
+    <ion-radio-group
+      [(ngModel)]="selectedAddress"
+      (ionChange)="selectAddress($event.detail.value)"
+    >
+      <ion-list>
+        <ion-item
+          *ngFor="let address of addresses"
+          [button]="true"
+          (click)="selectAddress(address)"
+        >
+          <ion-icon
+            [name]="getAddressTypeIcon(address.type)"
+            slot="start"
+            [color]="selectedAddress?.id === address.id ? 'primary' : 'medium'"
+          ></ion-icon>
+
+          <ion-label>
+            <div class="address-header">
+              <h3>{{ getAddressTypeLabel(address.type) }}</h3>
+              <ion-badge *ngIf="address.isDefault" color="primary"
+                >Predeterminada</ion-badge
+              >
+            </div>
+            <p class="address-street">{{ address.street }}</p>
+            <p class="address-city">
+              {{ address.city }}, {{ address.postalCode }}
+            </p>
+            <p *ngIf="address.reference" class="address-reference">
+              {{ address.reference }}
+            </p>
+          </ion-label>
+
+          <ion-radio slot="end" [value]="address"></ion-radio>
+        </ion-item>
+      </ion-list>
+    </ion-radio-group>
+  </div>
+
+  <!-- Sin direcciones -->
+  <div *ngIf="!loading && addresses.length === 0" class="empty-state">
+    <ion-icon name="location-outline" size="large"></ion-icon>
+    <h2>No tienes direcciones guardadas</h2>
+    <p>Agrega una dirección para continuar con tu pedido</p>
+  </div>
+
+  <!-- Botón para agregar dirección -->
+  <ion-button
+    expand="block"
+    fill="outline"
+    (click)="addNewAddress()"
+    class="add-button"
+  >
+    <ion-icon slot="start" name="add-outline"></ion-icon>
+    Agregar Nueva Dirección
+  </ion-button>
+</ion-content>

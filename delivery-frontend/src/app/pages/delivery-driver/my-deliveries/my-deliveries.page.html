@@ -1,0 +1,143 @@
+<ion-header>
+  <ion-toolbar>
+    <ion-title>Mis Entregas Activas</ion-title>
+    <ion-buttons slot="end">
+      <ion-chip
+        [color]="isSocketConnected ? 'success' : 'danger'"
+        style="margin-right: 8px"
+      >
+        <ion-icon
+          [name]="isSocketConnected ? 'wifi' : 'wifi-outline'"
+        ></ion-icon>
+        <ion-label
+          >{{ isSocketConnected ? 'En línea' : 'Desconectado' }}</ion-label
+        >
+      </ion-chip>
+      <ion-button (click)="loadMyDeliveries()">
+        <ion-icon name="refresh-outline"></ion-icon>
+      </ion-button>
+    </ion-buttons>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content [fullscreen]="true">
+  <ion-refresher slot="fixed" (ionRefresh)="handleRefresh($any($event))">
+    <ion-refresher-content></ion-refresher-content>
+  </ion-refresher>
+
+  <!-- Estado de carga -->
+  <div *ngIf="loading" class="ion-text-center ion-padding">
+    <ion-spinner></ion-spinner>
+    <p>Cargando tus entregas...</p>
+  </div>
+
+  <!-- Lista vacía -->
+  <div
+    *ngIf="!loading && myDeliveries.length === 0"
+    class="ion-text-center ion-padding empty-state"
+  >
+    <ion-icon name="bicycle-outline" size="large" color="medium"></ion-icon>
+    <h2>No tienes entregas activas</h2>
+    <p>Los pedidos que aceptes aparecerán aquí</p>
+    <p class="ion-text-center ion-margin-top">
+      <small>Cambia a la pestaña "Disponibles" para ver pedidos</small>
+    </p>
+  </div>
+
+  <!-- Lista de mis entregas -->
+  <ion-list *ngIf="!loading && myDeliveries.length > 0" lines="full">
+    <ion-card *ngFor="let order of myDeliveries" class="delivery-card">
+      <ion-card-header>
+        <div class="card-header-content">
+          <div>
+            <ion-card-subtitle>
+              <ion-icon name="time-outline"></ion-icon>
+              {{ getOrderTime(order.createdAt) }}
+            </ion-card-subtitle>
+            <ion-card-title>
+              <ion-icon name="restaurant-outline"></ion-icon>
+              {{ order.restaurant.name || 'Sin restaurante' }}
+            </ion-card-title>
+          </div>
+          <ion-chip [color]="getStatusColor(order.status)">
+            <ion-label>{{ getStatusLabel(order.status) }}</ion-label>
+          </ion-chip>
+        </div>
+      </ion-card-header>
+
+      <ion-card-content>
+        <!-- Información de tiempo estimado -->
+        <div
+          class="time-info"
+          *ngIf="order.status === 'preparing' || order.status === 'ready_for_pickup'"
+        >
+          <ion-icon name="time-outline" color="warning"></ion-icon>
+          <span>{{ getTimeInfo(order) }}</span>
+        </div>
+
+        <!-- Dirección del restaurante -->
+        <div class="info-row">
+          <ion-icon name="location-outline" color="primary"></ion-icon>
+          <div class="info-text">
+            <p class="info-label">Recoger en:</p>
+            <p class="info-value">
+              {{ order.restaurant.address || 'Sin dirección' }}
+            </p>
+          </div>
+        </div>
+
+        <!-- Dirección de entrega -->
+        <div class="info-row">
+          <ion-icon name="location-outline" color="success"></ion-icon>
+          <div class="info-text">
+            <p class="info-label">Entregar en:</p>
+            <p class="info-value">
+              {{ order.deliveryAddress || 'Sin dirección de entrega' }}
+            </p>
+          </div>
+        </div>
+
+        <!-- Total del pedido -->
+        <div class="info-row">
+          <ion-icon name="cash-outline" color="tertiary"></ion-icon>
+          <div class="info-text">
+            <p class="info-label">Total:</p>
+            <p class="info-value total">S/ {{ order.total || 0 }}</p>
+          </div>
+        </div>
+
+        <!-- Cantidad de items -->
+        <div class="info-row">
+          <ion-icon name="bag-outline" color="medium"></ion-icon>
+          <div class="info-text">
+            <p class="info-label">Productos:</p>
+            <p class="info-value">{{ order.items.length || 0 }} item(s)</p>
+          </div>
+        </div>
+
+        <!-- Botón para ver detalles -->
+        <ion-button
+          expand="block"
+          (click)="viewDeliveryDetail(order)"
+          class="detail-button"
+          [color]="order.status === 'out_for_delivery' ? 'success' : 'primary'"
+        >
+          <ion-icon slot="start" name="arrow-forward-outline"></ion-icon>
+          <span
+            *ngIf="order.status === 'preparing' || order.status === 'ready_for_pickup'"
+          >
+            Ir a Recoger
+          </span>
+          <span *ngIf="order.status === 'out_for_delivery'">
+            Continuar Entrega
+          </span>
+          <span
+            *ngIf="order.status !== 'preparing' && order.status !== 'ready_for_pickup' && order.status !== 'out_for_delivery'"
+          >
+            Ver Detalles
+          </span>
+        </ion-button>
+      </ion-card-content>
+    </ion-card>
+  </ion-list>
+</ion-content>

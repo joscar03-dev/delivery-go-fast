@@ -33,6 +33,55 @@
       </ion-item>
     </ion-list>
 
+    <!-- Mis Direcciones -->
+    <ion-list-header>
+      <ion-label>Mis Direcciones</ion-label>
+      <ion-button size="small" (click)="openAddressForm()">
+        <ion-icon slot="start" name="add-outline"></ion-icon>
+        Agregar
+      </ion-button>
+    </ion-list-header>
+
+    <div *ngIf="loadingAddresses" class="loading-addresses">
+      <ion-spinner name="crescent"></ion-spinner>
+    </div>
+
+    <ion-list [inset]="true" *ngIf="!loadingAddresses">
+      <div *ngIf="addresses.length === 0" class="empty-addresses">
+        <ion-icon name="location-outline"></ion-icon>
+        <p>No tienes direcciones guardadas</p>
+        <ion-button size="small" fill="outline" (click)="openAddressForm()">
+          Agregar primera dirección
+        </ion-button>
+      </div>
+
+      <ion-item *ngFor="let address of addresses" lines="full">
+        <ion-icon
+          name="location-outline"
+          slot="start"
+          color="primary"
+        ></ion-icon>
+        <ion-label>
+          <h2>{{ address.street }}</h2>
+          <p>{{ address.city }}, {{ address.postalCode }}</p>
+          <p *ngIf="address.reference" class="reference">
+            {{ address.reference }}
+          </p>
+        </ion-label>
+        <ion-button slot="end" fill="clear" (click)="editAddress(address)">
+          <ion-icon name="create-outline"></ion-icon>
+        </ion-button>
+        <ion-button
+          slot="end"
+          fill="clear"
+          color="danger"
+          (click)="confirmDeleteAddress(address)"
+        >
+          <ion-icon name="trash-outline"></ion-icon>
+        </ion-button>
+      </ion-item>
+    </ion-list>
+
     <!-- Configuración de Apariencia -->
     <ion-list-header>Apariencia</ion-list-header>
     <ion-list [inset]="true">

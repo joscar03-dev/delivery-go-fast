@@ -15,6 +15,40 @@
 <ion-content class="ion-padding">
   <!-- Carrito con productos -->
   <div *ngIf="cartItems.length > 0; else emptyCart">
+    <!-- Dirección de entrega -->
+    <ion-card class="address-card">
+      <ion-card-header>
+        <ion-card-title>
+          <ion-icon name="location-outline"></ion-icon>
+          Dirección de Entrega
+        </ion-card-title>
+      </ion-card-header>
+      <ion-card-content>
+        <div *ngIf="selectedAddress; else noAddress">
+          <div class="address-info">
+            <h3>{{ selectedAddress.street }}</h3>
+            <p>{{ selectedAddress.city }}, {{ selectedAddress.postalCode }}</p>
+            <p *ngIf="selectedAddress.reference" class="reference">
+              {{ selectedAddress.reference }}
+            </p>
+          </div>
+          <ion-button
+            expand="block"
+            fill="outline"
+            (click)="openAddressSelector()"
+          >
+            Cambiar Dirección
+          </ion-button>
+        </div>
+        <ng-template #noAddress>
+          <p class="no-address">No tienes una dirección seleccionada</p>
+          <ion-button expand="block" (click)="openAddressSelector()">
+            Seleccionar Dirección
+          </ion-button>
+        </ng-template>
+      </ion-card-content>
+    </ion-card>
+
     <!-- Información del restaurante -->
     <div class="restaurant-info" *ngIf="cartItems[0]">
       <h3>{{ cartItems[0].restaurantName }}</h3>

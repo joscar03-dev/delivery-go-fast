@@ -1,0 +1,233 @@
+<ion-header>
+  <ion-toolbar>
+    <ion-title>Pedidos</ion-title>
+    <ion-buttons slot="end">
+      <ion-chip
+        [color]="isSocketConnected ? 'success' : 'danger'"
+        style="margin-right: 8px"
+      >
+        <ion-icon
+          [name]="isSocketConnected ? 'wifi' : 'wifi-outline'"
+        ></ion-icon>
+        <ion-label
+          >{{ isSocketConnected ? 'En línea' : 'Desconectado' }}</ion-label
+        >
+      </ion-chip>
+      <ion-button (click)="loadAvailableDeliveries(); loadPendingDeliveries()">
+        <ion-icon name="refresh-outline"></ion-icon>
+      </ion-button>
+    </ion-buttons>
+  </ion-toolbar>
+
+  <!-- Segmento para cambiar entre Próximos y Disponibles -->
+  <ion-toolbar>
+    <ion-segment
+      [(ngModel)]="selectedSegment"
+      (ionChange)="onSegmentChange($event)"
+      mode="md"
+    >
+      <ion-segment-button value="proximos">
+        <ion-label>Próximos</ion-label>
+        <ion-badge *ngIf="pendingOrders.length > 0" color="warning"
+          >{{ pendingOrders.length }}</ion-badge
+        >
+      </ion-segment-button>
+      <ion-segment-button value="disponibles">
+        <ion-label>Disponibles</ion-label>
+        <ion-badge *ngIf="availableOrders.length > 0" color="success"
+          >{{ availableOrders.length }}</ion-badge
+        >
+      </ion-segment-button>
+    </ion-segment>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content [fullscreen]="true">
+  <ion-refresher slot="fixed" (ionRefresh)="handleRefresh($any($event))">
+    <ion-refresher-content></ion-refresher-content>
+  </ion-refresher>
+
+  <!-- Estado de carga -->
+  <div *ngIf="loading" class="ion-text-center ion-padding">
+    <ion-spinner></ion-spinner>
+    <p>Cargando pedidos...</p>
+  </div>
+
+  <!-- SEGMENTO: PRÓXIMOS (PENDING) -->
+  <div *ngIf="selectedSegment === 'proximos'">
+    <!-- Lista vacía -->
+    <div
+      *ngIf="!loading && pendingOrders.length === 0"
+      class="ion-text-center ion-padding empty-state"
+    >
+      <ion-icon name="time-outline" size="large" color="medium"></ion-icon>
+      <h2>No hay pedidos próximos</h2>
+      <p>Los pedidos nuevos aparecerán aquí antes de ser confirmados</p>
+    </div>
+
+    <!-- Lista de pedidos PENDING -->
+    <ion-list *ngIf="!loading && pendingOrders.length > 0" lines="full">
+      <ion-card *ngFor="let order of pendingOrders" class="order-card">
+        <ion-card-header>
+          <div class="order-header">
+            <div>
+              <ion-card-subtitle
+                >{{ getOrderTime(order.createdAt) }}</ion-card-subtitle
+              >
+              <ion-card-title>
+                {{ order.restaurant && order.restaurant.name ?
+                order.restaurant.name : 'Sin restaurante' }}
+              </ion-card-title>
+            </div>
+            <ion-chip color="warning">
+              <ion-label>Esperando confirmación</ion-label>
+            </ion-chip>
+          </div>
+        </ion-card-header>
+
+        <ion-card-content>
+          <!-- Tiempo estimado -->
+          <div class="time-badge">
+            <ion-icon name="time-outline"></ion-icon>
+            <span>{{ getEstimatedTime(order) }}</span>
+          </div>
+
+          <!-- Información del restaurante -->
+          <div class="info-section">
+            <ion-icon name="restaurant-outline" color="primary"></ion-icon>
+            <div class="info-text">
+              <p class="info-label">Recoger en:</p>
+              <p class="info-value">
+                {{ order.restaurant && order.restaurant.address ?
+                order.restaurant.address : 'Sin dirección' }}
+              </p>
+            </div>
+          </div>
+
+          <!-- Dirección de entrega -->
+          <div class="info-section">
+            <ion-icon name="location-outline" color="success"></ion-icon>
+            <div class="info-text">
+              <p class="info-label">Entregar en:</p>
+              <p class="info-value">
+                {{ order.deliveryAddress || 'Sin dirección de entrega' }}
+              </p>
+            </div>
+          </div>
+
+          <!-- Total del pedido -->
+          <div class="info-section">
+            <ion-icon name="cash-outline" color="primary"></ion-icon>
+            <div class="info-text">
+              <p class="info-label">Total del pedido:</p>
+              <p class="info-value">S/ {{ order.total || 0 }}</p>
+            </div>
+          </div>
+
+          <!-- Notas -->
+          <!-- <div class="info-section" *ngIf="order.notes">
+          <ion-icon name="document-text-outline" color="secondary"></ion-icon>
+          <div class="info-text">
+            <p class="info-label">Notas:</p>
+            <p class="info-value">{{ order.notes }}</p>
+          </div>
+        </div> -->
+
+          <!-- Badge informativo para pedidos PENDING -->
+          <ion-chip color="warning" style="width: 100%; margin-top: 16px">
+            <ion-icon name="time-outline"></ion-icon>
+            <ion-label
+              >Este pedido aún no ha sido confirmado por el
+              restaurante</ion-label
+            >
+          </ion-chip>
+        </ion-card-content>
+      </ion-card>
+    </ion-list>
+  </div>
+
+  <!-- SEGMENTO: DISPONIBLES (CONFIRMED+) -->
+  <div *ngIf="selectedSegment === 'disponibles'">
+    <!-- Lista vacía -->
+    <div
+      *ngIf="!loading && availableOrders.length === 0"
+      class="ion-text-center ion-padding empty-state"
+    >
+      <ion-icon name="bicycle-outline" size="large" color="medium"></ion-icon>
+      <h2>No hay pedidos disponibles</h2>
+      <p>Los pedidos confirmados aparecerán aquí para ser aceptados</p>
+    </div>
+
+    <!-- Lista de pedidos CONFIRMED+ -->
+    <ion-list *ngIf="!loading && availableOrders.length > 0" lines="full">
+      <ion-card *ngFor="let order of availableOrders" class="order-card">
+        <ion-card-header>
+          <div class="order-header">
+            <div>
+              <ion-card-subtitle
+                >{{ getOrderTime(order.createdAt) }}</ion-card-subtitle
+              >
+              <ion-card-title>
+                {{ order.restaurant && order.restaurant.name ?
+                order.restaurant.name : 'Sin restaurante' }}
+              </ion-card-title>
+            </div>
+            <ion-chip [color]="getStatusColor(order.status)">
+              <ion-label>{{ getStatusLabel(order.status) }}</ion-label>
+            </ion-chip>
+          </div>
+        </ion-card-header>
+
+        <ion-card-content>
+          <!-- Tiempo estimado -->
+          <div class="time-badge">
+            <ion-icon name="time-outline"></ion-icon>
+            <span>{{ getEstimatedTime(order) }}</span>
+          </div>
+
+          <!-- Información del restaurante -->
+          <div class="info-section">
+            <ion-icon name="restaurant-outline" color="primary"></ion-icon>
+            <div class="info-text">
+              <p class="info-label">Recoger en:</p>
+              <p class="info-value">
+                {{ order.restaurant && order.restaurant.address ?
+                order.restaurant.address : 'Sin dirección' }}
+              </p>
+            </div>
+          </div>
+
+          <!-- Dirección de entrega -->
+          <div class="info-section">
+            <ion-icon name="location-outline" color="success"></ion-icon>
+            <div class="info-text">
+              <p class="info-label">Entregar en:</p>
+              <p class="info-value">
+                {{ order.deliveryAddress || 'Sin dirección de entrega' }}
+              </p>
+            </div>
+          </div>
+
+          <!-- Total del pedido -->
+          <div class="info-section">
+            <ion-icon name="cash-outline" color="primary"></ion-icon>
+            <div class="info-text">
+              <p class="info-label">Total del pedido:</p>
+              <p class="info-value">S/ {{ order.total || 0 }}</p>
+            </div>
+          </div>
+
+          <!-- Botón de aceptar -->
+          <ion-button
+            expand="block"
+            (click)="acceptDelivery(order)"
+            class="accept-button"
+          >
+            <ion-icon slot="start" name="checkmark-circle-outline"></ion-icon>
+            Aceptar Pedido
+          </ion-button>
+        </ion-card-content>
+      </ion-card>
+    </ion-list>
+  </div>
+</ion-content>

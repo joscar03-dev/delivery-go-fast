@@ -21,18 +21,27 @@ import {
   IonItemSliding,
   IonItemOptions,
   IonItemOption,
+  IonCard,
+  IonCardHeader,
+  IonCardTitle,
+  IonCardContent,
+  ModalController,
 } from '@ionic/angular/standalone';
 import { Router } from '@angular/router';
 import { CartService } from '../../services/cart.service';
 import { OrderService } from '../../services/order.service';
 import { AuthService } from '../../services/auth.service';
+import { AddressService } from '../../services/address.service';
 import { CartItem, CreateOrderDto } from '../../models/order.model';
+import { Address } from '../../models/address.model';
+import { AddressSelectorComponent } from '../../components/address-selector/address-selector.component';
 import { addIcons } from 'ionicons';
 import {
   removeOutline,
   addOutline,
   trashOutline,
   basketOutline,
+  locationOutline,
 } from 'ionicons/icons';
 
 addIcons({
@@ -40,6 +49,7 @@ addIcons({
   'add-outline': addOutline,
   'trash-outline': trashOutline,
   'basket-outline': basketOutline,
+  'location-outline': locationOutline,
 });
 
 @Component({
@@ -67,6 +77,10 @@ addIcons({
     IonItemSliding,
     IonItemOptions,
     IonItemOption,
+    IonCard,
+    IonCardHeader,
+    IonCardTitle,
+    IonCardContent,
     CommonModule,
     FormsModule,
   ],
@@ -75,6 +89,8 @@ export class CartPage implements OnInit {
   private cartService = inject(CartService);
   private orderService = inject(OrderService);
   private authService = inject(AuthService);
+  private addressService = inject(AddressService);
+  private modalCtrl = inject(ModalController);
   private router = inject(Router);
 
   cartItems$ = this.cartService.cartItems$;
@@ -83,8 +99,11 @@ export class CartPage implements OnInit {
   showToast = false;
   toastMessage = '';
   alertMessage = '';
+  selectedAddress: Address | null = null;
 
-  ngOnInit() {}
+  async ngOnInit() {
+    await this.loadDefaultAddress();
+  }
 
   get cartItems(): CartItem[] {
     return this.cartService.cartItems;
@@ -119,9 +138,7 @@ export class CartPage implements OnInit {
   }
 
   // Normaliza las opciones para la vista del carrito
-  optionGroups(
-    item: CartItem
-  ): Array<{
+  optionGroups(item: CartItem): Array<{
     groupName: string;
     options: Array<{ name: string; extraPrice?: number }>;
   }> {
@@ -177,6 +194,13 @@ export class CartPage implements OnInit {
       return;
     }
 
+    // Verificar que haya una dirección seleccionada
+    if (!this.selectedAddress) {
+      this.alertMessage = 'Por favor selecciona una dirección de entrega';
+      this.showAlert = true;
+      return;
+    }
+
     this.loading = true;
 
     try {
@@ -190,7 +214,7 @@ export class CartPage implements OnInit {
           options: item.options,
         })),
         notes: '', // Puedes agregar un campo para notas si lo deseas
-        deliveryAddress: '', // Puedes obtener esto del perfil del usuario
+        deliveryAddress: `${this.selectedAddress.street}, ${this.selectedAddress.city}, ${this.selectedAddress.postalCode}`,
       };
 
       // Crear el pedido
@@ -215,6 +239,38 @@ export class CartPage implements OnInit {
       this.showAlert = true;
     } finally {
       this.loading = false;
+    }
+  }
+
+  /**
+   * Carga la dirección predeterminada del usuario
+   */
+  async loadDefaultAddress(): Promise<void> {
+    try {
+      const addresses = await this.addressService.getMyAddresses().toPromise();
+      // Buscar la dirección predeterminada
+      const defaultAddress = addresses?.find((addr: Address) => addr.isDefault);
+      this.selectedAddress =
+        defaultAddress || (addresses && addresses[0]) || null;
+    } catch (error) {
+      console.error('Error loading addresses:', error);
+    }
+  }
+
+  /**
+   * Abre el modal para seleccionar dirección
+   */
+  async openAddressSelector(): Promise<void> {
+    const modal = await this.modalCtrl.create({
+      component: AddressSelectorComponent,
+    });
+
+    await modal.present();
+
+    const { data, role } = await modal.onWillDismiss();
+
+    if (role === 'selected' && data) {
+      this.selectedAddress = data;
     }
   }
 

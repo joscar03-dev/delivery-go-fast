@@ -1,0 +1,273 @@
+<ion-header>
+  <ion-toolbar>
+    <ion-title>Gestión de Pedidos</ion-title>
+    <ion-buttons slot="end">
+      <ion-chip
+        [color]="isSocketConnected ? 'success' : 'danger'"
+        style="margin-right: 8px"
+      >
+        <ion-icon
+          [name]="isSocketConnected ? 'wifi' : 'wifi-outline'"
+        ></ion-icon>
+        <ion-label
+          >{{ isSocketConnected ? 'En línea' : 'Desconectado' }}</ion-label
+        >
+      </ion-chip>
+    </ion-buttons>
+  </ion-toolbar>
+  <ion-toolbar>
+    <ion-segment
+      [(ngModel)]="selectedSegment"
+      (ionChange)="onSegmentChange($event)"
+    >
+      <ion-segment-button value="pending">
+        <ion-label>Pendientes</ion-label>
+      </ion-segment-button>
+      <ion-segment-button value="preparing">
+        <ion-label>En Preparación</ion-label>
+      </ion-segment-button>
+      <ion-segment-button value="completed">
+        <ion-label>Completados</ion-label>
+      </ion-segment-button>
+    </ion-segment>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content>
+  <ion-refresher slot="fixed" (ionRefresh)="handleRefresh($event)">
+    <ion-refresher-content
+      pullingIcon="refresh-outline"
+      refreshingSpinner="crescent"
+    ></ion-refresher-content>
+  </ion-refresher>
+
+  <!-- Loading -->
+  <div *ngIf="loading" class="loading-section">
+    <ion-spinner name="crescent"></ion-spinner>
+    <p>Cargando pedidos...</p>
+  </div>
+
+  <!-- Lista de pedidos -->
+  <div *ngIf="!loading">
+    <!-- Sin pedidos -->
+    <div *ngIf="orders.length === 0" class="empty-state">
+      <ion-icon name="restaurant-outline" size="large"></ion-icon>
+      <h2>No hay pedidos</h2>
+      <p *ngIf="selectedSegment === 'pending'">
+        Los nuevos pedidos aparecerán aquí
+      </p>
+      <p *ngIf="selectedSegment === 'preparing'">
+        No hay pedidos en preparación actualmente
+      </p>
+      <p *ngIf="selectedSegment === 'completed'">
+        Los pedidos completados aparecerán aquí
+      </p>
+    </div>
+
+    <!-- Tarjetas de pedidos -->
+    <ion-list *ngIf="orders.length > 0" class="order-list">
+      <ion-card *ngFor="let order of orders" class="order-card">
+        <ion-card-header>
+          <div class="card-header-content">
+            <div>
+              <ion-card-title
+                >Pedido #{{ order.id.substring(0, 8) }}</ion-card-title
+              >
+              <ion-card-subtitle>
+                <ion-icon name="time-outline"></ion-icon>
+                {{ formatDate(order.createdAt) }}
+              </ion-card-subtitle>
+            </div>
+            <ion-badge [color]="getStatusColor(order.status)">
+              {{ getStatusLabel(order.status) }}
+            </ion-badge>
+          </div>
+        </ion-card-header>
+
+        <ion-card-content>
+          <!-- Información del cliente -->
+          <div class="info-section">
+            <ion-icon name="person-outline"></ion-icon>
+            <div>
+              <strong>Cliente:</strong>
+              {{ order.client?.name || 'Sin nombre' }}
+            </div>
+          </div>
+
+          <!-- Dirección de entrega -->
+          <div class="info-section" *ngIf="order.deliveryAddress">
+            <ion-icon name="location-outline"></ion-icon>
+            <div>
+              <strong>Dirección:</strong>
+              {{ order.deliveryAddress }}
+            </div>
+          </div>
+
+          <!-- Items del pedido -->
+          <div
+            class="items-section"
+            *ngIf="order.items && order.items.length > 0"
+          >
+            <strong>Productos:</strong>
+            <div class="item-list">
+              <div *ngFor="let item of order.items" class="order-item-wrapper">
+                <div class="order-item">
+                  <span class="item-quantity">{{ item.quantity }}x</span>
+                  <span class="item-name"
+                    >{{ item.menuItem?.name || 'Producto' }}</span
+                  >
+                  <span class="item-price">S/ {{ getItemTotal(item) }}</span>
+                </div>
+
+                <!-- Opciones personalizadas -->
+                <div *ngIf="hasOptions(item)" class="item-options">
+                  <div
+                    *ngFor="let group of getItemOptions(item)"
+                    class="option-group"
+                  >
+                    <span class="option-group-name"
+                      >{{ group.groupName }}:</span
+                    >
+                    <span class="option-values">
+                      <span *ngFor="let opt of group.options; let last = last">
+                        {{ opt.name }}<span *ngIf="opt.extraPrice > 0">
+                          (+S/ {{ formatPrice(opt.extraPrice) }})</span
+                        ><span *ngIf="!last">, </span>
+                      </span>
+                    </span>
+                  </div>
+                </div>
+
+                <!-- Comentario del item -->
+                <div *ngIf="item.comment" class="item-comment-box">
+                  <ion-icon name="chatbox-outline"></ion-icon>
+                  <span>{{ item.comment }}</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Notas -->
+          <div class="info-section" *ngIf="order.notes">
+            <ion-icon name="document-text-outline"></ion-icon>
+            <div>
+              <strong>Notas:</strong>
+              {{ order.notes }}
+            </div>
+          </div>
+
+          <!-- Total -->
+          <div class="total-section">
+            <ion-icon name="cash-outline"></ion-icon>
+            <strong>Total: S/ {{ formatTotal(order.total) }}</strong>
+          </div>
+
+          <!-- Tiempo estimado (si existe) -->
+          <div *ngIf="hasEstimatedTime(order)" class="time-section">
+            <ion-icon name="time-outline"></ion-icon>
+            <div>
+              <strong>Tiempo restante:</strong>
+              {{ getRemainingTime(order) }}
+            </div>
+          </div>
+
+          <!-- Botones de acción -->
+          <div class="action-buttons">
+            <!-- Pedidos Pendientes -->
+            <div *ngIf="order.status === 'pending'" class="button-group">
+              <ion-button
+                expand="block"
+                color="success"
+                (click)="confirmOrder(order)"
+              >
+                <ion-icon
+                  slot="start"
+                  name="checkmark-circle-outline"
+                ></ion-icon>
+                Aceptar y Cocinar
+              </ion-button>
+              <ion-button
+                expand="block"
+                fill="outline"
+                color="danger"
+                (click)="cancelOrder(order)"
+              >
+                <ion-icon slot="start" name="close-circle-outline"></ion-icon>
+                Rechazar
+              </ion-button>
+            </div>
+
+            <!-- Pedidos Confirmados o En Preparación -->
+            <div
+              *ngIf="order.status === 'confirmed' || order.status === 'preparing'"
+              class="button-group"
+            >
+              <div class="status-chip">
+                <ion-chip color="warning">
+                  <ion-icon name="restaurant-outline"></ion-icon>
+                  <ion-label>Cocinando...</ion-label>
+                </ion-chip>
+              </div>
+
+              <ion-button
+                expand="block"
+                color="success"
+                (click)="markAsReady(order)"
+              >
+                <ion-icon slot="start" name="checkmark-done-outline"></ion-icon>
+                Listo para Recoger
+              </ion-button>
+
+              <ion-button
+                expand="block"
+                fill="outline"
+                color="medium"
+                size="small"
+                (click)="needMoreTime(order)"
+              >
+                <ion-icon slot="start" name="time-outline"></ion-icon>
+                Necesito más tiempo
+              </ion-button>
+
+              <ion-button
+                expand="block"
+                fill="outline"
+                color="danger"
+                size="small"
+                (click)="cancelOrder(order)"
+              >
+                <ion-icon slot="start" name="close-circle-outline"></ion-icon>
+                Cancelar
+              </ion-button>
+            </div>
+
+            <!-- Pedido Listo para Recoger -->
+            <div
+              *ngIf="order.status === 'ready_for_pickup'"
+              class="button-group"
+            >
+              <ion-chip color="success" class="full-width-chip">
+                <ion-icon name="checkmark-circle-outline"></ion-icon>
+                <ion-label>¡Pedido listo! Esperando driver...</ion-label>
+              </ion-chip>
+            </div>
+
+            <!-- Pedidos en camino o entregados -->
+            <div
+              *ngIf="order.status === 'out_for_delivery' || order.status === 'delivered'"
+            >
+              <ion-chip
+                [color]="order.status === 'delivered' ? 'success' : 'primary'"
+              >
+                <ion-icon
+                  [name]="order.status === 'delivered' ? 'checkmark-circle-outline' : 'bicycle-outline'"
+                ></ion-icon>
+                <ion-label>{{ getStatusLabel(order.status) }}</ion-label>
+              </ion-chip>
+            </div>
+          </div>
+        </ion-card-content>
+      </ion-card>
+    </ion-list>
+  </div>
+</ion-content>

@@ -21,6 +21,8 @@ import {
   square,
   basketOutline,
   receiptOutline,
+  bicycleOutline,
+  restaurantOutline,
 } from 'ionicons/icons';
 import { AuthService } from '../services/auth.service';
 import { CartService } from '../services/cart.service';
@@ -47,6 +49,8 @@ export class TabsPage {
   private router = inject(Router);
 
   isSuperAdmin = computed(() => this.auth.hasRole('super_admin'));
+  isDeliveryDriver = computed(() => this.auth.hasRole('driver'));
+  isRestaurantOwner = computed(() => this.auth.hasRole('restaurant_owner'));
 
   // Exponer los observables del carrito al template
   cartItems$ = this.cartService.cartItems$;
@@ -59,6 +63,8 @@ export class TabsPage {
       square,
       'basket-outline': basketOutline,
       'receipt-outline': receiptOutline,
+      'bicycle-outline': bicycleOutline,
+      'restaurant-outline': restaurantOutline,
     });
   }
 
@@ -70,6 +76,20 @@ export class TabsPage {
     // Verificar autenticación antes de navegar
     if (this.auth.ensureAuthenticated('/order-history')) {
       this.router.navigate(['/order-history']);
+    }
+  }
+
+  goToDeliveries(): void {
+    // Verificar autenticación antes de navegar
+    if (this.auth.ensureAuthenticated('/delivery-driver/available')) {
+      this.router.navigate(['/delivery-driver/available']);
+    }
+  }
+
+  goToRestaurantOrders(): void {
+    // Verificar autenticación antes de navegar
+    if (this.auth.ensureAuthenticated('/restaurant-orders')) {
+      this.router.navigate(['/restaurant-orders']);
     }
   }
 }

@@ -5,6 +5,7 @@ export enum OrderStatus {
   PENDING = 'pending',
   CONFIRMED = 'confirmed',
   PREPARING = 'preparing',
+  READY_FOR_PICKUP = 'ready_for_pickup',
   OUT_FOR_DELIVERY = 'out_for_delivery',
   DELIVERED = 'delivered',
   CANCELLED = 'cancelled',
@@ -39,6 +40,9 @@ export interface Order {
   items?: OrderItem[];
   createdAt: string;
   updatedAt: string;
+  estimatedPrepTime?: number;
+  estimatedReadyTime?: string;
+  confirmedAt?: string;
 }
 
 export interface OrderHistoryResponse {

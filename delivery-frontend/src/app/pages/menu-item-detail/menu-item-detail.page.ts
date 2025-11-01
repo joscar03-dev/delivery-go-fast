@@ -236,22 +236,34 @@ export class MenuItemDetailPage implements OnInit {
       // Si es de otro restaurante, limpiar y continuar
       this.cart.clearCart();
     }
-    // Construir payload de opciones seleccionadas
-    const selectedPayload = {
-      groups: this.groups.map((g) => ({
-        groupId: g.id,
-        groupName: g.name,
-        options: g.options
+
+    // Construir payload OPTIMIZADO de opciones seleccionadas (solo lo necesario)
+    const selectedGroups = this.groups
+      .map((g) => {
+        const selectedOptions = g.options
           .filter((o) => this.selections[g.id]?.has(o.id))
-          .map((o) => ({ id: o.id, name: o.name, extraPrice: o.extraPrice })),
-      })),
-    };
+          .map((o) => ({
+            id: o.id,
+            name: o.name,
+            extraPrice: o.extraPrice,
+          }));
+
+        return selectedOptions.length > 0
+          ? {
+              groupId: g.id,
+              groupName: g.name,
+              options: selectedOptions,
+            }
+          : null;
+      })
+      .filter(Boolean); // Eliminar grupos sin selecciones
+
+    const selectedPayload =
+      selectedGroups.length > 0 ? { groups: selectedGroups } : undefined;
 
     this.cart.addItem(this.item, '', {
       comment: this.comment?.trim() || undefined,
-      options: selectedPayload.groups.some((g) => g.options.length > 0)
-        ? selectedPayload
-        : undefined,
+      options: selectedPayload,
       quantity: this.quantity,
     });
     this.toastMessage = 'Agregado al carrito';
