@@ -17,7 +17,7 @@ async function bootstrap() {
       'http://10.0.2.2:8100', // Android emulator
       'capacitor://localhost', // Capacitor iOS
       'ionic://localhost', // Ionic iOS
-      'http://localhost', // General
+      'https://localhost', // General
       'https://gofastdelivery.site', // Producción web
       'https://api.gofastdelivery.site', // Producción API
     ],

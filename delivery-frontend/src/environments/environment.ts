@@ -3,7 +3,7 @@
 // The list of file replacements can be found in `angular.json`.
 
 export const environment = {
-  production: false,
+  production: true,
   // URL base del API del backend NestJS https://api.gofastdelivery.site
   // Para Android Emulator: usa 10.0.2.2 (mapea a localhost de tu PC)
   // Para dispositivo físico: usa la IP de tu PC en la red local (ej: 192.168.1.X)
