@@ -80,6 +80,7 @@ export class AddressSelectorComponent implements OnInit {
   addresses: Address[] = [];
   loading = false;
   selectedAddress?: Address;
+  selectedId?: string;
 
   // Exponer helpers para el template
   getAddressTypeLabel = getAddressTypeLabel;
@@ -97,16 +98,14 @@ export class AddressSelectorComponent implements OnInit {
         this.loading = false;
 
         // Seleccionar la dirección default o la primera
-        if (this.selectedAddressId) {
-          this.selectedAddress = addresses.find(
-            (a) => a.id === this.selectedAddressId
-          );
-        }
-
-        if (!this.selectedAddress) {
-          this.selectedAddress =
-            addresses.find((a) => a.isDefault) || addresses[0];
-        }
+        // Preselección por id
+        const initial =
+          (this.selectedAddressId &&
+            addresses.find((a) => a.id === this.selectedAddressId)) ||
+          addresses.find((a) => a.isDefault) ||
+          addresses[0];
+        this.selectedAddress = initial;
+        this.selectedId = initial?.id;
       },
       error: async (error) => {
         console.error('Error loading addresses:', error);
@@ -123,6 +122,7 @@ export class AddressSelectorComponent implements OnInit {
 
   selectAddress(address: Address) {
     this.selectedAddress = address;
+    this.selectedId = address?.id;
   }
 
   async addNewAddress() {
@@ -151,9 +151,13 @@ export class AddressSelectorComponent implements OnInit {
   }
 
   confirm() {
-    if (this.selectedAddress) {
-      this.modalCtrl.dismiss(this.selectedAddress, 'selected');
+    if (!this.selectedAddress && this.selectedId) {
+      this.selectedAddress = this.addresses.find(
+        (a) => a.id === this.selectedId
+      );
     }
+    if (this.selectedAddress)
+      this.modalCtrl.dismiss(this.selectedAddress, 'selected');
   }
 
   cancel() {

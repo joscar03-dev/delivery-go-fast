@@ -9,6 +9,8 @@ import { DeliveriesModule } from './deliveries/deliveries.module';
 import { GeolocationModule } from './geolocation/geolocation.module';
 import { NotificationsModule } from './notifications/notifications.module';
 import * as Joi from 'joi';
+import { AppController } from './app.controller';
+import { AppService } from './app.service';
 
 @Module({
   imports: [
@@ -54,7 +56,7 @@ import * as Joi from 'joi';
     GeolocationModule,
     NotificationsModule,
   ],
-  controllers: [],
-  providers: [],
+  controllers: [AppController],
+  providers: [AppService],
 })
 export class AppModule {}

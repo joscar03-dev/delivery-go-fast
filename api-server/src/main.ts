@@ -18,6 +18,8 @@ async function bootstrap() {
       'capacitor://localhost', // Capacitor iOS
       'ionic://localhost', // Ionic iOS
       'http://localhost', // General
+      'https://gofastdelivery.site', // Producción web
+      'https://api.gofastdelivery.site', // Producción API
     ],
     credentials: true,
     methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],

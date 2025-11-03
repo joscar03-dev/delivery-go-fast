@@ -263,6 +263,9 @@ export class CartPage implements OnInit {
   async openAddressSelector(): Promise<void> {
     const modal = await this.modalCtrl.create({
       component: AddressSelectorComponent,
+      componentProps: {
+        selectedAddressId: this.selectedAddress?.id,
+      },
     });
 
     await modal.present();
