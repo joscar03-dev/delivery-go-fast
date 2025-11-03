@@ -40,7 +40,8 @@ import * as Joi from 'joi';
         password: configService.get<string>('DB_PASSWORD'),
         database: configService.get<string>('DB_DATABASE'),
         autoLoadEntities: true,
-        synchronize: true,
+        // En producción usamos migraciones; en dev puedes sobreescribir con env
+        synchronize: process.env.NODE_ENV !== 'production',
       }),
     }),
     AuthModule,

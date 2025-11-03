@@ -17,7 +17,13 @@
     "test:watch": "jest --watch",
     "test:cov": "jest --coverage",
     "test:debug": "node --inspect-brk -r tsconfig-paths/register -r ts-node/register node_modules/.bin/jest --runInBand",
-    "test:e2e": "jest --config ./test/jest-e2e.json"
+  "test:e2e": "jest --config ./test/jest-e2e.json",
+  "typeorm": "typeorm-ts-node-commonjs -d src/database/data-source.ts",
+  "migration:show": "typeorm-ts-node-commonjs -d src/database/data-source.ts migration:show",
+  "migration:run:ts": "typeorm-ts-node-commonjs -d src/database/data-source.ts migration:run",
+  "migration:revert:ts": "typeorm-ts-node-commonjs -d src/database/data-source.ts migration:revert",
+  "migration:run": "node ./node_modules/typeorm/cli.js -d dist/database/data-source.js migration:run",
+  "migration:revert": "node ./node_modules/typeorm/cli.js -d dist/database/data-source.js migration:revert"
   },
   "dependencies": {
     "@nestjs/common": "^11.1.6",
@@ -41,7 +47,8 @@
     "reflect-metadata": "^0.2.2",
     "rxjs": "^7.8.2",
     "socket.io": "^4.8.1",
-    "typeorm": "^0.3.27"
+  "typeorm": "^0.3.27",
+  "dotenv": "^16.4.5"
   },
   "devDependencies": {
     "@nestjs/cli": "^11.0.10",
