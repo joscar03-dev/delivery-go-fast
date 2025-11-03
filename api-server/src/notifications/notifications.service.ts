@@ -3,6 +3,8 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import * as admin from 'firebase-admin';
 import { DeviceToken } from './entities/device-token.entity';
+import * as fs from 'fs';
+import * as path from 'path';
 import { RegisterDeviceTokenDto } from './dto/register-device-token.dto';
 
 /**
@@ -63,8 +65,25 @@ export class NotificationsService implements OnModuleInit {
           return;
         }
 
-        // Inicializar Firebase Admin
-        const serviceAccount = require(`../../${serviceAccountPath}`);
+        // Resolver ruta del archivo de credenciales
+        const resolvedPath = path.isAbsolute(serviceAccountPath)
+          ? serviceAccountPath
+          : path.resolve(process.cwd(), serviceAccountPath);
+
+        if (!fs.existsSync(resolvedPath)) {
+          this.logger.error(
+            `❌ No se encontró el archivo de credenciales de Firebase en: ${resolvedPath}`,
+          );
+          this.logger.warn(
+            '⚠️ Las notificaciones push no estarán disponibles hasta que se configure correctamente Firebase',
+          );
+          return;
+        }
+
+        // Inicializar Firebase Admin leyendo el JSON directamente
+        const serviceAccount = JSON.parse(
+          fs.readFileSync(resolvedPath, 'utf8'),
+        );
 
         this.firebaseApp = admin.initializeApp({
           credential: admin.credential.cert(serviceAccount),
