@@ -77,12 +77,15 @@ async function runMigration() {
 }
 
 // Ejecutar migración
-runMigration()
-  .then(() => {
-    console.log('🎉 Proceso completado');
-    process.exit(0);
-  })
-  .catch((error) => {
-    console.error('💥 Error fatal:', error);
-    process.exit(1);
-  });
+// Ejecutar sólo si se llama directamente desde node, no cuando se "require" desde TypeORM
+if (require.main === module) {
+  runMigration()
+    .then(() => {
+      console.log('🎉 Proceso completado');
+      process.exit(0);
+    })
+    .catch((error) => {
+      console.error('💥 Error fatal:', error);
+      process.exit(1);
+    });
+}
