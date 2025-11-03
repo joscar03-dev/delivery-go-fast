@@ -4,6 +4,8 @@ export class AddAddressTypeAndDefault1234567890123
   implements MigrationInterface
 {
   public async up(queryRunner: QueryRunner): Promise<void> {
+    const hasTable = await queryRunner.hasTable('addresses');
+    if (!hasTable) return; // Tabla base no existe aún, omitir
     const hasType = await queryRunner.hasColumn('addresses', 'type');
     if (!hasType) {
       // Agregar columna 'type' con enum

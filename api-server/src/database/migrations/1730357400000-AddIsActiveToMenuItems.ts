@@ -2,6 +2,8 @@ import { MigrationInterface, QueryRunner, TableColumn } from 'typeorm';
 
 export class AddIsActiveToMenuItems1730357400000 implements MigrationInterface {
   public async up(queryRunner: QueryRunner): Promise<void> {
+    const hasTable = await queryRunner.hasTable('menu_items');
+    if (!hasTable) return;
     const has = await queryRunner.hasColumn('menu_items', 'is_active');
     if (!has) {
       await queryRunner.addColumn(
