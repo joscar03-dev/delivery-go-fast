@@ -5,7 +5,10 @@
 export const environment = {
   production: false,
   // URL base del API del backend NestJS
-  apiUrl: 'http://localhost:3000',
+  // Para Android Emulator: usa 10.0.2.2 (mapea a localhost de tu PC)
+  // Para dispositivo físico: usa la IP de tu PC en la red local (ej: 192.168.1.X)
+  // Para web/navegador: usa localhost
+  apiUrl: 'http://10.0.2.2:3000',
 };
 
 /*

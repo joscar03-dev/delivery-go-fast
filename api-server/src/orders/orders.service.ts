@@ -19,6 +19,7 @@ import { FindOrdersDto } from './dto/find-orders.dto';
 import { OrderStatus } from '../common/enums/order-status.enum';
 import { Role } from '../common/enums/role.enum';
 import { DeliveryGateway } from '../geolocation/delivery.gateway';
+import { NotificationsService } from '../notifications/notifications.service';
 
 @Injectable()
 export class OrdersService {
@@ -36,6 +37,7 @@ export class OrdersService {
     private readonly dataSource: DataSource,
     @Inject(forwardRef(() => DeliveryGateway))
     private readonly deliveryGateway: DeliveryGateway,
+    private readonly notificationsService: NotificationsService,
   ) {}
 
   async create(
@@ -429,30 +431,56 @@ export class OrdersService {
 
   /**
    * Emite un evento Socket.IO cuando cambia el estado de un pedido
+   * Y envía una Push Notification (Sistema Híbrido)
    */
-  private emitOrderStatusUpdate(
+  private async emitOrderStatusUpdate(
     orderId: string,
     newStatus: OrderStatus,
     previousStatus?: OrderStatus,
-  ): void {
+  ): Promise<void> {
     try {
+      // 1. Emitir evento Socket.IO (para usuarios con app abierta)
       this.deliveryGateway.server.emit('order-status-updated', {
         orderId,
         status: newStatus,
         previousStatus,
       });
+      console.log(
+        `✅ [Socket.IO] Estado actualizado para pedido ${orderId}: ${previousStatus} → ${newStatus}`,
+      );
+
+      // 2. Enviar Push Notification al cliente (para app cerrada/background)
+      const order = await this.orderRepository.findOne({
+        where: { id: orderId },
+        relations: ['client', 'restaurant'],
+      });
+
+      if (order?.client?.id) {
+        await this.notificationsService.sendOrderStatusNotification(
+          order.client.id,
+          {
+            orderId: order.id,
+            orderNumber: order.id.substring(0, 8),
+            status: newStatus,
+            restaurantName: order.restaurant?.name || 'Restaurante',
+          },
+        );
+        console.log(
+          `✅ [Push Notification] Enviada al cliente para pedido ${orderId}`,
+        );
+      }
     } catch (error) {
-      console.error('Error emitting order status update:', error);
+      console.error('Error en emitOrderStatusUpdate:', error);
     }
   }
 
   /**
    * Emite un evento Socket.IO cuando se crea un nuevo pedido
+   * Y envía una Push Notification (Sistema Híbrido)
    */
-  private emitNewOrderEvent(order: Order): void {
+  private async emitNewOrderEvent(order: Order): Promise<void> {
     try {
-      // Emitir a todos los usuarios conectados (restaurante y drivers)
-      this.deliveryGateway.server.emit('new-order-available', {
+      const orderData = {
         orderId: order.id,
         orderNumber: order.id.substring(0, 8), // Primeros 8 caracteres del ID
         restaurantName: order.restaurant?.name || 'Desconocido',
@@ -460,13 +488,31 @@ export class OrdersService {
         deliveryAddress: order.deliveryAddress || 'Sin dirección',
         restaurantId: order.restaurant?.id,
         status: order.status,
-      });
+      };
 
+      // 1. Emitir evento Socket.IO (para usuarios con app abierta)
+      this.deliveryGateway.server.emit('new-order-available', orderData);
       console.log(
-        `✅ Evento 'new-order-available' emitido para pedido ${order.id}`,
+        `✅ [Socket.IO] Evento 'new-order-available' emitido para pedido ${order.id}`,
       );
+
+      // 2. Enviar Push Notification al dueño del restaurante (para app cerrada/background)
+      if (order.restaurant?.owner?.id) {
+        await this.notificationsService.sendNewOrderNotification(
+          order.restaurant.owner.id,
+          {
+            orderId: order.id,
+            orderNumber: orderData.orderNumber,
+            totalAmount: orderData.totalAmount,
+            customerName: order.client?.name || 'Cliente',
+          },
+        );
+        console.log(
+          `✅ [Push Notification] Enviada al restaurante para pedido ${order.id}`,
+        );
+      }
     } catch (error) {
-      console.error('Error emitting new order event:', error);
+      console.error('Error en emitNewOrderEvent:', error);
     }
   }
 }

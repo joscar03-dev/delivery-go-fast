@@ -5,6 +5,7 @@ import { jwtDecode } from 'jwt-decode';
 import { environment } from '../../environments/environment';
 import type { User } from '../models/user.model';
 import { Router } from '@angular/router';
+import { PushNotificationService } from './push-notification.service';
 
 type TokenPayload = {
   sub?: string | number;
@@ -40,6 +41,7 @@ export interface RegisterDto {
 export class AuthService {
   private http = inject(HttpClient);
   private router = inject(Router);
+  private pushNotificationService = inject(PushNotificationService);
   private base = environment.apiUrl.replace(/\/$/, '');
 
   private currentUserSubject = new BehaviorSubject<User | null>(null);
@@ -101,6 +103,11 @@ export class AuthService {
   }
 
   logout(): void {
+    // Desregistrar dispositivo de push notifications
+    this.pushNotificationService.unregisterDevice().catch((error) => {
+      console.warn('Error al desregistrar dispositivo:', error);
+    });
+
     localStorage.removeItem('access_token');
     localStorage.removeItem('refresh_token');
     localStorage.removeItem('user');
@@ -134,6 +141,14 @@ export class AuthService {
     this.persistSession(tokens.accessToken, tokens.refreshToken, user);
     this.currentUserSubject.next(user);
     this.isAuthenticatedSubject.next(true);
+
+    // Inicializar push notifications después del login
+    this.pushNotificationService
+      .initializePushNotifications()
+      .catch((error) => {
+        console.warn('Error al inicializar push notifications:', error);
+      });
+
     return user;
   }
 

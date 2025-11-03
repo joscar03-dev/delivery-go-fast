@@ -9,6 +9,7 @@ import { MenuOption } from '../restaurants/entities/menu-option.entity';
 import { OrdersService } from './orders.service';
 import { OrdersController } from './orders.controller';
 import { GeolocationModule } from '../geolocation/geolocation.module';
+import { NotificationsModule } from '../notifications/notifications.module';
 
 @Module({
   imports: [
@@ -21,6 +22,7 @@ import { GeolocationModule } from '../geolocation/geolocation.module';
       MenuOption,
     ]),
     forwardRef(() => GeolocationModule),
+    NotificationsModule,
   ],
   controllers: [OrdersController],
   providers: [OrdersService],

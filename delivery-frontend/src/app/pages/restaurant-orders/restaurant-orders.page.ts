@@ -82,7 +82,6 @@ addIcons({
     IonSegmentButton,
     IonLabel,
     IonList,
-    IonItem,
     IonCard,
     IonCardHeader,
     IonCardTitle,

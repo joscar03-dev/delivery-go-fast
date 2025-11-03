@@ -1,9 +1,14 @@
 import type { CapacitorConfig } from '@capacitor/cli';
 
 const config: CapacitorConfig = {
-  appId: 'io.ionic.starter',
-  appName: 'delivery-frontend',
-  webDir: 'www'
+  appId: 'com.deliverygofast1.app',
+  appName: 'Delivery Go Fast',
+  webDir: 'www',
+  plugins: {
+    PushNotifications: {
+      presentationOptions: ['badge', 'sound', 'alert'],
+    },
+  },
 };
 
 export default config;

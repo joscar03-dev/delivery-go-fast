@@ -7,6 +7,7 @@ import { RestaurantsModule } from './restaurants/restaurants.module';
 import { OrdersModule } from './orders/orders.module';
 import { DeliveriesModule } from './deliveries/deliveries.module';
 import { GeolocationModule } from './geolocation/geolocation.module';
+import { NotificationsModule } from './notifications/notifications.module';
 import * as Joi from 'joi';
 
 @Module({
@@ -48,6 +49,7 @@ import * as Joi from 'joi';
     OrdersModule,
     DeliveriesModule,
     GeolocationModule,
+    NotificationsModule,
   ],
   controllers: [],
   providers: [],

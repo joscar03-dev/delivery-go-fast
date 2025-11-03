@@ -1,0 +1,7 @@
+<?xml version='1.0' encoding='utf-8'?>
+<resources>
+    <string name="app_name">Delivery Go Fast</string>
+    <string name="title_activity_main">Delivery Go Fast</string>
+    <string name="package_name">com.deliverygofast1.app</string>
+    <string name="custom_url_scheme">com.deliverygofast1.app</string>
+</resources>
