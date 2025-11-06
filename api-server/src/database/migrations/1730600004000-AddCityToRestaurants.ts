@@ -15,9 +15,10 @@ export class AddCityToRestaurants1730600004000 implements MigrationInterface {
     `);
 
     // Optionally set a default city for existing restaurants
+    // Usar una ciudad válida del ENUM que se creará en la siguiente migración
     await queryRunner.query(`
       UPDATE restaurants 
-      SET city = 'Lima' 
+      SET city = 'Bagua' 
       WHERE city IS NULL;
     `);
 
