@@ -14,6 +14,7 @@ import { MenuOptionGroupsService } from './services/menu-option-groups.service';
 import { MenuOptionGroupsController } from './controllers/menu-option-groups.controller';
 import { MenuOptionGroup } from './entities/menu-option-group.entity';
 import { MenuOption } from './entities/menu-option.entity';
+import { RestaurantDeliveryConfig } from '../payments/entities/restaurant-delivery-config.entity';
 
 @Module({
   imports: [
@@ -24,6 +25,7 @@ import { MenuOption } from './entities/menu-option.entity';
       MenuCategory,
       MenuOptionGroup,
       MenuOption,
+      RestaurantDeliveryConfig,
     ]),
   ],
   controllers: [

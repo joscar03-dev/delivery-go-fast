@@ -11,6 +11,13 @@
 /* This sets a different item border color for the default theme on ios and md */
 :root {
   --ion-item-border-color: var(--ion-background-color-step-200);
+  /** Colores primarios personalizados **/
+  --ion-color-primary: #f97316;
+  --ion-color-primary-rgb: 249, 115, 22;
+  --ion-color-primary-contrast: #000000;
+  --ion-color-primary-contrast-rgb: 0, 0, 0;
+  --ion-color-primary-shade: #da6513;
+  --ion-color-primary-tint: #fa812d;
 }
 
 /* This sets a different background and item background for the default theme on ios */

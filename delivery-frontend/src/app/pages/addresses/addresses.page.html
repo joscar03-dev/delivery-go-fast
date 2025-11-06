@@ -1,0 +1,81 @@
+<ion-header>
+  <ion-toolbar>
+    <ion-buttons slot="start">
+      <ion-back-button [defaultHref]="defaultBackHref"></ion-back-button>
+    </ion-buttons>
+    <ion-title>Mis Direcciones</ion-title>
+    <ion-buttons slot="end">
+      <ion-button (click)="openAddressForm()">
+        <ion-icon name="add-outline" slot="icon-only"></ion-icon>
+      </ion-button>
+    </ion-buttons>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content class="ion-padding">
+  <!-- Loading -->
+  <div *ngIf="loading" class="loading-section">
+    <ion-spinner name="crescent"></ion-spinner>
+    <p>Cargando direcciones...</p>
+  </div>
+
+  <!-- Lista de direcciones -->
+  <ion-list *ngIf="!loading && addresses.length > 0">
+    <ion-item-sliding *ngFor="let address of addresses">
+      <ion-item [button]="true" (click)="openAddressForm(address)">
+        <ion-icon
+          [name]="getAddressTypeIcon(address.type)"
+          slot="start"
+          color="primary"
+        ></ion-icon>
+
+        <ion-label>
+          <div class="address-header">
+            <h3>{{ getAddressTypeLabel(address.type) }}</h3>
+            <ion-badge *ngIf="address.isDefault" color="primary"
+              >Predeterminada</ion-badge
+            >
+          </div>
+          <p class="address-street">{{ address.street }}</p>
+          <p class="address-city">
+            {{ address.city }}, {{ address.postalCode }}
+          </p>
+          <p *ngIf="address.reference" class="address-reference">
+            {{ address.reference }}
+          </p>
+        </ion-label>
+      </ion-item>
+
+      <!-- Opciones deslizables -->
+      <ion-item-options side="end">
+        <ion-item-option
+          *ngIf="!address.isDefault"
+          color="success"
+          (click)="setDefaultAddress(address)"
+        >
+          <ion-icon name="checkmark-circle-outline"></ion-icon>
+          Predeterminada
+        </ion-item-option>
+        <ion-item-option color="primary" (click)="openAddressForm(address)">
+          <ion-icon name="create-outline"></ion-icon>
+          Editar
+        </ion-item-option>
+        <ion-item-option color="danger" (click)="deleteAddress(address)">
+          <ion-icon name="trash-outline"></ion-icon>
+          Eliminar
+        </ion-item-option>
+      </ion-item-options>
+    </ion-item-sliding>
+  </ion-list>
+
+  <!-- Sin direcciones -->
+  <div *ngIf="!loading && addresses.length === 0" class="empty-state">
+    <ion-icon name="location-outline"></ion-icon>
+    <h2>Sin direcciones</h2>
+    <p>Agrega una dirección para recibir tus pedidos</p>
+    <ion-button expand="block" (click)="openAddressForm()">
+      <ion-icon name="add-outline" slot="start"></ion-icon>
+      Agregar Dirección
+    </ion-button>
+  </div>
+</ion-content>

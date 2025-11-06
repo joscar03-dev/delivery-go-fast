@@ -1,163 +1,354 @@
-.restaurant-header {
-  text-align: center;
-  margin-bottom: 20px;
+// Header Section with Image
+.header-section {
+  position: relative;
+  width: 100%;
 
-  .restaurant-image {
+  .header-image {
     width: 100%;
-    max-width: 400px;
-    margin: 0 auto 20px;
-    border-radius: 12px;
-    overflow: hidden;
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
-
-    img {
-      width: 100%;
-      height: auto;
-      display: block;
-    }
-  }
-
-  h2 {
-    font-size: 28px;
-    font-weight: bold;
-    margin: 10px 0;
-    color: var(--ion-color-dark);
-  }
-
-  .address,
-  .phone {
+    min-height: 280px;
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
     display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 8px;
-    font-size: 16px;
-    color: var(--ion-color-medium);
-    margin: 8px 0;
+    flex-direction: column;
+    justify-content: flex-end;
+    overflow: hidden;
+  }
 
-    ion-icon {
-      font-size: 20px;
+  .back-button-container {
+    position: absolute;
+    top: 16px;
+    left: 16px;
+    z-index: 10;
+
+    .custom-back-button {
+      --background: rgba(0, 0, 0, 0.4);
+      --color: white;
+      --border-radius: 50%;
+      --padding-start: 0;
+      --padding-end: 0;
+      width: 40px;
+      height: 40px;
+      backdrop-filter: blur(8px);
     }
   }
 }
 
-.menu-categories {
-  padding: 15px 0;
-  margin-bottom: 10px;
+// Restaurant Info Card
+.restaurant-info-card {
+  padding: 0 16px;
+  margin-top: -32px;
+  position: relative;
+  z-index: 10;
 
-  .categories-swiper {
-    width: 100%;
-    height: auto;
-    padding: 0;
+  .info-card {
+    background: var(--ion-color-light);
+    padding: 24px;
+    border-radius: 16px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
 
-    .chip-slide {
-      width: auto;
+    .restaurant-name {
+      font-size: 32px;
+      font-weight: 700;
+      color: var(--ion-color-dark);
+      margin: 0 0 4px;
+      line-height: 1.2;
+    }
 
-      ion-chip {
-        cursor: pointer;
-        transition: all 0.3s ease;
+    .restaurant-category {
+      color: var(--ion-color-primary);
+      font-size: 14px;
+      font-weight: 500;
+      margin: 0 0 12px;
+    }
+
+    .info-item {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      padding: 12px 0;
+
+      .info-icon {
+        width: 40px;
+        height: 40px;
+        border-radius: 12px;
+        background: var(--ion-color-light-shade);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        flex-shrink: 0;
+
+        ion-icon {
+          font-size: 24px;
+          color: var(--ion-color-primary);
+        }
+      }
+
+      .info-text {
+        font-size: 16px;
+        color: var(--ion-color-dark);
         margin: 0;
+        flex: 1;
+      }
+    }
+  }
+}
+
+// Sticky Category Filter Bar
+.category-filter-bar {
+  position: sticky;
+  top: 0;
+  z-index: 20;
+  background: var(--ion-background-color);
+  padding: 16px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+
+  .categories-scroll {
+    display: flex;
+    gap: 8px;
+    overflow-x: auto;
+    padding-bottom: 8px;
+    margin-bottom: -8px;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+
+    &::-webkit-scrollbar {
+      display: none;
+    }
+
+    .category-chip {
+      padding: 8px 16px;
+      border-radius: 24px;
+      font-size: 14px;
+      font-weight: 600;
+      white-space: nowrap;
+      background: var(--ion-color-light);
+      color: var(--ion-color-dark);
+      border: none;
+      cursor: pointer;
+      transition: all 0.2s;
+
+      &.active {
+        background: var(--ion-color-primary);
+        color: white;
+      }
+
+      &:not(.active):hover {
+        background: var(--ion-color-light-shade);
+      }
+    }
+  }
+}
+
+// Menu Section
+.menu-section {
+  padding: 0 16px 112px;
+
+  .category-group {
+    margin-bottom: 32px;
+
+    .category-title {
+      font-size: 24px;
+      font-weight: 700;
+      color: var(--ion-color-dark);
+      margin: 0 0 16px;
+    }
+
+    .menu-items-list {
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+
+      .menu-item-card {
+        display: flex;
+        gap: 16px;
+        padding: 16px;
+        border-radius: 16px;
+        background: var(--ion-color-light);
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+        cursor: pointer;
+        transition: all 0.2s;
 
         &:hover {
+          box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
           transform: translateY(-2px);
         }
 
-        &:not([outline]) {
-          font-weight: 600;
+        .item-content {
+          flex: 1;
+          min-width: 0;
+
+          .item-name {
+            font-size: 16px;
+            font-weight: 700;
+            color: var(--ion-color-dark);
+            margin: 0 0 4px;
+          }
+
+          .item-description {
+            font-size: 14px;
+            color: var(--ion-color-medium);
+            margin: 0 0 12px;
+            line-height: 1.4;
+            display: -webkit-box;
+            -webkit-line-clamp: 2;
+            line-clamp: 2;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+          }
+
+          .item-price {
+            font-size: 16px;
+            font-weight: 700;
+            color: var(--ion-color-primary);
+            margin: 0;
+          }
+        }
+
+        .item-image-container {
+          position: relative;
+          flex-shrink: 0;
+
+          .item-image {
+            width: 96px;
+            height: 96px;
+            object-fit: cover;
+            border-radius: 12px;
+          }
+
+          .item-image-placeholder {
+            width: 96px;
+            height: 96px;
+            border-radius: 12px;
+            background: linear-gradient(
+              135deg,
+              var(--ion-color-light-shade),
+              var(--ion-color-light-tint)
+            );
+            display: flex;
+            align-items: center;
+            justify-content: center;
+          }
+
+          .add-button {
+            position: absolute;
+            bottom: -8px;
+            right: -8px;
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            background: var(--ion-color-primary);
+            color: white;
+            border: none;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 4px 12px rgba(242, 127, 13, 0.4);
+            cursor: pointer;
+            transition: all 0.2s;
+
+            &:hover {
+              transform: scale(1.1);
+              box-shadow: 0 6px 16px rgba(242, 127, 13, 0.5);
+            }
+
+            ion-icon {
+              font-size: 20px;
+            }
+          }
         }
       }
     }
   }
-}
 
-ion-list {
-  ion-thumbnail {
-    --size: 100px;
-    --border-radius: 10px;
-    margin-right: 12px;
+  .no-items {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 48px 16px;
+    text-align: center;
 
-    img {
-      object-fit: cover;
-      width: 100%;
-      height: 100%;
-    }
-  }
-
-  ion-item {
-    --padding-start: 0;
-    --inner-padding-end: 0;
-    margin-bottom: 10px;
-
-    ion-label {
-      h3 {
-        font-size: 18px;
-        font-weight: 600;
-        margin-bottom: 5px;
-        color: var(--ion-color-dark);
-      }
-
-      p {
-        font-size: 14px;
-        color: var(--ion-color-medium);
-        margin-top: 5px;
-        white-space: normal;
-      }
-
-      ion-chip {
-        margin-top: 8px;
-        font-size: 12px;
-        height: 24px;
-      }
+    ion-icon {
+      font-size: 64px;
+      color: var(--ion-color-medium);
+      margin-bottom: 16px;
     }
 
-    .price {
-      font-size: 20px;
-      font-weight: bold;
-      color: var(--ion-color-success);
-      margin-left: 10px;
+    p {
+      font-size: 16px;
+      color: var(--ion-color-medium);
+      margin: 0;
     }
-  }
-
-  ion-list-header {
-    font-size: 20px;
-    font-weight: bold;
-    margin-bottom: 10px;
-    padding-left: 0;
   }
 }
 
-.no-items {
+// Floating Action Button (FAB) - Cart
+.fab-container {
+  position: fixed;
+  bottom: 16px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: calc(100% - 32px);
+  max-width: 600px;
+  z-index: 30;
+
+  .fab-button {
+    width: 100%;
+    height: 56px;
+    border-radius: 28px;
+    background: var(--ion-color-primary);
+    color: white;
+    border: none;
+    box-shadow: 0 8px 24px rgba(242, 127, 13, 0.4);
+    cursor: pointer;
+    transition: all 0.2s;
+
+    &:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 12px 32px rgba(242, 127, 13, 0.5);
+    }
+
+    .fab-content {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 24px;
+
+      .fab-left {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+
+        ion-icon {
+          font-size: 24px;
+        }
+
+        span {
+          font-size: 16px;
+          font-weight: 600;
+        }
+      }
+
+      .fab-total {
+        font-size: 16px;
+        font-weight: 700;
+      }
+    }
+  }
+}
+
+// Loading Container
+.loading-container {
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  padding: 60px 20px;
-  text-align: center;
-
-  ion-icon {
-    color: var(--ion-color-medium);
-    margin-bottom: 15px;
-  }
+  padding: 48px 16px;
+  min-height: 50vh;
 
   p {
+    margin-top: 16px;
     color: var(--ion-color-medium);
-    font-size: 16px;
-  }
-}
-
-.loading {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  padding: 60px 20px;
-  text-align: center;
-
-  ion-spinner {
-    margin-bottom: 15px;
-  }
-
-  p {
-    color: var(--ion-color-medium);
-    font-size: 16px;
   }
 }

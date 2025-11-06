@@ -13,6 +13,7 @@ async function bootstrap() {
   app.enableCors({
     origin: [
       'http://localhost:8100', // Desarrollo web
+      'http://localhost:4200', // Desarrollo Angular
       'http://localhost:8101', // Desarrollo web alternativo
       'http://10.0.2.2:8100', // Android emulator
       'capacitor://localhost', // Capacitor iOS

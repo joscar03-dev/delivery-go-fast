@@ -126,13 +126,14 @@
     </div>
 
     <!-- Marcar como predeterminada -->
-    <ion-item lines="none">
-      <ion-label>
-        <h3>Marcar como dirección predeterminada</h3>
-        <p>Esta será la dirección que aparecerá por defecto en tus pedidos</p>
-      </ion-label>
-      <ion-toggle formControlName="isDefault" color="primary"></ion-toggle>
-    </ion-item>
+    <div class="default-address-section">
+      <ion-item lines="none">
+        <ion-label>
+          <h3>Marcar como dirección predeterminada</h3>
+        </ion-label>
+        <ion-toggle formControlName="isDefault" color="primary"></ion-toggle>
+      </ion-item>
+    </div>
 
     <!-- Mensaje de error general -->
     <div class="error-alert" *ngIf="errorMessage">

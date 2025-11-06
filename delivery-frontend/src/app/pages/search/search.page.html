@@ -1,0 +1,108 @@
+<ion-content>
+  <!-- Fondo con forma de ola -->
+  <div class="wave-background">
+    <svg
+      viewBox="0 0 1440 320"
+      xmlns="http://www.w3.org/2000/svg"
+      preserveAspectRatio="none"
+    >
+      <path
+        fill="url(#search-gradient)"
+        fill-opacity="1"
+        d="M0,224L48,213.3C96,203,192,181,288,181.3C384,181,480,203,576,208C672,213,768,203,864,186.7C960,171,1056,149,1152,149.3C1248,149,1344,171,1392,181.3L1440,192L1440,0L1392,0C1344,0,1248,0,1152,0C1056,0,960,0,864,0C768,0,672,0,576,0C480,0,384,0,288,0C192,0,96,0,48,0L0,0Z"
+      ></path>
+      <defs>
+        <linearGradient id="search-gradient" x1="0%" y1="0%" x2="100%" y2="0%">
+          <stop
+            offset="0%"
+            style="stop-color: var(--ion-color-primary); stop-opacity: 1"
+          />
+          <stop
+            offset="100%"
+            style="stop-color: var(--ion-color-primary-shade); stop-opacity: 1"
+          />
+        </linearGradient>
+      </defs>
+    </svg>
+  </div>
+
+  <!-- Header personalizado dentro del content -->
+  <div class="custom-header">
+    <ion-buttons slot="start" class="header-buttons">
+      <ion-back-button defaultHref="/tabs/business"></ion-back-button>
+    </ion-buttons>
+    <h1 class="header-title">Buscar Restaurantes</h1>
+  </div>
+
+  <!-- Barra de búsqueda -->
+  <div class="search-container-page">
+    <ion-searchbar
+      [(ngModel)]="searchQuery"
+      (ionInput)="onSearchChange($event)"
+      placeholder="Buscar por nombre de restaurante..."
+      [debounce]="300"
+      animated="true"
+      show-clear-button="always"
+      autofocus="true"
+    ></ion-searchbar>
+  </div>
+
+  <div class="content-wrapper">
+    <!-- Estado vacío - sin búsqueda -->
+    <div *ngIf="!searchQuery || searchQuery.length < 2" class="empty-state">
+      <ion-icon name="restaurant-outline"></ion-icon>
+      <h2>Buscar Restaurantes</h2>
+      <p>Escribe al menos 2 caracteres para buscar</p>
+    </div>
+
+    <!-- Sin resultados -->
+    <div
+      *ngIf="searchQuery.length >= 2 && searchResults.length === 0 && !loading"
+      class="no-results"
+    >
+      <ion-icon name="sad-outline"></ion-icon>
+      <h2>Sin resultados</h2>
+      <p>No encontramos restaurantes con "{{ searchQuery }}"</p>
+    </div>
+
+    <!-- Resultados en formato grid (igual que tab1) -->
+    <ion-grid *ngIf="searchResults.length > 0">
+      <ion-row>
+        <ion-col
+          size="12"
+          size-sm="6"
+          size-md="4"
+          size-lg="3"
+          *ngFor="let restaurant of searchResults"
+        >
+          <ion-card
+            button
+            (click)="navigateToRestaurant(restaurant.id)"
+            class="restaurant-card"
+          >
+            <div class="card-image">
+              <img
+                [src]="restaurant.imageUrl || 'assets/shapes.svg'"
+                [alt]="restaurant.name"
+              />
+            </div>
+            <ion-card-header>
+              <ion-card-title>{{ restaurant.name }}</ion-card-title>
+            </ion-card-header>
+            <ion-card-content>
+              <div class="card-info">
+                <ion-icon name="location-outline"></ion-icon>
+                <p>{{ restaurant.address }}</p>
+              </div>
+              <div class="card-category" *ngIf="restaurant.category?.name">
+                <span class="category-badge"
+                  >{{ restaurant.category?.name }}</span
+                >
+              </div>
+            </ion-card-content>
+          </ion-card>
+        </ion-col>
+      </ion-row>
+    </ion-grid>
+  </div>
+</ion-content>

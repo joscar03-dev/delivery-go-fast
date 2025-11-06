@@ -1,0 +1,333 @@
+<!DOCTYPE html>
+
+<html class="light" lang="es">
+  <head>
+    <meta charset="utf-8" />
+    <meta content="width=device-width, initial-scale=1.0" name="viewport" />
+    <title>My Profile - Delivery App</title>
+    <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+    <link href="https://fonts.googleapis.com" rel="preconnect" />
+    <link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect" />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;700;800&amp;display=swap"
+      rel="stylesheet"
+    />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined"
+      rel="stylesheet"
+    />
+    <script>
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            colors: {
+              primary: "#f27f0d",
+              "background-light": "#f8f7f5",
+              "background-dark": "#221910",
+            },
+            fontFamily: {
+              display: ["Plus Jakarta Sans", "sans-serif"],
+            },
+            borderRadius: {
+              DEFAULT: "1rem",
+              lg: "2rem",
+              xl: "3rem",
+              full: "9999px",
+            },
+          },
+        },
+      };
+    </script>
+    <style>
+      .material-symbols-outlined {
+        font-variation-settings: "FILL" 0, "wght" 400, "GRAD" 0, "opsz" 24;
+      }
+    </style>
+    <style>
+      body {
+        min-height: max(884px, 100dvh);
+      }
+    </style>
+  </head>
+  <body class="font-display">
+    <div
+      class="relative flex min-h-screen w-full flex-col bg-background-light dark:bg-background-dark group/design-root overflow-x-hidden"
+    >
+      <!-- Top App Bar -->
+      <header
+        class="flex items-center p-4 pb-2 justify-between bg-background-light dark:bg-background-dark sticky top-0 z-10"
+      >
+        <button
+          aria-label="Go back"
+          class="text-slate-800 dark:text-slate-200 flex size-10 shrink-0 items-center justify-center rounded-full"
+        >
+          <span class="material-symbols-outlined text-2xl">arrow_back</span>
+        </button>
+        <h1
+          class="text-slate-900 dark:text-slate-50 text-lg font-bold leading-tight tracking-[-0.015em] flex-1 text-center"
+        >
+          Mi Perfil
+        </h1>
+        <div class="size-10 shrink-0"></div>
+        <!-- Spacer to balance the back button -->
+      </header>
+      <main class="flex-1">
+        <!-- Profile Header -->
+        <section class="p-4 @container">
+          <div
+            class="flex w-full flex-col gap-4 @[520px]:flex-row @[520px]:justify-between @[520px]:items-center"
+          >
+            <div class="flex items-center gap-4">
+              <div
+                class="bg-center bg-no-repeat aspect-square bg-cover rounded-full h-20 w-20 shrink-0"
+                data-alt="User profile picture of Alex Martinez"
+                style="
+                  background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuBgqGEbjJJdw4LNb7qwXwv4OJO0rsT-_356z2t-lHmBIaeUeQ-2dgyveWjO7RnqDZ8rkL5FA_MUAwb64K1GVtajap6tRpzNMUVRy9YZBMB5AJqRREToGCtcv2UAbY5pLubw5PLgdhqcyPuNOhDcdcuaLHuI8MOXBhNvFZAQUnT1bw9qwHG7MCd_ylG3u1UAkc13LZz4rm1sXgW_WrLThrPD7hXuB-jZ1fUfoW1PtQG_XEm8sI9w4lqtEzFerF9mKRdzZT1PqHtty_I');
+                "
+              ></div>
+              <div class="flex flex-col justify-center">
+                <p
+                  class="text-slate-900 dark:text-slate-50 text-[22px] font-bold leading-tight tracking-[-0.015em]"
+                >
+                  Alex Martinez
+                </p>
+                <p
+                  class="text-slate-500 dark:text-slate-400 text-base font-normal leading-normal"
+                >
+                  alex.martinez@email.com
+                </p>
+              </div>
+            </div>
+            <button
+              class="flex min-w-[84px] cursor-pointer items-center justify-center overflow-hidden rounded-full h-10 px-4 bg-primary/20 dark:bg-primary/30 text-primary text-sm font-bold leading-normal tracking-[0.015em] w-full @[480px]:w-auto hover:bg-primary/30 dark:hover:bg-primary/40 transition-colors"
+            >
+              <span class="truncate">Editar Perfil</span>
+            </button>
+          </div>
+        </section>
+        <!-- List of Options -->
+        <div class="flex flex-col px-4 pt-4 pb-8 space-y-2">
+          <!-- Account Management Group -->
+          <div
+            class="flex flex-col bg-slate-50 dark:bg-slate-800/50 rounded-lg overflow-hidden"
+          >
+            <a
+              class="flex items-center gap-4 p-4 min-h-14 justify-between hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
+              href="#"
+            >
+              <div class="flex items-center gap-4">
+                <div
+                  class="text-slate-700 dark:text-slate-300 flex items-center justify-center rounded-lg bg-slate-200 dark:bg-slate-700 shrink-0 size-10"
+                >
+                  <span class="material-symbols-outlined">receipt_long</span>
+                </div>
+                <p
+                  class="text-slate-800 dark:text-slate-200 text-base font-medium leading-normal flex-1 truncate"
+                >
+                  Historial de Pedidos
+                </p>
+              </div>
+              <div class="shrink-0">
+                <div
+                  class="text-slate-400 dark:text-slate-500 flex size-7 items-center justify-center"
+                >
+                  <span class="material-symbols-outlined">chevron_right</span>
+                </div>
+              </div>
+            </a>
+            <div class="h-px bg-slate-200 dark:bg-slate-700/50 mx-4"></div>
+            <a
+              class="flex items-center gap-4 p-4 min-h-14 justify-between hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
+              href="#"
+            >
+              <div class="flex items-center gap-4">
+                <div
+                  class="text-slate-700 dark:text-slate-300 flex items-center justify-center rounded-lg bg-slate-200 dark:bg-slate-700 shrink-0 size-10"
+                >
+                  <span class="material-symbols-outlined">location_on</span>
+                </div>
+                <p
+                  class="text-slate-800 dark:text-slate-200 text-base font-medium leading-normal flex-1 truncate"
+                >
+                  Gestionar Direcciones
+                </p>
+              </div>
+              <div class="shrink-0">
+                <div
+                  class="text-slate-400 dark:text-slate-500 flex size-7 items-center justify-center"
+                >
+                  <span class="material-symbols-outlined">chevron_right</span>
+                </div>
+              </div>
+            </a>
+          </div>
+          <!-- Business & Partnership Group -->
+          <div
+            class="flex flex-col bg-slate-50 dark:bg-slate-800/50 rounded-lg overflow-hidden"
+          >
+            <a
+              class="flex items-center gap-4 p-4 min-h-14 justify-between hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
+              href="#"
+            >
+              <div class="flex items-center gap-4">
+                <div
+                  class="text-slate-700 dark:text-slate-300 flex items-center justify-center rounded-lg bg-slate-200 dark:bg-slate-700 shrink-0 size-10"
+                >
+                  <span class="material-symbols-outlined">two_wheeler</span>
+                </div>
+                <p
+                  class="text-slate-800 dark:text-slate-200 text-base font-medium leading-normal flex-1 truncate"
+                >
+                  Registrarse como driver
+                </p>
+              </div>
+              <div class="shrink-0">
+                <div
+                  class="text-slate-400 dark:text-slate-500 flex size-7 items-center justify-center"
+                >
+                  <span class="material-symbols-outlined">chevron_right</span>
+                </div>
+              </div>
+            </a>
+            <div class="h-px bg-slate-200 dark:bg-slate-700/50 mx-4"></div>
+            <a
+              class="flex items-center gap-4 p-4 min-h-14 justify-between hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
+              href="#"
+            >
+              <div class="flex items-center gap-4">
+                <div
+                  class="text-slate-700 dark:text-slate-300 flex items-center justify-center rounded-lg bg-slate-200 dark:bg-slate-700 shrink-0 size-10"
+                >
+                  <span class="material-symbols-outlined">storefront</span>
+                </div>
+                <p
+                  class="text-slate-800 dark:text-slate-200 text-base font-medium leading-normal flex-1 truncate"
+                >
+                  ¿Tienes un negocio?
+                </p>
+              </div>
+              <div class="shrink-0">
+                <div
+                  class="text-slate-400 dark:text-slate-500 flex size-7 items-center justify-center"
+                >
+                  <span class="material-symbols-outlined">chevron_right</span>
+                </div>
+              </div>
+            </a>
+          </div>
+          <!-- Support & Legal Group -->
+          <div
+            class="flex flex-col bg-slate-50 dark:bg-slate-800/50 rounded-lg overflow-hidden"
+          >
+            <a
+              class="flex items-center gap-4 p-4 min-h-14 justify-between hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
+              href="#"
+            >
+              <div class="flex items-center gap-4">
+                <div
+                  class="text-slate-700 dark:text-slate-300 flex items-center justify-center rounded-lg bg-slate-200 dark:bg-slate-700 shrink-0 size-10"
+                >
+                  <span class="material-symbols-outlined">support_agent</span>
+                </div>
+                <p
+                  class="text-slate-800 dark:text-slate-200 text-base font-medium leading-normal flex-1 truncate"
+                >
+                  Contactar soporte
+                </p>
+              </div>
+              <div class="shrink-0">
+                <div
+                  class="text-slate-400 dark:text-slate-500 flex size-7 items-center justify-center"
+                >
+                  <span class="material-symbols-outlined">chevron_right</span>
+                </div>
+              </div>
+            </a>
+            <div class="h-px bg-slate-200 dark:bg-slate-700/50 mx-4"></div>
+            <a
+              class="flex items-center gap-4 p-4 min-h-14 justify-between hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
+              href="#"
+            >
+              <div class="flex items-center gap-4">
+                <div
+                  class="text-slate-700 dark:text-slate-300 flex items-center justify-center rounded-lg bg-slate-200 dark:bg-slate-700 shrink-0 size-10"
+                >
+                  <span class="material-symbols-outlined">gavel</span>
+                </div>
+                <p
+                  class="text-slate-800 dark:text-slate-200 text-base font-medium leading-normal flex-1 truncate"
+                >
+                  Términos y condiciones
+                </p>
+              </div>
+              <div class="shrink-0">
+                <div
+                  class="text-slate-400 dark:text-slate-500 flex size-7 items-center justify-center"
+                >
+                  <span class="material-symbols-outlined">chevron_right</span>
+                </div>
+              </div>
+            </a>
+            <div class="h-px bg-slate-200 dark:bg-slate-700/50 mx-4"></div>
+            <a
+              class="flex items-center gap-4 p-4 min-h-14 justify-between hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
+              href="#"
+            >
+              <div class="flex items-center gap-4">
+                <div
+                  class="text-slate-700 dark:text-slate-300 flex items-center justify-center rounded-lg bg-slate-200 dark:bg-slate-700 shrink-0 size-10"
+                >
+                  <span class="material-symbols-outlined">shield</span>
+                </div>
+                <p
+                  class="text-slate-800 dark:text-slate-200 text-base font-medium leading-normal flex-1 truncate"
+                >
+                  Políticas de privacidad
+                </p>
+              </div>
+              <div class="shrink-0">
+                <div
+                  class="text-slate-400 dark:text-slate-500 flex size-7 items-center justify-center"
+                >
+                  <span class="material-symbols-outlined">chevron_right</span>
+                </div>
+              </div>
+            </a>
+          </div>
+          <!-- Session & Account Actions Group -->
+          <div class="pt-4 space-y-2">
+            <button
+              class="flex items-center gap-4 w-full p-4 min-h-14 justify-start bg-slate-50 dark:bg-slate-800/50 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
+            >
+              <div
+                class="text-slate-700 dark:text-slate-300 flex items-center justify-center shrink-0 size-10"
+              >
+                <span class="material-symbols-outlined">logout</span>
+              </div>
+              <p
+                class="text-slate-800 dark:text-slate-200 text-base font-medium leading-normal"
+              >
+                Cerrar Sesión
+              </p>
+            </button>
+            <button
+              class="flex items-center gap-4 w-full p-4 min-h-14 justify-start bg-transparent rounded-lg hover:bg-red-500/10 transition-colors group"
+            >
+              <div
+                class="text-red-600 dark:text-red-500 flex items-center justify-center shrink-0 size-10"
+              >
+                <span class="material-symbols-outlined">delete_forever</span>
+              </div>
+              <p
+                class="text-red-600 dark:text-red-500 text-base font-medium leading-normal"
+              >
+                Eliminar cuenta
+              </p>
+            </button>
+          </div>
+        </div>
+      </main>
+    </div>
+  </body>
+</html>

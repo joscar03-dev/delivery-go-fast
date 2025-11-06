@@ -23,7 +23,7 @@
   <ion-header>
     <ion-toolbar>
       <ion-buttons slot="start">
-        <ion-back-button defaultHref="/tabs/tab2"></ion-back-button>
+        <ion-back-button defaultHref="/tabs/admin"></ion-back-button>
       </ion-buttons>
       <ion-title>Restaurantes</ion-title>
       <ion-buttons slot="end">
@@ -38,11 +38,14 @@
         <ion-label>
           <h2>{{ r.name }}</h2>
           <p>{{ r.address }} — {{ r.phone }}</p>
+          <p *ngIf="r.city">
+            <ion-badge color="primary">{{ r.city }}</ion-badge>
+          </p>
         </ion-label>
         <ion-button slot="end" fill="clear" [id]="'action-sheet-' + r.id">
           <ion-icon name="ellipsis-vertical"></ion-icon>
         </ion-button>
-        
+
         <!-- Action Sheet para cada restaurante -->
         <ion-action-sheet
           [trigger]="'action-sheet-' + r.id"

@@ -1,0 +1,326 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta content="width=device-width, initial-scale=1.0" name="viewport" />
+    <title>Restaurant Details</title>
+    <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+    <link
+      href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&amp;display=swap"
+      rel="stylesheet"
+    />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined"
+      rel="stylesheet"
+    />
+    <script>
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            colors: {
+              primary: "#f27f0d",
+              "background-light": "#f8f7f5",
+              "background-dark": "#181818",
+              "text-light": "#1c140d",
+              "text-dark": "#f8f7f5",
+              "card-light": "#ffffff",
+              "card-dark": "#221910",
+              "subtle-light": "#f4ede7",
+              "subtle-dark": "#3a3a3a",
+            },
+            fontFamily: {
+              display: ["Plus Jakarta Sans", "sans-serif"],
+            },
+            borderRadius: {
+              DEFAULT: "1rem",
+              lg: "1.5rem",
+              xl: "2rem",
+              full: "9999px",
+            },
+          },
+        },
+      };
+    </script>
+    <style>
+      .material-symbols-outlined {
+        font-variation-settings: "FILL" 0, "wght" 400, "GRAD" 0, "opsz" 24;
+      }
+    </style>
+    <style>
+      body {
+        min-height: max(884px, 100dvh);
+      }
+    </style>
+  </head>
+  <body
+    class="bg-background-light dark:bg-background-dark font-display text-text-light dark:text-text-dark"
+  >
+    <div
+      class="relative flex h-auto min-h-screen w-full flex-col group/design-root overflow-x-hidden"
+    >
+      <!-- Header Section -->
+      <div class="relative">
+        <!-- Header Image -->
+        <div class="@container">
+          <div
+            class="w-full bg-center bg-no-repeat bg-cover flex flex-col justify-end overflow-hidden min-h-[280px]"
+            data-alt="Vibrant close-up of a well-presented plate of tacos"
+            style="
+              background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuAuvusNXTuo0tvo6v8gK0A68YmEc60OFvnBwHo-90QQELlfn2EdG2OhAWECCIimAtrVe-N4Td408A66RgwZQASWKR2X4pTGvcwfTAww48grV4sL3UahAvuaEBsKYMIPoT7Smw4B4-eTmMGSIdnBz8R15mk6pMbNuEEJueerPVU_uKDg_hbQFOLqEP7RE_1AOH00MkCNZCKd7S5cffVZNovviyKxgboBWBoDN0x_1As_-HhJtVRnrBz4_yXCD-kAosvQPu_06240jN4');
+            "
+          ></div>
+        </div>
+        <!-- Back Button -->
+        <div class="absolute top-4 left-4">
+          <button
+            class="flex items-center justify-center size-10 rounded-full bg-black/40 text-white backdrop-blur-sm"
+          >
+            <span class="material-symbols-outlined text-2xl">arrow_back</span>
+          </button>
+        </div>
+      </div>
+      <!-- Restaurant Info -->
+      <div class="px-4 -mt-8 relative z-10">
+        <div class="bg-card-light dark:bg-card-dark p-6 rounded-lg shadow-md">
+          <h1
+            class="text-text-light dark:text-text-dark tracking-tight text-[32px] font-bold leading-tight text-left pb-1"
+          >
+            El Sabor Divino
+          </h1>
+          <p class="text-primary text-sm font-medium leading-normal pb-3">
+            Mexican • $$
+          </p>
+          <div class="flex items-center gap-4 py-3">
+            <div
+              class="text-text-light dark:text-text-dark flex items-center justify-center rounded-lg bg-subtle-light dark:bg-subtle-dark shrink-0 size-10"
+            >
+              <span class="material-symbols-outlined text-primary">star</span>
+            </div>
+            <p
+              class="text-text-light dark:text-text-dark text-base font-normal leading-normal flex-1 truncate"
+            >
+              4.8 stars (500+ reviews)
+            </p>
+          </div>
+          <div class="flex items-center gap-4 py-3">
+            <div
+              class="text-text-light dark:text-text-dark flex items-center justify-center rounded-lg bg-subtle-light dark:bg-subtle-dark shrink-0 size-10"
+            >
+              <span class="material-symbols-outlined text-primary"
+                >location_on</span
+              >
+            </div>
+            <p
+              class="text-text-light dark:text-text-dark text-base font-normal leading-normal flex-1 truncate"
+            >
+              123 Calle Principal, Foodville
+            </p>
+          </div>
+          <div class="flex items-center gap-4 py-3">
+            <div
+              class="text-text-light dark:text-text-dark flex items-center justify-center rounded-lg bg-subtle-light dark:bg-subtle-dark shrink-0 size-10"
+            >
+              <span class="material-symbols-outlined text-primary"
+                >schedule</span
+              >
+            </div>
+            <p
+              class="text-text-light dark:text-text-dark text-base font-normal leading-normal flex-1 truncate"
+            >
+              Open until 10:00 PM
+            </p>
+          </div>
+        </div>
+      </div>
+      <!-- Sticky Category Filter Bar -->
+      <div
+        class="sticky top-0 z-20 bg-background-light dark:bg-background-dark py-4 px-4 shadow-sm"
+      >
+        <div class="flex items-center gap-2 overflow-x-auto pb-2 -mb-2">
+          <button
+            class="px-4 py-2 rounded-full text-sm font-semibold whitespace-nowrap bg-primary text-white"
+          >
+            Pollo
+          </button>
+          <button
+            class="px-4 py-2 rounded-full text-sm font-semibold whitespace-nowrap bg-subtle-light dark:bg-subtle-dark text-text-light dark:text-text-dark"
+          >
+            Res
+          </button>
+          <button
+            class="px-4 py-2 rounded-full text-sm font-semibold whitespace-nowrap bg-subtle-light dark:bg-subtle-dark text-text-light dark:text-text-dark"
+          >
+            Vegetariano
+          </button>
+          <button
+            class="px-4 py-2 rounded-full text-sm font-semibold whitespace-nowrap bg-subtle-light dark:bg-subtle-dark text-text-light dark:text-text-dark"
+          >
+            Bebidas
+          </button>
+          <button
+            class="px-4 py-2 rounded-full text-sm font-semibold whitespace-nowrap bg-subtle-light dark:bg-subtle-dark text-text-light dark:text-text-dark"
+          >
+            Postres
+          </button>
+        </div>
+      </div>
+      <!-- Menu Section -->
+      <div class="px-4 space-y-8 py-6 pb-28">
+        <!-- Category: Pollo -->
+        <div>
+          <h2
+            class="text-2xl font-bold text-text-light dark:text-text-dark mb-4"
+          >
+            Pollo
+          </h2>
+          <div class="space-y-4">
+            <!-- Menu Item Card -->
+            <div
+              class="flex gap-4 p-4 rounded-lg bg-card-light dark:bg-card-dark shadow-sm"
+            >
+              <div class="flex-1">
+                <h3 class="font-bold text-text-light dark:text-text-dark">
+                  Tacos de Pollo Asado
+                </h3>
+                <p class="text-sm text-gray-600 dark:text-gray-400 mt-1">
+                  Grilled chicken, cilantro, onions, and salsa verde on a corn
+                  tortilla.
+                </p>
+                <p class="font-bold text-primary mt-3">$12.50</p>
+              </div>
+              <div class="relative shrink-0">
+                <img
+                  class="w-24 h-24 object-cover rounded-lg"
+                  data-alt="Three tacos with grilled chicken and fresh toppings"
+                  src="https://lh3.googleusercontent.com/aida-public/AB6AXuCn2VjjbKa6cYOEj9qWg8B4do3nSNxsKy76S6-CLSOLH1G0Elku6M2gG_sih-PrfnWx2vXnkd-6qy6rqc_Snaz4cJ-u2PLDXgOiR26WVG4z1HJJaymsiCLxZ1rjzZphmHoU3orMGCzdWbgTuUgyxiOkjqwPNECSLykVWf1Jy64oc5mW29xHKYjL6P6W6T6xa8v_xSxaFKEvamCO9GhGlrdqDMNXzapVcE0fCKFlpLhOZVcTMhLpJ_yUzdUvmtClI4G0yKF-u7ynilg"
+                />
+                <button
+                  class="absolute -bottom-2 -right-2 flex items-center justify-center size-9 rounded-full bg-primary text-white shadow-lg"
+                >
+                  <span class="material-symbols-outlined text-xl">add</span>
+                </button>
+              </div>
+            </div>
+            <!-- Menu Item Card -->
+            <div
+              class="flex gap-4 p-4 rounded-lg bg-card-light dark:bg-card-dark shadow-sm"
+            >
+              <div class="flex-1">
+                <h3 class="font-bold text-text-light dark:text-text-dark">
+                  Burrito de Pollo
+                </h3>
+                <p class="text-sm text-gray-600 dark:text-gray-400 mt-1">
+                  Large flour tortilla filled with grilled chicken, rice, beans,
+                  and cheese.
+                </p>
+                <p class="font-bold text-primary mt-3">$14.00</p>
+              </div>
+              <div class="relative shrink-0">
+                <img
+                  class="w-24 h-24 object-cover rounded-lg"
+                  data-alt="A large chicken burrito cut in half"
+                  src="https://lh3.googleusercontent.com/aida-public/AB6AXuBvUvmV0HpWX2zVJZdAHUPmlKFoPs-KrOZGYQFrhf_-Pf30BbLiI-ko2sovhu82s_8Noo4Ay0araBCEqazncqeW5vqFrn-UTxm3o0MVvYOOkTKaroCuncEFO9fPIFyjeZCaZVfW1aiCxovJOJyATJosTaFGaFRpYtiFjWTCXHSoTNx6c-Y-YO4u4LsPT3JsWowFAb2XtzBsJuo7LXNXMInjmdvZFJ7NaJ12ksP9gSWnEAwu5TE1UIsSinMmRfNoCqmbpG_JcLJrpA0"
+                />
+                <button
+                  class="absolute -bottom-2 -right-2 flex items-center justify-center size-9 rounded-full bg-primary text-white shadow-lg"
+                >
+                  <span class="material-symbols-outlined text-xl">add</span>
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+        <!-- Category: Res -->
+        <div>
+          <h2
+            class="text-2xl font-bold text-text-light dark:text-text-dark mb-4"
+          >
+            Res
+          </h2>
+          <div class="space-y-4">
+            <!-- Menu Item Card -->
+            <div
+              class="flex gap-4 p-4 rounded-lg bg-card-light dark:bg-card-dark shadow-sm"
+            >
+              <div class="flex-1">
+                <h3 class="font-bold text-text-light dark:text-text-dark">
+                  Carne Asada Plate
+                </h3>
+                <p class="text-sm text-gray-600 dark:text-gray-400 mt-1">
+                  Marinated grilled steak served with rice, beans, and
+                  tortillas.
+                </p>
+                <p class="font-bold text-primary mt-3">$18.99</p>
+              </div>
+              <div class="relative shrink-0">
+                <img
+                  class="w-24 h-24 object-cover rounded-lg"
+                  data-alt="A plate of grilled carne asada with sides"
+                  src="https://lh3.googleusercontent.com/aida-public/AB6AXuD8lEjATriZBgupi-qEVe1NJ2f1WvXqB5KLnwgR40sMynoZFo-c05jsRmP0Qv56k9GU4eBLiNaCp9EH7VrizgiUsd7Z0ZGYZ9qTk82KGY21Lu22JoRRsv0GKb1oWtQEWa-QhxY7lC7-boxppt1DsMvZ2EElYwYljNYCcc6sMkCIShXSLHGMqSJFv2N3qY62bCARc0uIqBVKBP4-mVUeVe4FMfkx2x8MxpJDCMmY8ok1Lif9AZjnBFI2xh6UQ75Z8PwAL8fT_fRbW3s"
+                />
+                <button
+                  class="absolute -bottom-2 -right-2 flex items-center justify-center size-9 rounded-full bg-primary text-white shadow-lg"
+                >
+                  <span class="material-symbols-outlined text-xl">add</span>
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+        <!-- Category: Vegetariano -->
+        <div>
+          <h2
+            class="text-2xl font-bold text-text-light dark:text-text-dark mb-4"
+          >
+            Vegetariano
+          </h2>
+          <div class="space-y-4">
+            <!-- Menu Item Card -->
+            <div
+              class="flex gap-4 p-4 rounded-lg bg-card-light dark:bg-card-dark shadow-sm"
+            >
+              <div class="flex-1">
+                <h3 class="font-bold text-text-light dark:text-text-dark">
+                  Quesadillas de Huitlacoche
+                </h3>
+                <p class="text-sm text-gray-600 dark:text-gray-400 mt-1">
+                  Corn truffle, Oaxaca cheese, and epazote in a handmade
+                  tortilla.
+                </p>
+                <p class="font-bold text-primary mt-3">$13.50</p>
+              </div>
+              <div class="relative shrink-0">
+                <img
+                  class="w-24 h-24 object-cover rounded-lg"
+                  data-alt="Authentic quesadillas with dark filling"
+                  src="https://lh3.googleusercontent.com/aida-public/AB6AXuCVp4J-yxZkki8A1RVWyphW8fUjfbuM4An0CgUEU86aHCZIGxUUu2PI3Jjjd85oodxAuQMlkQTpaK_584Un55k1D3WeWtdgtnh9lnGoyhKViAx1Je8AhuYybnNUlTmIRFA9gRFDyTV9Th3Vibb7Is8DLlJ81-R6bJB916meYJwwCfwKwOzz8TXlv9Kj4bFLcwMyEh9Pzx4veIU-s42Tm2-74nRrYQ-HlKMHN5PD8lWzx40lFRl-s0ZxDPivfj-uoEs8bzZem_07Leo"
+                />
+                <button
+                  class="absolute -bottom-2 -right-2 flex items-center justify-center size-9 rounded-full bg-primary text-white shadow-lg"
+                >
+                  <span class="material-symbols-outlined text-xl">add</span>
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <!-- Floating Action Button (FAB) -->
+      <div
+        class="fixed bottom-4 left-1/2 -translate-x-1/2 w-[calc(100%-2rem)] z-30"
+      >
+        <button
+          class="w-full h-14 flex items-center justify-between px-6 rounded-full bg-primary text-white font-bold shadow-xl"
+        >
+          <div class="flex items-center gap-2">
+            <span class="material-symbols-outlined">shopping_bag</span>
+            <span>2 items</span>
+          </div>
+          <span>View Cart • $26.50</span>
+        </button>
+      </div>
+    </div>
+  </body>
+</html>

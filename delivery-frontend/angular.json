@@ -36,6 +36,7 @@
               }
             ],
             "styles": [
+              "src/styles/tailwind.css",
               "src/global.scss",
               "src/theme/variables.scss",
               "node_modules/swiper/swiper-bundle.min.css"

@@ -22,6 +22,7 @@ import {
 import { Router } from '@angular/router';
 import { OrderService } from '../../services/order.service';
 import { SocketService } from '../../services/socket.service';
+import { WaveBackgroundComponent } from '../../components/wave-background/wave-background.component';
 import { Order, OrderStatus } from '../../models/order.model';
 import { addIcons } from 'ionicons';
 import {
@@ -62,6 +63,7 @@ addIcons({
     IonRefresherContent,
     CommonModule,
     FormsModule,
+    WaveBackgroundComponent,
   ],
 })
 export class OrderHistoryPage implements OnInit, OnDestroy {
@@ -365,7 +367,7 @@ export class OrderHistoryPage implements OnInit, OnDestroy {
   }
 
   goToOrderDetail(orderId: string): void {
-    this.router.navigate(['/order-detail', orderId]);
+    this.router.navigate(['/tabs/order-detail', orderId]);
   }
 
   getStatusColor(status: OrderStatus): string {

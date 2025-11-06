@@ -1,0 +1,135 @@
+<ion-header [translucent]="true">
+  <ion-toolbar>
+    <ion-title>Mis Restaurantes</ion-title>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content [fullscreen]="true" class="ion-padding">
+  <!-- Loading State -->
+  <div *ngIf="isLoading" class="flex items-center justify-center h-full">
+    <div class="text-center">
+      <ion-spinner name="crescent" color="primary"></ion-spinner>
+      <p class="mt-4 text-gray-500">Cargando tus restaurantes...</p>
+    </div>
+  </div>
+
+  <!-- No restaurants -->
+  <div
+    *ngIf="!isLoading && myRestaurants.length === 0"
+    class="text-center py-12"
+  >
+    <ion-icon
+      name="restaurant-outline"
+      class="text-6xl text-gray-400"
+    ></ion-icon>
+    <h2 class="text-xl font-semibold text-gray-700 mt-4">
+      No tienes restaurantes
+    </h2>
+    <p class="text-gray-500 mt-2">
+      Contacta al administrador para registrar tu restaurante
+    </p>
+  </div>
+
+  <!-- Restaurant List -->
+  <div *ngIf="!isLoading && myRestaurants.length > 0" class="max-w-4xl mx-auto">
+    <div *ngFor="let restaurant of myRestaurants" class="mb-6">
+      <ion-card class="shadow-lg rounded-xl overflow-hidden">
+        <ion-card-header
+          class="bg-gradient-to-r from-primary to-secondary text-white"
+        >
+          <div class="flex items-center justify-between">
+            <div class="flex items-center gap-3">
+              <ion-icon name="restaurant-outline" class="text-3xl"></ion-icon>
+              <ion-card-title class="text-xl"
+                >{{ restaurant.name }}</ion-card-title
+              >
+            </div>
+            <ion-note
+              class="text-white text-sm bg-white/20 px-3 py-1 rounded-full"
+            >
+              {{ restaurant.isOpen ? 'Abierto' : 'Cerrado' }}
+            </ion-note>
+          </div>
+        </ion-card-header>
+
+        <ion-card-content class="p-0">
+          <ion-list class="bg-transparent">
+            <!-- Configuración de Delivery -->
+            <ion-item
+              button
+              (click)="goToDeliveryConfig(restaurant.id)"
+              lines="full"
+            >
+              <ion-icon
+                name="settings-outline"
+                slot="start"
+                color="primary"
+              ></ion-icon>
+              <ion-label>
+                <h3 class="font-semibold">Configuración de Delivery</h3>
+                <p class="text-sm text-gray-500">
+                  Tarifa, delivery gratis, tiempo estimado
+                </p>
+              </ion-label>
+              <ion-icon name="chevron-forward-outline" slot="end"></ion-icon>
+            </ion-item>
+
+            <!-- Información del Restaurante -->
+            <ion-item
+              button
+              (click)="goToRestaurantDetail(restaurant.id)"
+              lines="full"
+            >
+              <ion-icon
+                name="restaurant-outline"
+                slot="start"
+                color="secondary"
+              ></ion-icon>
+              <ion-label>
+                <h3 class="font-semibold">Información del Restaurante</h3>
+                <p class="text-sm text-gray-500">
+                  Nombre, dirección, horarios, categoría
+                </p>
+              </ion-label>
+              <ion-icon name="chevron-forward-outline" slot="end"></ion-icon>
+            </ion-item>
+
+            <!-- Gestión de Menú -->
+            <ion-item
+              button
+              (click)="goToMenuManagement(restaurant.id)"
+              lines="full"
+            >
+              <ion-icon
+                name="list-outline"
+                slot="start"
+                color="tertiary"
+              ></ion-icon>
+              <ion-label>
+                <h3 class="font-semibold">Gestión de Menú</h3>
+                <p class="text-sm text-gray-500">
+                  Productos, categorías, opciones
+                </p>
+              </ion-label>
+              <ion-icon name="chevron-forward-outline" slot="end"></ion-icon>
+            </ion-item>
+
+            <!-- Pedidos Recibidos -->
+            <ion-item button (click)="goToOrders(restaurant.id)" lines="none">
+              <ion-icon
+                name="receipt-outline"
+                slot="start"
+                color="success"
+              ></ion-icon>
+              <ion-label>
+                <h3 class="font-semibold">Pedidos Recibidos</h3>
+                <p class="text-sm text-gray-500">Ver y gestionar pedidos</p>
+              </ion-label>
+              <ion-icon name="chevron-forward-outline" slot="end"></ion-icon>
+            </ion-item>
+          </ion-list>
+        </ion-card-content>
+      </ion-card>
+    </div>
+  </div>
+</ion-content>

@@ -1,0 +1,67 @@
+<ion-header>
+  <ion-toolbar>
+    <ion-title>Buscar Restaurantes</ion-title>
+    <ion-buttons slot="end">
+      <ion-button (click)="dismiss()">
+        <ion-icon name="close"></ion-icon>
+      </ion-button>
+    </ion-buttons>
+  </ion-toolbar>
+  <ion-toolbar>
+    <!-- INPUT HTML NORMAL en lugar de ion-searchbar -->
+    <div class="search-input-container">
+      <input
+        #searchInput
+        type="text"
+        class="search-input"
+        placeholder="Buscar por nombre..."
+        (keyup)="onSearchKeyup(searchInput.value)"
+      />
+    </div>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content>
+  <div *ngIf="loading" class="loading-container">
+    <ion-spinner name="crescent"></ion-spinner>
+    <p>Cargando restaurantes...</p>
+  </div>
+
+  <div
+    *ngIf="!loading && (!searchQuery || searchQuery.length < 2)"
+    class="search-empty"
+  >
+    <ion-icon name="restaurant"></ion-icon>
+    <p>Escribe al menos 2 caracteres para buscar</p>
+  </div>
+
+  <div
+    *ngIf="
+      !loading &&
+      searchQuery &&
+      searchQuery.length >= 2 &&
+      searchResults.length === 0
+    "
+    class="search-no-results"
+  >
+    <ion-icon name="sad-outline"></ion-icon>
+    <p>No se encontraron resultados para "{{ searchQuery }}"</p>
+  </div>
+
+  <ion-list
+    *ngIf="!loading && searchQuery.length >= 2 && searchResults.length > 0"
+  >
+    <ion-item
+      button
+      *ngFor="let result of searchResults"
+      (click)="selectRestaurant(result)"
+      lines="full"
+    >
+      <ion-icon name="restaurant" slot="start" color="primary"></ion-icon>
+      <ion-label>
+        <h2>{{ result.restaurant.name }}</h2>
+        <p>{{ result.restaurant.address }}</p>
+      </ion-label>
+    </ion-item>
+  </ion-list>
+</ion-content>

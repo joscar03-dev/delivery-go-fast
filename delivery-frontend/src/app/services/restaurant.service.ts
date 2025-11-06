@@ -283,4 +283,30 @@ export class RestaurantService {
       `${this.base}/restaurants/${restaurantId}/menu-option-groups/${groupId}`
     );
   }
+
+  // Configuración de Delivery
+  getDeliveryConfig(restaurantId: string): Observable<any> {
+    return this.http.get<any>(
+      `${this.base}/restaurants/${restaurantId}/delivery-config`
+    );
+  }
+
+  updateDeliveryConfig(restaurantId: string, data: any): Observable<any> {
+    return this.http.patch<any>(
+      `${this.base}/restaurants/${restaurantId}/delivery-config`,
+      data
+    );
+  }
+
+  // Restaurantes del usuario autenticado
+  getMyRestaurants(): Observable<RestaurantModel[]> {
+    return this.http.get<RestaurantModel[]>(
+      `${this.base}/restaurants/my/restaurants`
+    );
+  }
+
+  // Alias para getById (para compatibilidad)
+  getRestaurantById(id: string): Observable<RestaurantModel> {
+    return this.getById(id);
+  }
 }

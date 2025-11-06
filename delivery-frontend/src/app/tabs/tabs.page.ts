@@ -23,10 +23,13 @@ import {
   receiptOutline,
   bicycleOutline,
   restaurantOutline,
+  cart,
+  business,
+  codeWorking,
+  person,
 } from 'ionicons/icons';
 import { AuthService } from '../services/auth.service';
 import { CartService } from '../services/cart.service';
-import { Router } from '@angular/router';
 
 @Component({
   selector: 'app-tabs',
@@ -46,7 +49,6 @@ export class TabsPage {
   public environmentInjector = inject(EnvironmentInjector);
   private auth = inject(AuthService);
   private cartService = inject(CartService);
-  private router = inject(Router);
 
   isSuperAdmin = computed(() => this.auth.hasRole('super_admin'));
   isDeliveryDriver = computed(() => this.auth.hasRole('driver'));
@@ -58,38 +60,14 @@ export class TabsPage {
 
   constructor() {
     addIcons({
-      triangle,
-      ellipse,
+      business: business,
+      codeWorking: codeWorking,
+      person: person,
       square,
-      'basket-outline': basketOutline,
+      cart: cart,
       'receipt-outline': receiptOutline,
       'bicycle-outline': bicycleOutline,
       'restaurant-outline': restaurantOutline,
     });
-  }
-
-  goToCart(): void {
-    this.router.navigate(['/cart']);
-  }
-
-  goToOrderHistory(): void {
-    // Verificar autenticación antes de navegar
-    if (this.auth.ensureAuthenticated('/order-history')) {
-      this.router.navigate(['/order-history']);
-    }
-  }
-
-  goToDeliveries(): void {
-    // Verificar autenticación antes de navegar
-    if (this.auth.ensureAuthenticated('/delivery-driver/available')) {
-      this.router.navigate(['/delivery-driver/available']);
-    }
-  }
-
-  goToRestaurantOrders(): void {
-    // Verificar autenticación antes de navegar
-    if (this.auth.ensureAuthenticated('/restaurant-orders')) {
-      this.router.navigate(['/restaurant-orders']);
-    }
   }
 }

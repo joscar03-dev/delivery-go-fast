@@ -1,0 +1,380 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta content="width=device-width, initial-scale=1.0" name="viewport" />
+    <title>Go Fast - Food Delivery</title>
+    <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+    <link href="https://fonts.googleapis.com" rel="preconnect" />
+    <link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect" />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&amp;display=swap"
+      rel="stylesheet"
+    />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined"
+      rel="stylesheet"
+    />
+    <script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            colors: {
+              primary: "#FF6B00",
+              "background-light": "#F8F9FA",
+              "background-dark": "#121212",
+              "text-light-primary": "#333333",
+              "text-light-secondary": "#888888",
+              "text-dark-primary": "#E0E0E0",
+              "text-dark-secondary": "#A0A0A0",
+              "surface-light": "#FFFFFF",
+              "surface-dark": "#1E1E1E",
+              "surface-subtle-light": "#F0F0F0",
+              "surface-subtle-dark": "#282828",
+            },
+            fontFamily: {
+              display: ["Plus Jakarta Sans", "sans-serif"],
+            },
+            borderRadius: {
+              DEFAULT: "1rem",
+              lg: "1.5rem",
+              xl: "2rem",
+              full: "9999px",
+            },
+          },
+        },
+      };
+    </script>
+    <style>
+      .material-symbols-outlined {
+        font-variation-settings: "FILL" 0, "wght" 400, "GRAD" 0, "opsz" 24;
+      }
+    </style>
+    <style>
+      body {
+        min-height: max(884px, 100dvh);
+      }
+    </style>
+  </head>
+  <body class="bg-background-light dark:bg-background-dark font-display">
+    <div
+      class="relative flex h-auto min-h-screen w-full flex-col group/design-root overflow-x-hidden"
+    >
+      <!-- Top App Bar -->
+      <header
+        class="flex flex-col gap-2 bg-background-light dark:bg-background-dark p-4 pb-2 sticky top-0 z-10"
+      >
+        <div class="flex items-center h-12 justify-between">
+          <h1 class="text-primary text-2xl font-extrabold">Go Fast</h1>
+          <div class="flex w-12 items-center justify-end">
+            <button
+              class="flex max-w-[480px] cursor-pointer items-center justify-center overflow-hidden rounded-full h-10 w-10 bg-transparent text-text-light-primary dark:text-text-dark-primary text-base font-bold leading-normal tracking-[0.015em] min-w-0 p-0"
+            >
+              <span class="material-symbols-outlined text-3xl"
+                >account_circle</span
+              >
+            </button>
+          </div>
+        </div>
+        <p
+          class="text-text-light-primary dark:text-text-dark-primary tracking-light text-base font-medium"
+        >
+          Delivering to 123 Main Street
+        </p>
+      </header>
+      <!-- Search Bar -->
+      <div
+        class="px-4 py-3 bg-background-light dark:bg-background-dark sticky top-[104px] z-10"
+      >
+        <label class="flex flex-col min-w-40 h-14 w-full">
+          <div class="flex w-full flex-1 items-stretch rounded-lg h-full">
+            <div
+              class="text-text-light-secondary dark:text-text-dark-secondary flex border-none bg-surface-subtle-light dark:bg-surface-subtle-dark items-center justify-center pl-4 rounded-l-lg border-r-0"
+            >
+              <span class="material-symbols-outlined">search</span>
+            </div>
+            <input
+              class="form-input flex w-full min-w-0 flex-1 resize-none overflow-hidden rounded-lg text-text-light-primary dark:text-text-dark-primary focus:outline-0 focus:ring-2 focus:ring-primary/50 border-none bg-surface-subtle-light dark:bg-surface-subtle-dark h-full placeholder:text-text-light-secondary dark:placeholder:text-text-dark-secondary px-4 rounded-l-none border-l-0 pl-2 text-base font-normal leading-normal"
+              placeholder="Search for restaurants or dishes"
+              value=""
+            />
+          </div>
+        </label>
+      </div>
+      <!-- Featured Restaurants Title -->
+      <div class="px-4 pt-4 pb-2">
+        <h2
+          class="text-xl font-bold text-text-light-primary dark:text-text-dark-primary"
+        >
+          Featured Restaurants
+        </h2>
+      </div>
+      <!-- Carousel -->
+      <div
+        class="flex overflow-x-auto [-ms-scrollbar-style:none] [scrollbar-width:none] [&amp;::-webkit-scrollbar]:hidden"
+      >
+        <div class="flex items-stretch p-4 pt-0 gap-4">
+          <div
+            class="flex h-full flex-1 flex-col gap-3 rounded-lg bg-surface-light dark:bg-surface-dark shadow-sm min-w-64"
+          >
+            <div
+              class="w-full bg-center bg-no-repeat aspect-video bg-cover rounded-t-lg flex flex-col"
+              data-alt="A delicious looking burger with fries"
+              style="
+                background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuBFrs5ICjn96mcMpzGRGdSZudfkdX9LuYsHpA2kZUbTlA4NTut-BrOrr7GEIrZt16VTDdO35RBTQ_oPLXKPtQoz8KYbaYkwKcV7plwW8ABGjkmoHtWGRC6XmTSLB78Ii9Ytw1oz_SK20Uwrt-7u300O0DG59cWVRprUV5EDbD6z-Cmgb6mxg3_Vn9rOJhDEqyOfSNzwAWBZdc1g2FYepfCYPQjCTNTVXejHDNn7kRU1YWGRB3KZPUJRrB-sB2FhCzNgCRm0nDG471o');
+              "
+            ></div>
+            <div class="flex flex-col flex-1 justify-between p-3 pt-0 gap-2">
+              <div>
+                <p
+                  class="text-text-light-primary dark:text-text-dark-primary text-base font-bold leading-normal"
+                >
+                  Burger Palace
+                </p>
+                <p
+                  class="text-text-light-secondary dark:text-text-dark-secondary text-sm font-normal leading-normal"
+                >
+                  American • Burgers
+                </p>
+              </div>
+            </div>
+          </div>
+          <div
+            class="flex h-full flex-1 flex-col gap-3 rounded-lg bg-surface-light dark:bg-surface-dark shadow-sm min-w-64"
+          >
+            <div
+              class="w-full bg-center bg-no-repeat aspect-video bg-cover rounded-t-lg flex flex-col"
+              data-alt="A classic pepperoni pizza on a wooden board"
+              style="
+                background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuBJKeOz6plPRGffwhNuIcRSwCR_Ck9sPNIjLR5iTpyVAt4hBp4IBUP3RXkhaSv1R40sIePBFxHIVm8LWXfIkzCP8Jkk33WHxbIXmOMcuSTfzfiZL16W-z-ac37_1nJmPX3xQ_0FihgfiEyahmti6aNopbrpsItuFCXYYfL_BsG6um6Y8iJ8XRbbv3DEvrfitMRyW-28LV-HKltyPFyVBllmg8fDrxRrv2HRf0GAkCEMT_pcbZjqc80j469WIZjAMlUFuM02V2Vcvsk');
+              "
+            ></div>
+            <div class="flex flex-col flex-1 justify-between p-3 pt-0 gap-2">
+              <div>
+                <p
+                  class="text-text-light-primary dark:text-text-dark-primary text-base font-bold leading-normal"
+                >
+                  Pizza Planet
+                </p>
+                <p
+                  class="text-text-light-secondary dark:text-text-dark-secondary text-sm font-normal leading-normal"
+                >
+                  Italian • Pizza
+                </p>
+              </div>
+            </div>
+          </div>
+          <div
+            class="flex h-full flex-1 flex-col gap-3 rounded-lg bg-surface-light dark:bg-surface-dark shadow-sm min-w-64"
+          >
+            <div
+              class="w-full bg-center bg-no-repeat aspect-video bg-cover rounded-t-lg flex flex-col"
+              data-alt="A fresh and healthy salad bowl with various greens"
+              style="
+                background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuBkdOlFCnDvZWw2xZluzqwcs-ZsifAu_4g_Z69rHJZ9L8h4gAGJlR-KoIzMPQ17iT0UfVYC24yonl0n3pT9OFlINy87jA5E6mHkl7wiKLUEIimQP1nuob2YOXIVlpW4_VNuSmUMT71wt_Jik0PIEkJyOf8bi_RGHZ7oWtzEweiv_uvJ73j4iF_Dna6kk18_zkZuVAE9KzgUsTEUWikbvQAfja40NVpVrz-tPZNGq_E_IykPauUH-ok2wULEUbyqpQANmNWxYF6jYaQ');
+              "
+            ></div>
+            <div class="flex flex-col flex-1 justify-between p-3 pt-0 gap-2">
+              <div>
+                <p
+                  class="text-text-light-primary dark:text-text-dark-primary text-base font-bold leading-normal"
+                >
+                  Salad Grove
+                </p>
+                <p
+                  class="text-text-light-secondary dark:text-text-dark-secondary text-sm font-normal leading-normal"
+                >
+                  Healthy • Salads
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <!-- Chips -->
+      <div
+        class="flex gap-3 px-4 py-3 overflow-x-auto [-ms-scrollbar-style:none] [scrollbar-width:none] [&amp;::-webkit-scrollbar]:hidden"
+      >
+        <button
+          class="flex h-10 shrink-0 cursor-pointer items-center justify-center gap-x-2 rounded-full bg-primary pl-4 pr-4 text-white"
+        >
+          <p class="text-sm font-bold leading-normal">All</p>
+        </button>
+        <button
+          class="flex h-10 shrink-0 cursor-pointer items-center justify-center gap-x-2 rounded-full bg-surface-subtle-light dark:bg-surface-subtle-dark pl-4 pr-4 text-text-light-primary dark:text-text-dark-primary"
+        >
+          <p class="text-sm font-medium leading-normal">Fast Food</p>
+        </button>
+        <button
+          class="flex h-10 shrink-0 cursor-pointer items-center justify-center gap-x-2 rounded-full bg-surface-subtle-light dark:bg-surface-subtle-dark pl-4 pr-4 text-text-light-primary dark:text-text-dark-primary"
+        >
+          <p class="text-sm font-medium leading-normal">Pizza</p>
+        </button>
+        <button
+          class="flex h-10 shrink-0 cursor-pointer items-center justify-center gap-x-2 rounded-full bg-surface-subtle-light dark:bg-surface-subtle-dark pl-4 pr-4 text-text-light-primary dark:text-text-dark-primary"
+        >
+          <p class="text-sm font-medium leading-normal">Sushi</p>
+        </button>
+        <button
+          class="flex h-10 shrink-0 cursor-pointer items-center justify-center gap-x-2 rounded-full bg-surface-subtle-light dark:bg-surface-subtle-dark pl-4 pr-4 text-text-light-primary dark:text-text-dark-primary"
+        >
+          <p class="text-sm font-medium leading-normal">Healthy</p>
+        </button>
+        <button
+          class="flex h-10 shrink-0 cursor-pointer items-center justify-center gap-x-2 rounded-full bg-surface-subtle-light dark:bg-surface-subtle-dark pl-4 pr-4 text-text-light-primary dark:text-text-dark-primary"
+        >
+          <p class="text-sm font-medium leading-normal">Dessert</p>
+        </button>
+      </div>
+      <!-- Restaurant List -->
+      <div class="flex flex-col gap-4 p-4">
+        <!-- Card 1 -->
+        <div
+          class="flex flex-col items-stretch justify-start rounded-lg bg-surface-light dark:bg-surface-dark shadow-sm"
+        >
+          <div
+            class="w-full bg-center bg-no-repeat aspect-video bg-cover rounded-t-lg"
+            data-alt="A close-up shot of a juicy cheeseburger"
+            style="
+              background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuDOXRxuTPlj3e031153zp_y4_tVNXniZJncNo6EylGxvyAnD5DzePoYpNxQx7A9Q990RWdnHoFP9sjkLdfTf372QqhMrNqwTZLxSmOOERbYDBBVu8IuJYG1nKwStoJUCXLum-PM8XuPEW6HutmexTCzfkjaqgVWxv8htEi1IamJD2WOvYPtxaR3humqxTj1S6rLdrFFYRDglHXcTTsf644sDJ-nU3RKFCJsZ8JdnqD6oteDEF5MihmJYl-qsFvCDKt7CKjC00ZOoNM');
+            "
+          ></div>
+          <div
+            class="flex w-full min-w-72 grow flex-col items-stretch justify-center gap-1 p-4"
+          >
+            <p
+              class="text-text-light-primary dark:text-text-dark-primary text-lg font-bold leading-tight tracking-[-0.015em]"
+            >
+              The Burger Joint
+            </p>
+            <div
+              class="flex items-center gap-2 text-text-light-secondary dark:text-text-dark-secondary"
+            >
+              <span class="material-symbols-outlined text-lg text-primary"
+                >star</span
+              >
+              <p class="text-base font-normal leading-normal">
+                4.5 • 25-35 min
+              </p>
+            </div>
+            <p
+              class="text-text-light-secondary dark:text-text-dark-secondary text-base font-normal leading-normal"
+            >
+              American • Burgers
+            </p>
+          </div>
+        </div>
+        <!-- Card 2 -->
+        <div
+          class="flex flex-col items-stretch justify-start rounded-lg bg-surface-light dark:bg-surface-dark shadow-sm"
+        >
+          <div
+            class="w-full bg-center bg-no-repeat aspect-video bg-cover rounded-t-lg"
+            data-alt="Various sushi rolls arranged neatly on a plate"
+            style="
+              background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuDJnoUNa0KxChdz6NZTh1XwLi6JcP0kiH5nfGnPEP9jp4kN7LH-gP3UCZhM2UgI2T1xzRABejXTa8kS_QWSFa8eIY2CF6BX9fH5k-qdg6EklN7gwUg4LojAPEnTDaSQd2RkslSqURQ6jgYnWlnibRDm51iJs_gXvtSejAUHmARSPNdKxYCFx9vy-ASMBvgLYxoh9uJ7XKWKsMml-bKOIvMn61eOIDDuwPwi_szXuw497ldA-QdpASbmZCRgBMWLFdfJRAIsX9uH82M');
+            "
+          ></div>
+          <div
+            class="flex w-full min-w-72 grow flex-col items-stretch justify-center gap-1 p-4"
+          >
+            <p
+              class="text-text-light-primary dark:text-text-dark-primary text-lg font-bold leading-tight tracking-[-0.015em]"
+            >
+              Sushi Express
+            </p>
+            <div
+              class="flex items-center gap-2 text-text-light-secondary dark:text-text-dark-secondary"
+            >
+              <span class="material-symbols-outlined text-lg text-primary"
+                >star</span
+              >
+              <p class="text-base font-normal leading-normal">
+                4.8 • 30-40 min
+              </p>
+            </div>
+            <p
+              class="text-text-light-secondary dark:text-text-dark-secondary text-base font-normal leading-normal"
+            >
+              Japanese • Sushi
+            </p>
+          </div>
+        </div>
+        <!-- Card 3 -->
+        <div
+          class="flex flex-col items-stretch justify-start rounded-lg bg-surface-light dark:bg-surface-dark shadow-sm"
+        >
+          <div
+            class="w-full bg-center bg-no-repeat aspect-video bg-cover rounded-t-lg"
+            data-alt="A steaming bowl of ramen noodles with toppings"
+            style="
+              background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuAWZgScVsrFQ5IeHNByBZV7rFv3sB6zSgJLFTAbe7FuVZTdhdZNjhfMzQKXmsb_e8Gw5OEqo8Zbp61jLXrnRDF8zhF03cam_gmc5Y0XsgpVqN4fLtz2gPbgWxN2Qd_q5i8w7s2U8CK_WlNQwck7-TdSWGl1sXU-z5vLtlFOLdaG0lLlOg-8ELKz_FQfrdfTePkqMr-0jtnLenRxn8WOymiQfQRK6fzWeUfJ5L-1z5HYcRVyUeKmC_h2cTYUjS_r13IKPmyvY7-02F4');
+            "
+          ></div>
+          <div
+            class="flex w-full min-w-72 grow flex-col items-stretch justify-center gap-1 p-4"
+          >
+            <p
+              class="text-text-light-primary dark:text-text-dark-primary text-lg font-bold leading-tight tracking-[-0.015em]"
+            >
+              Ramen House
+            </p>
+            <div
+              class="flex items-center gap-2 text-text-light-secondary dark:text-text-dark-secondary"
+            >
+              <span class="material-symbols-outlined text-lg text-primary"
+                >star</span
+              >
+              <p class="text-base font-normal leading-normal">
+                4.6 • 20-30 min
+              </p>
+            </div>
+            <p
+              class="text-text-light-secondary dark:text-text-dark-secondary text-base font-normal leading-normal"
+            >
+              Japanese • Noodles
+            </p>
+          </div>
+        </div>
+        <!-- Card 4 -->
+        <div
+          class="flex flex-col items-stretch justify-start rounded-lg bg-surface-light dark:bg-surface-dark shadow-sm"
+        >
+          <div
+            class="w-full bg-center bg-no-repeat aspect-video bg-cover rounded-t-lg"
+            data-alt="A healthy green smoothie bowl with fruits and nuts"
+            style="
+              background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuAqEsbrbphabY7Vt75v5XEZKkr_jqVv4LPnlZDgVtSriETPnZcFGw5vs4UjJVhpaLaeO_KNA-D3nUGaOrtLRQl1BuuzfwF-9IUSB-Lf-UDdyJzmJ04yOexUL7la-UFz4QHiN7-CEgpy5b3yx1_lTdxKT-MhSABwC1q8ULKAfKsPAIKEqdzX4v0-nmHSfo4f7jRKWDArVhGwx2pJIs-JV0UUifFS9yjDjw31qN5O1vftPrIO_qQbHS-Eauh70doxbr7qr79eAVfJevY');
+            "
+          ></div>
+          <div
+            class="flex w-full min-w-72 grow flex-col items-stretch justify-center gap-1 p-4"
+          >
+            <p
+              class="text-text-light-primary dark:text-text-dark-primary text-lg font-bold leading-tight tracking-[-0.015em]"
+            >
+              Green Goodness
+            </p>
+            <div
+              class="flex items-center gap-2 text-text-light-secondary dark:text-text-dark-secondary"
+            >
+              <span class="material-symbols-outlined text-lg text-primary"
+                >star</span
+              >
+              <p class="text-base font-normal leading-normal">
+                4.9 • 15-25 min
+              </p>
+            </div>
+            <p
+              class="text-text-light-secondary dark:text-text-dark-secondary text-base font-normal leading-normal"
+            >
+              Healthy • Salads
+            </p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </body>
+</html>

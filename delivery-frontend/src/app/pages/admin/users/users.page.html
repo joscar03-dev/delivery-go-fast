@@ -1,7 +1,7 @@
 <ion-header>
   <ion-toolbar>
     <ion-buttons slot="start">
-      <ion-back-button defaultHref="/tabs/tab2"></ion-back-button>
+      <ion-back-button defaultHref="/tabs/admin"></ion-back-button>
     </ion-buttons>
     <ion-title>Usuarios</ion-title>
   </ion-toolbar>
@@ -26,13 +26,19 @@
 
   <ion-row class="ion-justify-content-between ion-align-items-center">
     <ion-col size="auto">
-      <ion-button (click)="prevPage()" [disabled]="page===1">Anterior</ion-button>
+      <ion-button (click)="prevPage()" [disabled]="page===1"
+        >Anterior</ion-button
+      >
     </ion-col>
     <ion-col size="auto">
       <ion-badge>Pag {{ page }}</ion-badge>
     </ion-col>
     <ion-col size="auto">
-      <ion-button (click)="nextPage()" [disabled]="page*pageSize >= users.length">Siguiente</ion-button>
+      <ion-button
+        (click)="nextPage()"
+        [disabled]="page*pageSize >= users.length"
+        >Siguiente</ion-button
+      >
     </ion-col>
   </ion-row>
 

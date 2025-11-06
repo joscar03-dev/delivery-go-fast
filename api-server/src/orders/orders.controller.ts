@@ -18,6 +18,7 @@ import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { RolesGuard } from '../auth/guards/roles.guard';
 import { Roles } from '../auth/decorators/roles.decorator';
 import { Role } from '../common/enums/role.enum';
+import { CheckoutDto } from '../payments/dto/checkout.dto';
 
 @Controller('orders')
 @UseGuards(JwtAuthGuard, RolesGuard)
@@ -29,6 +30,17 @@ export class OrdersController {
   create(@Body() createOrderDto: CreateOrderDto, @Request() req) {
     const currentUser = req.user;
     return this.ordersService.create(createOrderDto, currentUser.id);
+  }
+
+  /**
+   * POST /api/orders/checkout
+   * Crear pedido con sistema de pago completo
+   */
+  @Post('checkout')
+  @Roles(Role.CLIENT, Role.SUPER_ADMIN)
+  checkout(@Body() checkoutDto: CheckoutDto, @Request() req) {
+    const currentUser = req.user;
+    return this.ordersService.checkout(checkoutDto, currentUser.id);
   }
 
   @Get()

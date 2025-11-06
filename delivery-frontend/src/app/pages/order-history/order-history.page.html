@@ -1,7 +1,7 @@
 <ion-header>
   <ion-toolbar>
     <ion-buttons slot="start">
-      <ion-back-button defaultHref="/tabs/tab1"></ion-back-button>
+      <ion-back-button defaultHref="/tabs/account"></ion-back-button>
     </ion-buttons>
     <ion-title>Mis Pedidos</ion-title>
     <ion-buttons slot="end">
@@ -21,6 +21,8 @@
 </ion-header>
 
 <ion-content>
+  <app-wave-background></app-wave-background>
+
   <!-- Pull to refresh -->
   <ion-refresher slot="fixed" (ionRefresh)="refresh($event)">
     <ion-refresher-content

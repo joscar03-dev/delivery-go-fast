@@ -1,0 +1,212 @@
+<ion-header [translucent]="true">
+  <ion-toolbar>
+    <ion-buttons slot="start">
+      <ion-back-button defaultHref="/tabs/restaurant-admin"></ion-back-button>
+    </ion-buttons>
+    <ion-title>Configuración de Delivery</ion-title>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content [fullscreen]="true" class="ion-padding">
+  <!-- Loading State -->
+  <div *ngIf="isLoading" class="flex items-center justify-center h-full">
+    <div class="text-center">
+      <ion-spinner name="crescent" color="primary"></ion-spinner>
+      <p class="mt-4 text-gray-500">Cargando configuración...</p>
+    </div>
+  </div>
+
+  <!-- Main Content -->
+  <div *ngIf="!isLoading" class="max-w-2xl mx-auto">
+    <h2 class="text-2xl font-bold text-gray-800 mb-2">{{ restaurantName }}</h2>
+    <p class="text-gray-500 mb-6">
+      Configura los parámetros de delivery de tu restaurante
+    </p>
+
+    <!-- Activar/Desactivar Delivery -->
+    <ion-card class="mb-4 shadow-md rounded-xl overflow-hidden">
+      <ion-card-content class="p-4">
+        <ion-item lines="none">
+          <ion-icon
+            name="location-outline"
+            slot="start"
+            color="primary"
+            class="text-2xl"
+          ></ion-icon>
+          <ion-label>
+            <h3 class="font-semibold text-lg">Servicio de Delivery</h3>
+            <p class="text-sm text-gray-500">Activa o desactiva el delivery</p>
+          </ion-label>
+          <ion-toggle
+            [(ngModel)]="deliveryConfig.isDeliveryEnabled"
+            color="success"
+          ></ion-toggle>
+        </ion-item>
+      </ion-card-content>
+    </ion-card>
+
+    <!-- Configuración de Precios -->
+    <ion-card class="mb-4 shadow-md rounded-xl overflow-hidden">
+      <ion-card-header class="bg-gray-50">
+        <ion-card-title class="text-base flex items-center gap-2">
+          <ion-icon name="cash-outline" color="success"></ion-icon>
+          Precios y Montos
+        </ion-card-title>
+      </ion-card-header>
+      <ion-card-content class="p-4">
+        <!-- Tarifa de Delivery -->
+        <ion-item class="mb-4 border border-gray-200 rounded-lg">
+          <ion-label position="stacked">Tarifa de Delivery (S/)</ion-label>
+          <ion-input
+            type="number"
+            [(ngModel)]="deliveryConfig.deliveryFee"
+            step="0.50"
+            min="0"
+            placeholder="5.00"
+          ></ion-input>
+          <ion-note slot="helper"
+            >Costo del delivery para tus clientes</ion-note
+          >
+        </ion-item>
+
+        <!-- Delivery Gratis desde -->
+        <ion-item class="mb-4 border border-gray-200 rounded-lg">
+          <ion-label position="stacked">Delivery gratis desde (S/)</ion-label>
+          <ion-input
+            type="number"
+            [(ngModel)]="deliveryConfig.freeDeliveryThreshold"
+            step="5"
+            min="0"
+            placeholder="50.00"
+          ></ion-input>
+          <ion-note slot="helper"
+            >Pedidos mayores a este monto tendrán delivery gratis (0 =
+            desactivado)</ion-note
+          >
+        </ion-item>
+
+        <!-- Pedido Mínimo -->
+        <ion-item class="border border-gray-200 rounded-lg">
+          <ion-label position="stacked">Pedido mínimo (S/)</ion-label>
+          <ion-input
+            type="number"
+            [(ngModel)]="deliveryConfig.minOrderAmount"
+            step="5"
+            min="0"
+            placeholder="15.00"
+          ></ion-input>
+          <ion-note slot="helper"
+            >Monto mínimo para realizar un pedido (0 = sin mínimo)</ion-note
+          >
+        </ion-item>
+      </ion-card-content>
+    </ion-card>
+
+    <!-- Configuración de Tiempos y Distancias -->
+    <ion-card class="mb-4 shadow-md rounded-xl overflow-hidden">
+      <ion-card-header class="bg-gray-50">
+        <ion-card-title class="text-base flex items-center gap-2">
+          <ion-icon name="time-outline" color="warning"></ion-icon>
+          Tiempos y Cobertura
+        </ion-card-title>
+      </ion-card-header>
+      <ion-card-content class="p-4">
+        <!-- Tiempo Estimado -->
+        <ion-item class="mb-4 border border-gray-200 rounded-lg">
+          <ion-label position="stacked"
+            >Tiempo estimado de entrega (minutos)</ion-label
+          >
+          <ion-input
+            type="number"
+            [(ngModel)]="deliveryConfig.estimatedDeliveryTime"
+            min="10"
+            step="5"
+            placeholder="30"
+          ></ion-input>
+          <ion-note slot="helper"
+            >Tiempo promedio de preparación + entrega</ion-note
+          >
+        </ion-item>
+
+        <!-- Distancia Máxima -->
+        <ion-item class="border border-gray-200 rounded-lg">
+          <ion-label position="stacked"
+            >Distancia máxima de entrega (km)</ion-label
+          >
+          <ion-input
+            type="number"
+            [(ngModel)]="deliveryConfig.maxDeliveryDistance"
+            min="1"
+            step="1"
+            placeholder="10"
+          ></ion-input>
+          <ion-note slot="helper"
+            >Radio de cobertura desde tu restaurante</ion-note
+          >
+        </ion-item>
+      </ion-card-content>
+    </ion-card>
+
+    <!-- Ejemplo Visual -->
+    <ion-card
+      class="mb-6 shadow-md rounded-xl overflow-hidden bg-gradient-to-r from-blue-50 to-purple-50"
+    >
+      <ion-card-content class="p-4">
+        <h4 class="font-semibold text-gray-800 mb-3">
+          📋 Vista previa para clientes:
+        </h4>
+        <div class="space-y-2 text-sm">
+          <p class="flex justify-between">
+            <span class="text-gray-600">Tarifa de delivery:</span>
+            <span class="font-semibold"
+              >S/ {{ deliveryConfig.deliveryFee.toFixed(2) }}</span
+            >
+          </p>
+          <p
+            class="flex justify-between"
+            *ngIf="deliveryConfig.freeDeliveryThreshold > 0"
+          >
+            <span class="text-green-600">🎉 Delivery gratis desde:</span>
+            <span class="font-semibold text-green-600"
+              >S/ {{ deliveryConfig.freeDeliveryThreshold.toFixed(2) }}</span
+            >
+          </p>
+          <p
+            class="flex justify-between"
+            *ngIf="deliveryConfig.minOrderAmount > 0"
+          >
+            <span class="text-gray-600">📦 Pedido mínimo:</span>
+            <span class="font-semibold"
+              >S/ {{ deliveryConfig.minOrderAmount.toFixed(2) }}</span
+            >
+          </p>
+          <p class="flex justify-between">
+            <span class="text-gray-600">⏱️ Tiempo estimado:</span>
+            <span class="font-semibold"
+              >{{ deliveryConfig.estimatedDeliveryTime }} min</span
+            >
+          </p>
+          <p class="flex justify-between">
+            <span class="text-gray-600">📍 Cobertura:</span>
+            <span class="font-semibold"
+              >{{ deliveryConfig.maxDeliveryDistance }} km</span
+            >
+          </p>
+        </div>
+      </ion-card-content>
+    </ion-card>
+
+    <!-- Botón Guardar -->
+    <ion-button
+      expand="block"
+      size="large"
+      (click)="saveConfig()"
+      [disabled]="isSaving"
+      class="mb-6"
+    >
+      <ion-icon slot="start" name="save-outline"></ion-icon>
+      {{ isSaving ? 'Guardando...' : 'Guardar Configuración' }}
+      <ion-spinner *ngIf="isSaving" slot="end" name="crescent"></ion-spinner>
+    </ion-button>
+  </div>
+</ion-content>

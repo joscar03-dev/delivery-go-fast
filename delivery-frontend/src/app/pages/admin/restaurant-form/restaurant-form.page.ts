@@ -24,6 +24,7 @@ import { RestaurantService } from '../../../services/restaurant.service';
 import { UserService } from '../../../services/user.service';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { ImageCompressor } from '../../../common/utils/image-compressor.util';
+import { CITIES, City } from '../../../models/city.enum';
 import { addIcons } from 'ionicons';
 import {
   trashOutline,
@@ -78,6 +79,7 @@ export class AdminRestaurantFormPage {
     name: this.fb.nonNullable.control<string>('', [Validators.required]),
     address: this.fb.nonNullable.control<string>('', [Validators.required]),
     phone: this.fb.nonNullable.control<string>('', [Validators.required]),
+    city: this.fb.nonNullable.control<string>('', [Validators.required]),
     imageUrl: this.fb.nonNullable.control<string>(''),
     latitude: this.fb.nonNullable.control<number | null>(null, [
       Validators.required,
@@ -96,6 +98,9 @@ export class AdminRestaurantFormPage {
   locating = false;
   imagePreview: string | null = null;
 
+  // Lista de ciudades disponibles
+  cities = CITIES;
+
   constructor() {
     // Leer ID si viene por query para modo edición
     const id = this.route.snapshot.queryParamMap.get('id');
@@ -106,6 +111,7 @@ export class AdminRestaurantFormPage {
           name: r.name,
           address: r.address,
           phone: r.phone,
+          city: r.city || City.BAGUA,
           imageUrl: r.imageUrl || '',
           latitude: (r as any).location?.coordinates?.[1] ?? null,
           longitude: (r as any).location?.coordinates?.[0] ?? null,
@@ -252,6 +258,7 @@ export class AdminRestaurantFormPage {
       name: data.name,
       address: data.address,
       phone: data.phone,
+      city: data.city,
       latitude: Number(data.latitude),
       longitude: Number(data.longitude),
       ...(data.imageUrl ? { imageUrl: data.imageUrl } : {}),

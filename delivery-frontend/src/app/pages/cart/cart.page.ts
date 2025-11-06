@@ -1,4 +1,4 @@
-import { Component, OnInit, inject } from '@angular/core';
+import { Component, OnInit, inject, ViewChild } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import {
@@ -26,6 +26,7 @@ import {
   IonCardTitle,
   IonCardContent,
   ModalController,
+  IonModal,
 } from '@ionic/angular/standalone';
 import { Router } from '@angular/router';
 import { CartService } from '../../services/cart.service';
@@ -42,6 +43,8 @@ import {
   trashOutline,
   basketOutline,
   locationOutline,
+  arrowBack,
+  location,
 } from 'ionicons/icons';
 
 addIcons({
@@ -50,6 +53,8 @@ addIcons({
   'trash-outline': trashOutline,
   'basket-outline': basketOutline,
   'location-outline': locationOutline,
+  'arrow-back': arrowBack,
+  location: location,
 });
 
 @Component({
@@ -81,17 +86,21 @@ addIcons({
     IonCardHeader,
     IonCardTitle,
     IonCardContent,
+    IonModal,
     CommonModule,
     FormsModule,
+    AddressSelectorComponent,
   ],
 })
 export class CartPage implements OnInit {
+  @ViewChild('addressModal') addressModal!: IonModal;
+
   private cartService = inject(CartService);
   private orderService = inject(OrderService);
   private authService = inject(AuthService);
   private addressService = inject(AddressService);
   private modalCtrl = inject(ModalController);
-  private router = inject(Router);
+  public router = inject(Router);
 
   cartItems$ = this.cartService.cartItems$;
   loading = false;
@@ -194,52 +203,8 @@ export class CartPage implements OnInit {
       return;
     }
 
-    // Verificar que haya una dirección seleccionada
-    if (!this.selectedAddress) {
-      this.alertMessage = 'Por favor selecciona una dirección de entrega';
-      this.showAlert = true;
-      return;
-    }
-
-    this.loading = true;
-
-    try {
-      // Preparar los datos del pedido
-      const orderData: CreateOrderDto = {
-        restaurantId: this.cartService.currentRestaurantId!,
-        items: this.cartItems.map((item) => ({
-          menuItemId: item.menuItemId,
-          quantity: item.quantity,
-          comment: item.comment,
-          options: item.options,
-        })),
-        notes: '', // Puedes agregar un campo para notas si lo deseas
-        deliveryAddress: `${this.selectedAddress.street}, ${this.selectedAddress.city}, ${this.selectedAddress.postalCode}`,
-      };
-
-      // Crear el pedido
-      const order = await this.orderService.createOrder(orderData).toPromise();
-
-      // Limpiar el carrito
-      this.cartService.clearCart();
-
-      // Mostrar confirmación
-      this.toastMessage = 'Pedido realizado exitosamente';
-      this.showToast = true;
-
-      // Redirigir al historial de pedidos después de un momento
-      setTimeout(() => {
-        this.router.navigate(['/order-history']);
-      }, 2000);
-    } catch (error: any) {
-      console.error('Error creating order:', error);
-      this.alertMessage =
-        error.error?.message ||
-        'Error al realizar el pedido. Inténtalo de nuevo.';
-      this.showAlert = true;
-    } finally {
-      this.loading = false;
-    }
+    // Navegar a la página de checkout
+    this.router.navigate(['/tabs/checkout']);
   }
 
   /**
@@ -258,23 +223,39 @@ export class CartPage implements OnInit {
   }
 
   /**
-   * Abre el modal para seleccionar dirección
+   * Abre el modal para seleccionar dirección usando el modal declarativo
    */
   async openAddressSelector(): Promise<void> {
-    const modal = await this.modalCtrl.create({
-      component: AddressSelectorComponent,
-      componentProps: {
-        selectedAddressId: this.selectedAddress?.id,
-      },
-    });
-
-    await modal.present();
-
-    const { data, role } = await modal.onWillDismiss();
-
-    if (role === 'selected' && data) {
-      this.selectedAddress = data;
+    if (this.addressModal) {
+      await this.addressModal.present();
     }
+  }
+
+  /**
+   * Maneja la selección de dirección desde el modal
+   */
+  onAddressSelected(address: Address, modal: any): void {
+    this.selectedAddress = address;
+    modal.dismiss();
+  }
+
+  /**
+   * Maneja la navegación a la página de direcciones desde el modal
+   */
+  async onNavigateToAddresses(modal: any): Promise<void> {
+    console.log('🚀 Navigating to addresses from cart');
+    await modal.dismiss();
+    await this.router.navigate(['/tabs/addresses'], {
+      state: { returnUrl: '/tabs/cart' },
+    });
+  }
+
+  /**
+   * Hook que se ejecuta cuando la vista está por entrar
+   * Recarga la dirección predeterminada cuando regresamos de /addresses
+   */
+  async ionViewWillEnter(): Promise<void> {
+    await this.loadDefaultAddress();
   }
 
   onAlertDismiss(): void {

@@ -268,8 +268,23 @@ export class MenuItemDetailPage implements OnInit {
     });
     this.toastMessage = 'Agregado al carrito';
     this.showToast = true;
+
     if (goToCheckout) {
-      this.router.navigate(['/cart']);
+      // Ir al carrito para pagar
+      this.router.navigate(['/tabs/cart']);
+    } else {
+      // Regresar al detalle del restaurante para seguir agregando items
+      this.router.navigate(['/restaurant', this.restaurantId]);
+    }
+  }
+
+  increaseQuantity(): void {
+    this.quantity++;
+  }
+
+  decreaseQuantity(): void {
+    if (this.quantity > 1) {
+      this.quantity--;
     }
   }
 }

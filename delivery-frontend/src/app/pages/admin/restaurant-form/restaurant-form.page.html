@@ -35,6 +35,19 @@
         ></ion-input>
       </ion-item>
 
+      <ion-item class="custom-item">
+        <ion-select
+          label="Ciudad"
+          labelPlacement="stacked"
+          formControlName="city"
+          interface="action-sheet"
+        >
+          <ion-select-option *ngFor="let city of cities" [value]="city">
+            {{ city }}
+          </ion-select-option>
+        </ion-select>
+      </ion-item>
+
       <!-- Campo de imagen con preview -->
       <div class="image-upload-container">
         <ion-label>Imagen del Restaurante</ion-label>

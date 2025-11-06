@@ -26,6 +26,7 @@ import {
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { RestaurantService } from '../../services/restaurant.service';
 import { CartService } from '../../services/cart.service';
+import { WaveBackgroundComponent } from '../../components/wave-background/wave-background.component';
 import type {
   RestaurantModel,
   MenuItemModel,
@@ -38,6 +39,8 @@ import {
   restaurantOutline,
   pricetagOutline,
   addOutline,
+  star,
+  cartOutline,
 } from 'ionicons/icons';
 
 // Register Swiper custom elements
@@ -50,6 +53,8 @@ addIcons({
   'restaurant-outline': restaurantOutline,
   'pricetag-outline': pricetagOutline,
   'add-outline': addOutline,
+  star: star,
+  'cart-outline': cartOutline,
 });
 
 @Component({
@@ -73,6 +78,7 @@ addIcons({
     IonSpinner,
     IonButton,
     IonToast,
+    WaveBackgroundComponent,
   ],
   schemas: [CUSTOM_ELEMENTS_SCHEMA],
   templateUrl: './restaurant-detail.page.html',
@@ -159,6 +165,36 @@ export class RestaurantDetailPage implements OnInit {
       'menu',
       menuItem.id,
     ]);
+  }
+
+  viewItemDetail(menuItem: MenuItemModel): void {
+    if (!this.restaurant) return;
+    this.router.navigate([
+      '/restaurants',
+      this.restaurant.id,
+      'menu',
+      menuItem.id,
+    ]);
+  }
+
+  getItemsByCategory(categoryId: string): MenuItemModel[] {
+    if (!this.restaurant?.menuItems) return [];
+    return this.restaurant.menuItems.filter((item) => {
+      const itemCategoryId = this.getItemCategoryId(item);
+      return itemCategoryId === categoryId;
+    });
+  }
+
+  get cartItemCount(): number {
+    return this.cartService.itemCount;
+  }
+
+  get cartTotal(): number {
+    return this.cartService.totalPrice;
+  }
+
+  goToCart(): void {
+    this.router.navigate(['/tabs/cart']);
   }
 
   onToastDismiss(): void {

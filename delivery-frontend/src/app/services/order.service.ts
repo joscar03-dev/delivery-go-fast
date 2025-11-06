@@ -7,6 +7,7 @@ import {
   CreateOrderDto,
   OrderHistoryResponse,
 } from '../models/order.model';
+import { CheckoutDto } from '../models/payment.model';
 import { environment } from '../../environments/environment';
 import { AuthService } from './auth.service';
 
@@ -157,5 +158,15 @@ export class OrderService {
         headers: this.getHeaders(),
       })
       .pipe(map((response) => response.orders || []));
+  }
+
+  /**
+   * Realiza el checkout completo del carrito
+   * Crea el pedido con dirección, método de pago y cálculo de delivery
+   */
+  checkout(checkoutData: CheckoutDto): Observable<Order> {
+    return this.http.post<Order>(`${this.apiUrl}/checkout`, checkoutData, {
+      headers: this.getHeaders(),
+    });
   }
 }

@@ -24,10 +24,13 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
       throw new UnauthorizedException();
     }
     // Lo que retornes aquí se adjuntará al objeto request (request.user)
-    // Incluimos el rol del payload para acceso rápido
+    // Incluimos el 'sub' del payload para que esté disponible en req.user.sub
     return {
-      ...user,
+      sub: payload.sub, // ✅ Agregar el ID desde el payload
+      id: user.id, // También incluir como 'id' por compatibilidad
+      email: payload.email,
       role: payload.role,
+      name: user.name,
     };
   }
 }

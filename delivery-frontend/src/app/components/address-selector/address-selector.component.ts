@@ -1,26 +1,28 @@
-import { Component, OnInit, inject, Input } from '@angular/core';
+import {
+  Component,
+  OnInit,
+  inject,
+  Input,
+  Output,
+  EventEmitter,
+} from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { FormsModule } from '@angular/forms';
+import { Router } from '@angular/router';
 import {
   IonHeader,
   IonToolbar,
   IonTitle,
-  IonContent,
   IonButton,
   IonButtons,
   IonIcon,
   IonList,
   IonItem,
   IonLabel,
-  IonRadioGroup,
-  IonRadio,
   IonSpinner,
   IonBadge,
-  ModalController,
   ToastController,
 } from '@ionic/angular/standalone';
 import { AddressService } from '../../services/address.service';
-import { AddressFormComponent } from '../address-form/address-form.component';
 import {
   Address,
   AddressType,
@@ -35,6 +37,8 @@ import {
   briefcaseOutline,
   locationOutline,
   checkmarkCircleOutline,
+  checkmarkCircle,
+  settingsOutline,
 } from 'ionicons/icons';
 
 addIcons({
@@ -44,6 +48,8 @@ addIcons({
   'briefcase-outline': briefcaseOutline,
   'location-outline': locationOutline,
   'checkmark-circle-outline': checkmarkCircleOutline,
+  'checkmark-circle': checkmarkCircle,
+  'settings-outline': settingsOutline,
 });
 
 @Component({
@@ -51,19 +57,15 @@ addIcons({
   standalone: true,
   imports: [
     CommonModule,
-    FormsModule,
     IonHeader,
     IonToolbar,
     IonTitle,
-    IonContent,
     IonButton,
     IonButtons,
     IonIcon,
     IonList,
     IonItem,
     IonLabel,
-    IonRadioGroup,
-    IonRadio,
     IonSpinner,
     IonBadge,
   ],
@@ -72,15 +74,17 @@ addIcons({
 })
 export class AddressSelectorComponent implements OnInit {
   @Input() selectedAddressId?: string;
+  @Output() addressSelected = new EventEmitter<Address>();
+  @Output() modalCancelled = new EventEmitter<void>();
+  @Output() navigateToAddresses = new EventEmitter<void>();
 
   private addressService = inject(AddressService);
-  private modalCtrl = inject(ModalController);
   private toastCtrl = inject(ToastController);
+  private router = inject(Router);
 
   addresses: Address[] = [];
   loading = false;
   selectedAddress?: Address;
-  selectedId?: string;
 
   // Exponer helpers para el template
   getAddressTypeLabel = getAddressTypeLabel;
@@ -105,7 +109,6 @@ export class AddressSelectorComponent implements OnInit {
           addresses.find((a) => a.isDefault) ||
           addresses[0];
         this.selectedAddress = initial;
-        this.selectedId = initial?.id;
       },
       error: async (error) => {
         console.error('Error loading addresses:', error);
@@ -122,45 +125,25 @@ export class AddressSelectorComponent implements OnInit {
 
   selectAddress(address: Address) {
     this.selectedAddress = address;
-    this.selectedId = address?.id;
   }
 
-  async addNewAddress() {
-    const modal = await this.modalCtrl.create({
-      component: AddressFormComponent,
-      componentProps: {
-        isEdit: false,
-      },
+  async goToAddresses() {
+    // Emitir evento para que el padre cierre el modal y navegue
+    this.navigateToAddresses.emit();
+    // Esta navegación es redundante porque el padre ya navega,
+    // pero si se usa standalone, también pasamos el state
+    this.router.navigate(['/tabs/addresses'], {
+      state: { returnUrl: '/tabs/cart' },
     });
-
-    await modal.present();
-
-    const { data, role } = await modal.onWillDismiss();
-
-    if (role === 'saved') {
-      // Recargar direcciones
-      this.loadAddresses();
-
-      const toast = await this.toastCtrl.create({
-        message: 'Dirección agregada exitosamente',
-        duration: 2000,
-        color: 'success',
-      });
-      await toast.present();
-    }
   }
 
   confirm() {
-    if (!this.selectedAddress && this.selectedId) {
-      this.selectedAddress = this.addresses.find(
-        (a) => a.id === this.selectedId
-      );
+    if (this.selectedAddress) {
+      this.addressSelected.emit(this.selectedAddress);
     }
-    if (this.selectedAddress)
-      this.modalCtrl.dismiss(this.selectedAddress, 'selected');
   }
 
   cancel() {
-    this.modalCtrl.dismiss(null, 'cancel');
+    this.modalCancelled.emit();
   }
 }

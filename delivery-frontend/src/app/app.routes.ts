@@ -96,28 +96,6 @@ export const routes: Routes = [
     loadComponent: () =>
       import('./pages/admin/menu-items').then((m) => m.AdminMenuItemsPage),
   },
-  {
-    path: 'cart',
-    canMatch: [authGuard],
-    loadComponent: () =>
-      import('./pages/cart/cart.page').then((m) => m.CartPage),
-  },
-  {
-    path: 'order-history',
-    canMatch: [authGuard],
-    loadComponent: () =>
-      import('./pages/order-history/order-history.page').then(
-        (m) => m.OrderHistoryPage
-      ),
-  },
-  {
-    path: 'order-detail/:id',
-    canMatch: [authGuard],
-    loadComponent: () =>
-      import('./pages/order-detail/order-detail.page').then(
-        (m) => m.OrderDetailPage
-      ),
-  },
   // Módulo de Repartidores (Delivery Driver) - Con Tabs
   {
     path: 'delivery-driver',

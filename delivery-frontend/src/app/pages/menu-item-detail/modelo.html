@@ -1,0 +1,271 @@
+<!DOCTYPE html>
+<html class="light" lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta content="width=device-width, initial-scale=1.0" name="viewport" />
+    <title>Dish Detail</title>
+    <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+    <link href="https://fonts.googleapis.com" rel="preconnect" />
+    <link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect" />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;700;800&amp;display=swap"
+      rel="stylesheet"
+    />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined"
+      rel="stylesheet"
+    />
+    <script>
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            colors: {
+              primary: "#f27f0d",
+              "background-light": "#f8f7f5",
+              "background-dark": "#221910",
+            },
+            fontFamily: {
+              display: ["Plus Jakarta Sans", "Noto Sans", "sans-serif"],
+            },
+            borderRadius: {
+              DEFAULT: "1rem",
+              lg: "2rem",
+              xl: "3rem",
+              full: "9999px",
+            },
+          },
+        },
+      };
+    </script>
+    <style>
+      .material-symbols-outlined {
+        font-variation-settings: "FILL" 0, "wght" 400, "GRAD" 0, "opsz" 24;
+        font-size: 24px;
+      }
+    </style>
+    <style>
+      body {
+        min-height: max(884px, 100dvh);
+      }
+    </style>
+    <style>
+      body {
+        min-height: max(884px, 100dvh);
+      }
+    </style>
+  </head>
+  <body class="font-display">
+    <div
+      class="relative flex min-h-screen w-full flex-col bg-background-light dark:bg-background-dark text-[#1c140d] dark:text-gray-200"
+    >
+      <div
+        class="sticky top-0 z-10 flex items-center justify-between bg-background-light/80 dark:bg-background-dark/80 p-4 pb-2 backdrop-blur-sm"
+      >
+        <button
+          class="flex size-12 shrink-0 items-center justify-center rounded-full bg-white dark:bg-gray-800/50"
+        >
+          <span
+            class="material-symbols-outlined text-[#1c140d] dark:text-gray-200"
+            >arrow_back</span
+          >
+        </button>
+        <div class="flex w-12 items-center justify-end">
+          <button
+            class="flex size-12 shrink-0 items-center justify-center rounded-full bg-white dark:bg-gray-800/50"
+          >
+            <span
+              class="material-symbols-outlined text-[#1c140d] dark:text-gray-200"
+              >favorite_border</span
+            >
+          </button>
+        </div>
+      </div>
+      <div class="px-4">
+        <div
+          class="w-full min-h-80 overflow-hidden rounded-xl bg-cover bg-center bg-no-repeat"
+          data-alt="A delicious, professionally photographed ramen bowl with noodles, broth, a soft-boiled egg, and various toppings."
+          style="
+            background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuCTvzVTPV6ZvMRBiae0p60W6nNYg1C2mI85EPaSw1nuL233NcnNdn0tyrDG1GAnVQ7HuWa6JN3uQSh3HcvMB1B4DtZTZ-N1xlJVqZCg7TX8tVUVJ95WP7K_Uz5KcNDN-16S9Vt3TYiugmQOdYuqdOjDE6VUgT7ESq7g4QDdZ5W-doy1ilk186Kg6ctiGRPEnxZYqrdmgL3HnSu4ISpP0HJPK_agdIM7MSqZUnvq3iimI59qHbzurJcbqsMeu0HBF3QTW6PAx1bL1Oc');
+          "
+        ></div>
+      </div>
+      <main class="flex-grow pb-40">
+        <h1
+          class="px-4 pt-6 pb-2 text-3xl font-bold leading-tight tracking-tight text-[#1c140d] dark:text-white"
+        >
+          Tonkotsu Ramen Clásico
+        </h1>
+        <p
+          class="px-4 pt-1 pb-3 text-base font-normal leading-relaxed text-gray-600 dark:text-gray-400"
+        >
+          Una descripción detallada y apetitosa del plato. Nuestro Tonkotsu
+          Ramen presenta un caldo de cerdo rico y cremoso, cocido a fuego lento
+          durante 12 horas. Acompañado de fideos artesanales, chashu tierno,
+          huevo ajitama y alga nori.
+        </p>
+        <div
+          class="flex items-center justify-between gap-4 bg-background-light dark:bg-background-dark px-4 py-4 min-h-14"
+        >
+          <div class="flex items-center gap-4">
+            <div
+              class="flex size-12 shrink-0 items-center justify-center rounded-lg bg-gray-100 dark:bg-gray-800"
+            >
+              <span class="material-symbols-outlined">shopping_bag</span>
+            </div>
+            <p class="flex-1 text-base font-medium leading-normal">Cantidad</p>
+          </div>
+          <div class="shrink-0">
+            <div class="flex items-center gap-3 text-lg font-bold">
+              <button
+                class="flex h-8 w-8 cursor-pointer items-center justify-center rounded-full bg-gray-200 dark:bg-gray-700 text-primary dark:text-white"
+              >
+                -
+              </button>
+              <span class="w-4 text-center">1</span>
+              <button
+                class="flex h-8 w-8 cursor-pointer items-center justify-center rounded-full bg-primary text-white"
+              >
+                +
+              </button>
+            </div>
+          </div>
+        </div>
+        <div class="px-4 py-4">
+          <label class="mb-2 block text-base font-medium" for="comentarios"
+            >Comentarios</label
+          >
+          <textarea
+            class="w-full rounded-lg border-gray-200 bg-gray-100 p-3 text-base focus:border-primary focus:ring-primary dark:border-gray-700 dark:bg-gray-800 dark:text-gray-300 dark:placeholder-gray-500"
+            id="comentarios"
+            name="comentarios"
+            placeholder="¿Instrucciones especiales? Ej: sin cebolla."
+            rows="3"
+          ></textarea>
+        </div>
+        <div class="px-4 pt-4">
+          <h2 class="text-xl font-bold text-[#1c140d] dark:text-white">
+            Personalizar Pedido
+          </h2>
+          <div class="mt-4 space-y-6">
+            <div>
+              <div class="flex items-center justify-between">
+                <h3 class="text-base font-medium">Nivel de Picante</h3>
+                <span
+                  class="rounded-full bg-primary/10 px-3 py-1 text-xs font-medium text-primary dark:bg-primary/20 dark:text-yellow-300"
+                  >Requerido</span
+                >
+              </div>
+              <div class="mt-3 space-y-3">
+                <label
+                  class="flex cursor-pointer items-center justify-between rounded-lg border border-gray-200 bg-white p-4 dark:border-gray-700 dark:bg-gray-800/50"
+                >
+                  <span class="text-sm font-medium">Suave</span>
+                  <input
+                    class="h-5 w-5 border-gray-300 text-primary focus:ring-primary dark:border-gray-600 dark:bg-gray-700"
+                    name="spice-level"
+                    type="radio"
+                  />
+                </label>
+                <label
+                  class="flex cursor-pointer items-center justify-between rounded-lg border border-primary bg-primary/5 p-4 dark:border-primary dark:bg-primary/20"
+                >
+                  <span
+                    class="text-sm font-medium text-primary dark:text-yellow-300"
+                    >Medio</span
+                  >
+                  <input
+                    checked=""
+                    class="h-5 w-5 border-gray-300 text-primary focus:ring-primary dark:border-gray-600 dark:bg-gray-700"
+                    name="spice-level"
+                    type="radio"
+                  />
+                </label>
+                <label
+                  class="flex cursor-pointer items-center justify-between rounded-lg border border-gray-200 bg-white p-4 dark:border-gray-700 dark:bg-gray-800/50"
+                >
+                  <span class="text-sm font-medium">Picante</span>
+                  <input
+                    class="h-5 w-5 border-gray-300 text-primary focus:ring-primary dark:border-gray-600 dark:bg-gray-700"
+                    name="spice-level"
+                    type="radio"
+                  />
+                </label>
+              </div>
+            </div>
+            <div>
+              <h3 class="text-base font-medium">Añadir Extras</h3>
+              <div class="mt-3 space-y-3">
+                <label
+                  class="flex cursor-pointer items-center justify-between rounded-lg border border-gray-200 bg-white p-4 dark:border-gray-700 dark:bg-gray-800/50"
+                >
+                  <div class="flex items-center gap-3">
+                    <input
+                      class="h-5 w-5 rounded border-gray-300 text-primary focus:ring-primary dark:border-gray-600 dark:bg-gray-700"
+                      type="checkbox"
+                    />
+                    <span class="text-sm font-medium">Extra Chashu</span>
+                  </div>
+                  <span class="text-sm text-gray-500 dark:text-gray-400"
+                    >+ $2.50</span
+                  >
+                </label>
+                <label
+                  class="flex cursor-pointer items-center justify-between rounded-lg border border-gray-200 bg-white p-4 dark:border-gray-700 dark:bg-gray-800/50"
+                >
+                  <div class="flex items-center gap-3">
+                    <input
+                      class="h-5 w-5 rounded border-gray-300 text-primary focus:ring-primary dark:border-gray-600 dark:bg-gray-700"
+                      type="checkbox"
+                    />
+                    <span class="text-sm font-medium"
+                      >Huevo Ajitama Adicional</span
+                    >
+                  </div>
+                  <span class="text-sm text-gray-500 dark:text-gray-400"
+                    >+ $1.50</span
+                  >
+                </label>
+                <label
+                  class="flex cursor-pointer items-center justify-between rounded-lg border border-primary bg-primary/5 p-4 dark:border-primary dark:bg-primary/20"
+                >
+                  <div class="flex items-center gap-3">
+                    <input
+                      checked=""
+                      class="h-5 w-5 rounded border-gray-300 text-primary focus:ring-primary dark:border-gray-600 dark:bg-gray-700"
+                      type="checkbox"
+                    />
+                    <span
+                      class="text-sm font-medium text-primary dark:text-yellow-300"
+                      >Aceite de Ajo Negro</span
+                    >
+                  </div>
+                  <span
+                    class="text-sm font-medium text-primary dark:text-yellow-300"
+                    >+ $1.00</span
+                  >
+                </label>
+              </div>
+            </div>
+          </div>
+        </div>
+      </main>
+      <div
+        class="fixed bottom-0 left-0 right-0 z-10 w-full border-t border-gray-200/80 bg-background-light/80 p-4 backdrop-blur-sm dark:border-gray-700/80 dark:bg-background-dark/80"
+      >
+        <div class="flex flex-col gap-3">
+          <button
+            class="flex h-14 w-full items-center justify-center rounded-full bg-primary/10 px-6 text-base font-bold text-primary dark:bg-primary/20 dark:text-yellow-300"
+          >
+            <span>Añadir al carrito</span>
+          </button>
+          <button
+            class="flex h-14 w-full items-center justify-center rounded-full bg-primary px-6 text-base font-bold text-white shadow-lg shadow-primary/30"
+          >
+            <span>Agregar e ir a pagar</span>
+          </button>
+        </div>
+      </div>
+    </div>
+  </body>
+</html>

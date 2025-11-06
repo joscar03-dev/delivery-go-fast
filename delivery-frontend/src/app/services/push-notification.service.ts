@@ -200,7 +200,7 @@ export class PushNotificationService {
         break;
 
       case 'order-history':
-        this.router.navigate(['/order-history']);
+        this.router.navigate(['/tabs/order-history']);
         break;
 
       default:

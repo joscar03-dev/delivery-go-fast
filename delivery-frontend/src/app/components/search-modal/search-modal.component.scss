@@ -1,0 +1,88 @@
+// Input de búsqueda personalizado
+.search-input-container {
+  padding: 8px 16px;
+  width: 100%;
+}
+
+.search-input {
+  width: 100%;
+  padding: 12px 16px;
+  border: 1px solid var(--ion-color-medium);
+  border-radius: 8px;
+  font-size: 16px;
+  outline: none;
+  transition: border-color 0.3s;
+  background-color: var(--ion-color-light);
+
+  &:focus {
+    border-color: var(--ion-color-primary);
+  }
+
+  &::placeholder {
+    color: var(--ion-color-medium);
+  }
+}
+
+.loading-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 60px 20px;
+  text-align: center;
+
+  ion-spinner {
+    margin-bottom: 16px;
+  }
+
+  p {
+    color: var(--ion-color-medium);
+    font-size: 14px;
+  }
+}
+
+.search-empty,
+.search-no-results {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 60px 20px;
+  text-align: center;
+
+  ion-icon {
+    font-size: 64px;
+    color: var(--ion-color-medium);
+    margin-bottom: 16px;
+  }
+
+  p {
+    color: var(--ion-color-medium);
+    font-size: 16px;
+  }
+}
+
+ion-list {
+  padding: 8px 0;
+
+  ion-item {
+    --padding-start: 16px;
+    --inner-padding-end: 16px;
+
+    ion-label {
+      h2 {
+        font-weight: 600;
+        margin-bottom: 4px;
+      }
+
+      p {
+        font-size: 13px;
+        color: var(--ion-color-medium);
+
+        strong {
+          color: var(--ion-color-primary);
+        }
+      }
+    }
+  }
+}

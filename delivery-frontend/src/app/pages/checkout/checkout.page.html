@@ -1,0 +1,314 @@
+<ion-header [translucent]="true">
+  <ion-toolbar>
+    <ion-buttons slot="start">
+      <ion-back-button defaultHref="/tabs/cart"></ion-back-button>
+    </ion-buttons>
+    <ion-title>Finalizar pedido</ion-title>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content [fullscreen]="true" class="ion-padding">
+  <!-- Loading State -->
+  <div *ngIf="isLoading" class="flex items-center justify-center h-full">
+    <div class="text-center">
+      <ion-spinner name="crescent" color="primary"></ion-spinner>
+      <p class="mt-4 text-gray-500">Cargando información...</p>
+    </div>
+  </div>
+
+  <!-- Main Content -->
+  <div *ngIf="!isLoading" class="max-w-4xl mx-auto pb-24">
+    <!-- Resumen del pedido -->
+    <ion-card class="mb-4 shadow-md rounded-xl overflow-hidden">
+      <ion-card-header
+        class="bg-gradient-to-r from-primary to-secondary text-white"
+      >
+        <div class="flex items-center gap-2">
+          <ion-icon name="receipt-outline" class="text-2xl"></ion-icon>
+          <ion-card-title class="text-lg">Resumen del pedido</ion-card-title>
+        </div>
+      </ion-card-header>
+      <ion-card-content class="p-4">
+        <p class="text-base font-semibold text-gray-800 mb-2">
+          {{ restaurantName }}
+        </p>
+        <div class="space-y-2">
+          <div
+            *ngFor="let item of cartItems"
+            class="flex justify-between items-start py-2 border-b border-gray-100 last:border-0"
+          >
+            <div class="flex-1">
+              <p class="font-medium text-gray-800">
+                {{ item.quantity }}x {{ item.name }}
+              </p>
+              <p *ngIf="item.comment" class="text-xs text-gray-500 mt-1">
+                {{ item.comment }}
+              </p>
+            </div>
+            <p class="font-semibold text-gray-700 ml-2">
+              S/ {{ (item.price * item.quantity).toFixed(2) }}
+            </p>
+          </div>
+        </div>
+        <div class="mt-4 pt-3 border-t border-gray-200">
+          <div class="flex justify-between text-sm mb-2">
+            <span class="text-gray-600">Subtotal</span>
+            <span class="font-medium">S/ {{ (subtotal || 0).toFixed(2) }}</span>
+          </div>
+          <div
+            class="flex justify-between text-sm mb-2"
+            *ngIf="deliveryFee === 0 && deliveryConfig?.freeDeliveryThreshold && subtotal >= (deliveryConfig?.freeDeliveryThreshold || 0)"
+          >
+            <span class="text-green-600">🎉 Delivery gratis</span>
+            <span class="font-medium text-green-600 line-through"
+              >S/ {{ (deliveryConfig?.deliveryFee || 0).toFixed(2) }}</span
+            >
+          </div>
+          <div
+            class="flex justify-between text-sm mb-2"
+            *ngIf="deliveryFee > 0"
+          >
+            <span class="text-gray-600">Delivery</span>
+            <span class="font-medium"
+              >S/ {{ (deliveryFee || 0).toFixed(2) }}</span
+            >
+          </div>
+          <div
+            class="flex justify-between text-lg font-bold text-primary mt-3 pt-3 border-t border-gray-200"
+          >
+            <span>Total</span>
+            <span>S/ {{ (total || 0).toFixed(2) }}</span>
+          </div>
+        </div>
+      </ion-card-content>
+    </ion-card>
+
+    <!-- Dirección de entrega -->
+    <ion-card class="mb-4 shadow-md rounded-xl overflow-hidden">
+      <ion-card-header
+        class="bg-gradient-to-r from-primary to-secondary text-white"
+      >
+        <div class="flex items-center justify-between">
+          <div class="flex items-center gap-2">
+            <ion-icon name="location-outline" class="text-2xl"></ion-icon>
+            <ion-card-title class="text-lg"
+              >Dirección de entrega</ion-card-title
+            >
+          </div>
+          <ion-button
+            fill="clear"
+            size="small"
+            class="text-white"
+            (click)="goToAddAddress()"
+          >
+            <ion-icon slot="icon-only" name="add-circle-outline"></ion-icon>
+          </ion-button>
+        </div>
+      </ion-card-header>
+      <ion-card-content class="p-4">
+        <div *ngIf="userAddresses.length === 0" class="text-center py-4">
+          <p class="text-gray-500 mb-3">No tienes direcciones guardadas</p>
+          <ion-button (click)="goToAddAddress()" color="primary">
+            <ion-icon slot="start" name="add-outline"></ion-icon>
+            Agregar dirección
+          </ion-button>
+        </div>
+
+        <ion-radio-group
+          [(ngModel)]="selectedAddressId"
+          *ngIf="userAddresses.length > 0"
+        >
+          <div *ngFor="let address of userAddresses" class="mb-3">
+            <ion-item
+              lines="none"
+              class="border border-gray-200 rounded-lg mb-2"
+            >
+              <ion-radio slot="start" [value]="address.id"></ion-radio>
+              <ion-label class="ion-text-wrap">
+                <h3 class="font-semibold text-gray-800">
+                  {{ address.street }}
+                </h3>
+                <p class="text-sm text-gray-600">
+                  {{ address.city }}, {{ address.postalCode }}
+                </p>
+                <p *ngIf="address.reference" class="text-xs text-gray-500 mt-1">
+                  Ref: {{ address.reference }}
+                </p>
+                <ion-note
+                  *ngIf="address.isDefault"
+                  color="primary"
+                  class="text-xs"
+                  >✓ Predeterminada</ion-note
+                >
+              </ion-label>
+            </ion-item>
+          </div>
+        </ion-radio-group>
+      </ion-card-content>
+    </ion-card>
+
+    <!-- Método de pago -->
+    <ion-card class="mb-4 shadow-md rounded-xl overflow-hidden">
+      <ion-card-header
+        class="bg-gradient-to-r from-primary to-secondary text-white"
+      >
+        <div class="flex items-center gap-2">
+          <ion-icon name="wallet-outline" class="text-2xl"></ion-icon>
+          <ion-card-title class="text-lg">Método de pago</ion-card-title>
+        </div>
+      </ion-card-header>
+      <ion-card-content class="p-4">
+        <ion-radio-group
+          [(ngModel)]="selectedPaymentMethod"
+          (ionChange)="onPaymentMethodChange($event.detail.value)"
+        >
+          <div *ngFor="let method of paymentMethods" class="mb-3">
+            <ion-item
+              lines="none"
+              class="border border-gray-200 rounded-lg mb-2"
+              [disabled]="!method.isActive"
+            >
+              <ion-radio slot="start" [value]="method.code"></ion-radio>
+              <ion-icon
+                [name]="getPaymentMethodIcon(method.code)"
+                slot="start"
+                class="mr-2"
+              ></ion-icon>
+              <ion-label>
+                <h3 class="font-semibold text-gray-800">{{ method.name }}</h3>
+                <p class="text-xs text-gray-500">{{ method.description }}</p>
+              </ion-label>
+            </ion-item>
+          </div>
+        </ion-radio-group>
+
+        <!-- Campos específicos para Efectivo -->
+        <div
+          *ngIf="selectedPaymentMethod === PaymentMethodCode.CASH"
+          class="mt-4 p-4 bg-yellow-50 rounded-lg border border-yellow-200"
+        >
+          <h4 class="font-semibold text-gray-800 mb-3">Pago en efectivo</h4>
+          <ion-item class="mb-3 rounded-lg">
+            <ion-label position="floating">¿Con cuánto vas a pagar?</ion-label>
+            <ion-input
+              type="number"
+              [(ngModel)]="cashAmount"
+              (ionInput)="onCashAmountChange()"
+              placeholder="Ej: 50.00"
+              min="0"
+              step="0.01"
+            ></ion-input>
+          </ion-item>
+
+          <div *ngIf="changeAmount > 0" class="bg-white p-3 rounded-lg">
+            <p class="text-sm text-gray-600">Tu vuelto será:</p>
+            <p class="text-2xl font-bold text-green-600">
+              S/ {{ changeAmount.toFixed(2) }}
+            </p>
+          </div>
+
+          <div
+            *ngIf="cashAmount && cashAmount < total"
+            class="mt-3 p-3 bg-red-50 rounded-lg border border-red-200"
+          >
+            <p class="text-sm text-red-600">
+              ⚠️ El monto es insuficiente. Faltan S/ {{ (total -
+              cashAmount).toFixed(2) }}
+            </p>
+          </div>
+        </div>
+
+        <!-- Campos específicos para Yape/Plin -->
+        <div
+          *ngIf="selectedPaymentMethod === PaymentMethodCode.YAPE || selectedPaymentMethod === PaymentMethodCode.PLIN"
+          class="mt-4 p-4 bg-purple-50 rounded-lg border border-purple-200"
+        >
+          <h4 class="font-semibold text-gray-800 mb-3">
+            Pago con {{ selectedPaymentMethod === PaymentMethodCode.YAPE ?
+            'Yape' : 'Plin' }}
+          </h4>
+
+          <div class="mb-4 p-3 bg-white rounded-lg">
+            <p class="text-sm text-gray-600 mb-1">
+              Realiza la transferencia a:
+            </p>
+            <p class="text-lg font-bold text-purple-600">933 044 973</p>
+            <p class="text-sm text-gray-500 mt-1">
+              Monto: S/ {{ (total || 0).toFixed(2) }}
+            </p>
+          </div>
+
+          <ion-item class="mb-3 rounded-lg">
+            <ion-label position="floating">Número de operación *</ion-label>
+            <ion-input
+              type="text"
+              [(ngModel)]="transactionReference"
+              placeholder="Ingresa el código de operación"
+              required
+            ></ion-input>
+          </ion-item>
+
+          <ion-item class="rounded-lg">
+            <ion-label position="floating"
+              >URL de comprobante (opcional)</ion-label
+            >
+            <ion-input
+              type="url"
+              [(ngModel)]="paymentProofUrl"
+              placeholder="https://..."
+            ></ion-input>
+          </ion-item>
+
+          <ion-note class="text-xs text-gray-500 mt-2 block">
+            Tu pedido será verificado antes de ser procesado
+          </ion-note>
+        </div>
+
+        <!-- Campos específicos para Tarjeta -->
+        <div
+          *ngIf="selectedPaymentMethod === PaymentMethodCode.CARD"
+          class="mt-4 p-4 bg-blue-50 rounded-lg border border-blue-200"
+        >
+          <h4 class="font-semibold text-gray-800 mb-2">Pago con tarjeta</h4>
+          <p class="text-sm text-gray-600">
+            🚧 Esta función estará disponible próximamente
+          </p>
+        </div>
+      </ion-card-content>
+    </ion-card>
+
+    <!-- Notas adicionales -->
+    <ion-card class="mb-4 shadow-md rounded-xl overflow-hidden">
+      <ion-card-header>
+        <ion-card-title class="text-base"
+          >Notas adicionales (opcional)</ion-card-title
+        >
+      </ion-card-header>
+      <ion-card-content class="p-4">
+        <ion-textarea
+          [(ngModel)]="notes"
+          placeholder="Ej: Sin cebolla, poca sal, etc."
+          rows="3"
+          class="border border-gray-200 rounded-lg"
+        ></ion-textarea>
+      </ion-card-content>
+    </ion-card>
+  </div>
+
+  <!-- Botón de confirmación fijo -->
+  <div
+    class="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 p-4 safe-area-bottom"
+  >
+    <ion-button
+      expand="block"
+      size="large"
+      (click)="confirmOrder()"
+      [disabled]="isLoading || !selectedAddressId || !selectedPaymentMethod"
+      class="font-semibold"
+    >
+      <ion-icon slot="start" name="checkmark-circle-outline"></ion-icon>
+      Confirmar pedido - S/ {{ (total || 0).toFixed(2) }}
+      <ion-spinner *ngIf="isLoading" slot="end" name="crescent"></ion-spinner>
+    </ion-button>
+  </div>
+</ion-content>

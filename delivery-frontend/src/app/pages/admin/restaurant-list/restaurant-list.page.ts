@@ -16,6 +16,7 @@ import {
   IonIcon,
   IonActionSheet,
   IonMenu,
+  IonBadge,
   ToastController,
   AlertController,
 } from '@ionic/angular/standalone';
@@ -71,6 +72,7 @@ addIcons({
     IonIcon,
     IonActionSheet,
     IonMenu,
+    IonBadge,
   ],
   templateUrl: './restaurant-list.page.html',
 })

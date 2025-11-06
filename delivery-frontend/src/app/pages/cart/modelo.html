@@ -1,0 +1,276 @@
+<!DOCTYPE html>
+<html class="light" lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta content="width=device-width, initial-scale=1.0" name="viewport" />
+    <title>Shopping Cart</title>
+    <link href="https://fonts.googleapis.com" rel="preconnect" />
+    <link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect" />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:ital,wght@0,200..800;1,200..800&amp;display=swap"
+      rel="stylesheet"
+    />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined"
+      rel="stylesheet"
+    />
+    <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+    <script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            colors: {
+              primary: "#f27f0d",
+              "background-light": "#f8f7f5",
+              "background-dark": "#221910",
+              "content-light": "#1c140d",
+              "content-dark": "#f8f7f5",
+              "subtle-light": "#9c7349",
+              "subtle-dark": "#a38b73",
+              "surface-light": "#f4ede7",
+              "surface-dark": "#2f241a",
+            },
+            fontFamily: {
+              display: ["Plus Jakarta Sans", "sans-serif"],
+            },
+            borderRadius: {
+              DEFAULT: "1rem",
+              lg: "1.25rem",
+              xl: "2rem",
+              full: "9999px",
+            },
+          },
+        },
+      };
+    </script>
+    <style>
+      .material-symbols-outlined {
+        font-variation-settings: "FILL" 0, "wght" 400, "GRAD" 0, "opsz" 24;
+      }
+    </style>
+    <style>
+      body {
+        min-height: max(884px, 100dvh);
+      }
+    </style>
+    <style>
+      body {
+        min-height: max(884px, 100dvh);
+      }
+    </style>
+  </head>
+  <body class="bg-background-light dark:bg-background-dark font-display">
+    <div class="relative flex min-h-screen w-full flex-col">
+      <header
+        class="sticky top-0 z-10 flex items-center justify-between border-b border-surface-light dark:border-surface-dark bg-background-light/80 dark:bg-background-dark/80 px-4 py-3 backdrop-blur-sm"
+      >
+        <button
+          class="flex size-10 shrink-0 items-center justify-center rounded-full text-content-light dark:text-content-dark"
+        >
+          <span class="material-symbols-outlined text-2xl">arrow_back</span>
+        </button>
+        <h1
+          class="flex-1 text-center text-lg font-bold leading-tight tracking-tight text-content-light dark:text-content-dark"
+        >
+          Mi Carrito
+        </h1>
+        <div class="size-10 shrink-0"></div>
+      </header>
+      <main class="flex-grow pb-40">
+        <section
+          class="border-b border-surface-light dark:border-surface-dark bg-white dark:bg-surface-dark px-4 py-4"
+        >
+          <p class="text-sm text-subtle-light dark:text-subtle-dark">
+            Tu pedido de
+          </p>
+          <h2
+            class="mt-1 text-xl font-bold text-content-light dark:text-content-dark"
+          >
+            Burger Palace
+          </h2>
+        </section>
+        <section class="px-4 pt-6">
+          <h2
+            class="text-lg font-bold leading-tight tracking-tight text-content-light dark:text-content-dark"
+          >
+            Entregar en
+          </h2>
+          <div
+            class="mt-3 flex items-center gap-4 rounded-lg bg-white dark:bg-surface-dark p-4 shadow-sm"
+          >
+            <div
+              class="flex size-12 shrink-0 items-center justify-center rounded-full bg-surface-light dark:bg-background-dark"
+            >
+              <span class="material-symbols-outlined text-2xl text-primary"
+                >location_on</span
+              >
+            </div>
+            <div class="flex-1">
+              <p class="font-medium text-content-light dark:text-content-dark">
+                Av. Libertador 123
+              </p>
+              <p class="text-sm text-subtle-light dark:text-subtle-dark">
+                Buenos Aires, CABA
+              </p>
+            </div>
+            <button
+              class="shrink-0 rounded-full bg-primary/10 px-4 py-2 text-sm font-semibold text-primary transition-colors hover:bg-primary/20"
+            >
+              Cambiar
+            </button>
+          </div>
+        </section>
+        <section class="px-4 pt-6">
+          <h2
+            class="text-lg font-bold leading-tight tracking-tight text-content-light dark:text-content-dark"
+          >
+            Tus productos
+          </h2>
+          <div class="mt-3 space-y-3">
+            <div
+              class="flex items-center gap-4 rounded-lg bg-white dark:bg-surface-dark p-3 shadow-sm"
+            >
+              <img
+                class="size-20 shrink-0 rounded-lg object-cover"
+                data-alt="A juicy cheeseburger with lettuce and tomato on a sesame seed bun."
+                src="https://lh3.googleusercontent.com/aida-public/AB6AXuAhJqBihEAkvZpcBSj2F5usUroQiVO9fARDEnAtC4_SOXDQkVsK53Scyowz3tUDaSStbL0n8l5Zfp3csCXiUFAgUEucTSZm6NrvMBaBOEXbY0K9rTO9GRTQ1ClvqrT9T_Ov2-P-7SBtDQguoBAXk_I7wLvdX3ZqLNopTBNiwDN7Mr_cdY9tU7EtA3FihuIKkTaE2iRtej6PQGU06rMD-KdVvXOzBmKPSzPexRo5YmzAPOfMY4REa4MOR_o5iY5BPGyvCc_-w0-AJ-Y"
+              />
+              <div class="flex-1">
+                <p
+                  class="font-medium text-content-light dark:text-content-dark"
+                >
+                  Spicy Chicken Burger
+                </p>
+                <p class="text-sm text-subtle-light dark:text-subtle-dark">
+                  + $1.00 Extra Spicy
+                </p>
+                <p
+                  class="mt-1 font-semibold text-content-light dark:text-content-dark"
+                >
+                  $10.50
+                </p>
+              </div>
+              <div
+                class="flex shrink-0 items-center gap-2 rounded-full bg-surface-light dark:bg-background-dark px-2 py-1"
+              >
+                <button
+                  class="flex size-6 items-center justify-center rounded-full text-primary transition-colors hover:bg-primary/10"
+                >
+                  -
+                </button>
+                <span
+                  class="w-4 text-center text-sm font-medium text-content-light dark:text-content-dark"
+                  >1</span
+                >
+                <button
+                  class="flex size-6 items-center justify-center rounded-full text-primary transition-colors hover:bg-primary/10"
+                >
+                  +
+                </button>
+              </div>
+            </div>
+            <div
+              class="flex items-center gap-4 rounded-lg bg-white dark:bg-surface-dark p-3 shadow-sm"
+            >
+              <img
+                class="size-20 shrink-0 rounded-lg object-cover"
+                data-alt="A slice of pepperoni pizza on a wooden board."
+                src="https://lh3.googleusercontent.com/aida-public/AB6AXuBhmjTWb9pHuiQxk74gdp0-7HxRtSRZ7xHDX5VMP6H9SoFXlRvGCG6sf6XxogSXFUbeKGav3fcycoFuNrWxIlQXGwjz3M2qwr7I5RbiLxK-JTuG-D9CfDE19Rpwwr4kah9NORjrE0I6BqSAs_BdYqYZ1XCvnN7X4GAUz5d5gPTANiijU-ZDi4bXpZVZF3hr6YnVu1ytRfnQFMFH0p19BinuSDTpykTUTiUNROq4vbQCDvFTN4uPPis_4lP59_o-tOp5g4zoAisS8eA"
+              />
+              <div class="flex-1">
+                <p
+                  class="font-medium text-content-light dark:text-content-dark"
+                >
+                  Pizza Pepperoni
+                </p>
+                <p
+                  class="mt-1 font-semibold text-content-light dark:text-content-dark"
+                >
+                  $14.00
+                </p>
+              </div>
+              <div
+                class="flex shrink-0 items-center gap-2 rounded-full bg-surface-light dark:bg-background-dark px-2 py-1"
+              >
+                <button
+                  class="flex size-6 items-center justify-center rounded-full text-primary transition-colors hover:bg-primary/10"
+                >
+                  -
+                </button>
+                <span
+                  class="w-4 text-center text-sm font-medium text-content-light dark:text-content-dark"
+                  >1</span
+                >
+                <button
+                  class="flex size-6 items-center justify-center rounded-full text-primary transition-colors hover:bg-primary/10"
+                >
+                  +
+                </button>
+              </div>
+            </div>
+            <div
+              class="flex items-center gap-4 rounded-lg bg-white dark:bg-surface-dark p-3 shadow-sm"
+            >
+              <img
+                class="size-20 shrink-0 rounded-lg object-cover"
+                data-alt="A can of soda with condensation on it."
+                src="https://lh3.googleusercontent.com/aida-public/AB6AXuDLPpZYCrrAr0zIdh2qQXHn4RUAmx-zpAHmeVijqjyQG4E2jzM4EHOZdWWiyF_6PG47BJyjZvy8lWVEUjz_qSctYWj50vJvx8z617uENBsLvravVoJrvFC_31nmKqs4RxhJIl2-RVVmYZqwvKBfhJcUHGYm5z0-ev5WqkgHWgpDi0_owDueIO4NL8xV1wLSORjhSct2qkFbk4ECAcYAWYNZFkx4ooMtPwfvfSMn1xgoZRAL9eSX2h771ztrn1Nt_REOo-9lb6uMLvk"
+              />
+              <div class="flex-1">
+                <p
+                  class="font-medium text-content-light dark:text-content-dark"
+                >
+                  Coca-Cola
+                </p>
+                <p
+                  class="mt-1 font-semibold text-content-light dark:text-content-dark"
+                >
+                  $2.50
+                </p>
+              </div>
+              <div
+                class="flex shrink-0 items-center gap-2 rounded-full bg-surface-light dark:bg-background-dark px-2 py-1"
+              >
+                <button
+                  class="flex size-6 items-center justify-center rounded-full text-primary transition-colors hover:bg-primary/10"
+                >
+                  -
+                </button>
+                <span
+                  class="w-4 text-center text-sm font-medium text-content-light dark:text-content-dark"
+                  >2</span
+                >
+                <button
+                  class="flex size-6 items-center justify-center rounded-full text-primary transition-colors hover:bg-primary/10"
+                >
+                  +
+                </button>
+              </div>
+            </div>
+          </div>
+        </section>
+      </main>
+      <footer
+        class="fixed bottom-0 left-0 right-0 z-10 w-full border-t border-surface-light dark:border-surface-dark bg-background-light dark:bg-background-dark p-4 shadow-[0_-4px_12px_rgba(0,0,0,0.05)]"
+      >
+        <div class="mx-auto max-w-4xl">
+          <div class="flex items-center justify-between">
+            <span class="text-base text-subtle-light dark:text-subtle-dark"
+              >Total</span
+            >
+            <span
+              class="text-2xl font-bold text-content-light dark:text-content-dark"
+              >$29.50</span
+            >
+          </div>
+          <button
+            class="mt-4 w-full rounded-full bg-primary py-4 text-base font-bold text-white transition-transform hover:scale-[1.02] active:scale-[0.98]"
+          >
+            Realizar Pedido
+          </button>
+        </div>
+      </footer>
+    </div>
+  </body>
+</html>

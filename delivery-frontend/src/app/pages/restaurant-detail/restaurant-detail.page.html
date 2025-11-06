@@ -1,122 +1,199 @@
-<ion-header>
-  <ion-toolbar>
-    <ion-buttons slot="start">
-      <ion-back-button defaultHref="/tabs/tab1"></ion-back-button>
-    </ion-buttons>
-    <ion-title>{{ restaurant?.name || 'Restaurante' }}</ion-title>
-  </ion-toolbar>
-</ion-header>
-
-<ion-content class="ion-padding">
+<ion-content>
   <ng-container *ngIf="restaurant && !loading; else loadingTpl">
-    <!-- Header del Restaurante -->
-    <div class="restaurant-header">
-      <div class="restaurant-image" *ngIf="restaurant.imageUrl">
-        <img [src]="restaurant.imageUrl" [alt]="restaurant.name" />
+    <!-- Header Section with Image -->
+    <div class="header-section">
+      <!-- Header Image -->
+      <div
+        class="header-image"
+        [style.background-image]="restaurant.imageUrl ? 'url(' + restaurant.imageUrl + ')' : 'url(https://via.placeholder.com/800x280)'"
+      ></div>
+
+      <!-- Back Button -->
+      <div class="back-button-container">
+        <ion-buttons>
+          <ion-back-button
+            defaultHref="/tabs/business"
+            class="custom-back-button"
+          ></ion-back-button>
+        </ion-buttons>
       </div>
-      <h2>{{ restaurant.name }}</h2>
-      <p class="address">
-        <ion-icon name="location-outline"></ion-icon>
-        {{ restaurant.address }}
-      </p>
-      <p class="phone">
-        <ion-icon name="call-outline"></ion-icon>
-        {{ restaurant.phone }}
-      </p>
     </div>
 
-    <!-- Filtro por Categorías de Menú -->
-    <div class="menu-categories" *ngIf="restaurant.menuCategories?.length">
-      <swiper-container
-        slides-per-view="auto"
-        space-between="8"
-        free-mode="true"
-        class="categories-swiper"
-      >
-        <swiper-slide class="chip-slide">
-          <ion-chip
-            [outline]="!selectedMenuCategory"
-            (click)="filterByCategory(null)"
-            color="primary"
-          >
-            <ion-label>Todos</ion-label>
-          </ion-chip>
-        </swiper-slide>
-        <swiper-slide
-          class="chip-slide"
-          *ngFor="let c of restaurant.menuCategories"
-        >
-          <ion-chip
-            [outline]="selectedMenuCategory !== c.id"
-            (click)="filterByCategory(c.id)"
-            color="primary"
-          >
-            <ion-icon name="restaurant-outline"></ion-icon>
-            <ion-label>{{ c.name }}</ion-label>
-          </ion-chip>
-        </swiper-slide>
-      </swiper-container>
-    </div>
+    <!-- Restaurant Info Card -->
+    <div class="restaurant-info-card">
+      <div class="info-card">
+        <h1 class="restaurant-name">{{ restaurant.name }}</h1>
+        <p class="restaurant-category">Mexican • $$</p>
 
-    <!-- Lista de Platos -->
-    <ion-list *ngIf="filteredMenuItems?.length; else noItemsTpl">
-      <ion-list-header>
-        <ion-label>Menú</ion-label>
-      </ion-list-header>
-      <ion-item *ngFor="let m of filteredMenuItems" lines="full">
-        <!-- Thumbnail de la imagen -->
-        <ion-thumbnail slot="start" *ngIf="m.imageUrl">
-          <img [src]="m.imageUrl" [alt]="m.name" />
-        </ion-thumbnail>
-
-        <!-- Contenido del item -->
-        <ion-label>
-          <h3>{{ m.name }}</h3>
-          <p *ngIf="m.description">{{ m.description }}</p>
-          <p *ngIf="getItemCategoryName(m)">
-            <ion-chip color="secondary" size="small">
-              <ion-icon name="pricetag-outline"></ion-icon>
-              <ion-label>{{ getItemCategoryName(m) }}</ion-label>
-            </ion-chip>
-          </p>
-          <!-- Precio -->
-          <div class="price-section">
-            <span class="price"
-              >{{ m.price | currency:'USD':'symbol':'1.2-2' }}</span
-            >
+        <!-- Rating -->
+        <div class="info-item">
+          <div class="info-icon">
+            <ion-icon name="star"></ion-icon>
           </div>
-        </ion-label>
+          <p class="info-text">4.8 stars (500+ reviews)</p>
+        </div>
 
-        <!-- Botón Añadir al Carrito -->
-        <ion-button
-          slot="end"
-          fill="outline"
-          size="small"
-          (click)="addToCart(m)"
+        <!-- Address -->
+        <div class="info-item">
+          <div class="info-icon">
+            <ion-icon name="location-outline"></ion-icon>
+          </div>
+          <p class="info-text">{{ restaurant.address }}</p>
+        </div>
+
+        <!-- Phone -->
+        <div class="info-item">
+          <div class="info-icon">
+            <ion-icon name="call-outline"></ion-icon>
+          </div>
+          <p class="info-text">{{ restaurant.phone }}</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Sticky Category Filter Bar -->
+    <div class="category-filter-bar">
+      <div class="categories-scroll">
+        <button
+          class="category-chip"
+          [class.active]="!selectedMenuCategory"
+          (click)="filterByCategory(null)"
         >
-          <ion-icon name="add-outline" slot="start"></ion-icon>
-          Añadir
-        </ion-button>
-      </ion-item>
-    </ion-list>
+          Todos
+        </button>
+        <button
+          class="category-chip"
+          [class.active]="selectedMenuCategory === c.id"
+          *ngFor="let c of restaurant.menuCategories"
+          (click)="filterByCategory(c.id)"
+        >
+          {{ c.name }}
+        </button>
+      </div>
+    </div>
 
-    <!-- Mensaje cuando no hay items -->
-    <ng-template #noItemsTpl>
-      <div class="no-items">
-        <ion-icon name="restaurant-outline" size="large"></ion-icon>
+    <!-- Menu Section -->
+    <div class="menu-section">
+      <!-- Group by Categories -->
+      <ng-container *ngIf="!selectedMenuCategory; else filteredView">
+        <div
+          *ngFor="let category of restaurant.menuCategories"
+          class="category-group"
+        >
+          <h2 class="category-title">{{ category.name }}</h2>
+          <div class="menu-items-list">
+            <div
+              *ngFor="let item of getItemsByCategory(category.id)"
+              class="menu-item-card"
+              (click)="viewItemDetail(item)"
+            >
+              <div class="item-content">
+                <h3 class="item-name">{{ item.name }}</h3>
+                <p class="item-description" *ngIf="item.description">
+                  {{ item.description }}
+                </p>
+                <p class="item-price">
+                  {{ item.price | currency:'USD':'symbol':'1.2-2' }}
+                </p>
+              </div>
+              <div class="item-image-container">
+                <img
+                  *ngIf="item.imageUrl"
+                  [src]="item.imageUrl"
+                  [alt]="item.name"
+                  class="item-image"
+                />
+                <div
+                  *ngIf="!item.imageUrl"
+                  class="item-image-placeholder"
+                ></div>
+                <button
+                  class="add-button"
+                  (click)="addToCart(item); $event.stopPropagation()"
+                >
+                  <ion-icon name="add-outline"></ion-icon>
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </ng-container>
+
+      <!-- Filtered View -->
+      <ng-template #filteredView>
+        <div class="category-group">
+          <h2 class="category-title">
+            {{ getCategoryName(selectedMenuCategory!) }}
+          </h2>
+          <div class="menu-items-list">
+            <div
+              *ngFor="let item of filteredMenuItems"
+              class="menu-item-card"
+              (click)="viewItemDetail(item)"
+            >
+              <div class="item-content">
+                <h3 class="item-name">{{ item.name }}</h3>
+                <p class="item-description" *ngIf="item.description">
+                  {{ item.description }}
+                </p>
+                <p class="item-price">
+                  {{ item.price | currency:'USD':'symbol':'1.2-2' }}
+                </p>
+              </div>
+              <div class="item-image-container">
+                <img
+                  *ngIf="item.imageUrl"
+                  [src]="item.imageUrl"
+                  [alt]="item.name"
+                  class="item-image"
+                />
+                <div
+                  *ngIf="!item.imageUrl"
+                  class="item-image-placeholder"
+                ></div>
+                <button
+                  class="add-button"
+                  (click)="addToCart(item); $event.stopPropagation()"
+                >
+                  <ion-icon name="add-outline"></ion-icon>
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </ng-template>
+
+      <!-- No Items Message -->
+      <div *ngIf="filteredMenuItems?.length === 0" class="no-items">
+        <ion-icon name="restaurant-outline"></ion-icon>
         <p>No hay platos disponibles</p>
       </div>
-    </ng-template>
+    </div>
   </ng-container>
 
   <!-- Loading Template -->
   <ng-template #loadingTpl>
-    <div class="loading">
-      <ion-spinner></ion-spinner>
+    <div class="loading-container">
+      <ion-spinner name="crescent"></ion-spinner>
       <p>Cargando...</p>
     </div>
   </ng-template>
 </ion-content>
+
+<!-- Floating Action Button (FAB) - Cart -->
+<div class="fab-container" *ngIf="cartItemCount > 0">
+  <button class="fab-button" (click)="goToCart()">
+    <div class="fab-content">
+      <div class="fab-left">
+        <ion-icon name="cart-outline"></ion-icon>
+        <span>{{ cartItemCount }} items</span>
+      </div>
+      <span class="fab-total"
+        >Ver Carrito • {{ cartTotal | currency:'USD':'symbol':'1.2-2' }}</span
+      >
+    </div>
+  </button>
+</div>
 
 <!-- Toast para confirmación -->
 <ion-toast

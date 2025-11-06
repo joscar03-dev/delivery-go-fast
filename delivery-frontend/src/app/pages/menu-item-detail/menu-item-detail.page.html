@@ -1,142 +1,167 @@
-<ion-header>
-  <ion-toolbar>
-    <ion-buttons slot="start">
-      <ion-back-button defaultHref="/tabs/tab1"></ion-back-button>
-    </ion-buttons>
-    <ion-title>Detalle del producto</ion-title>
-  </ion-toolbar>
-</ion-header>
-
-<ion-content class="ion-padding">
+<ion-content>
   <ng-container *ngIf="item && !loading; else loadingTpl">
-    <div class="item-header">
-      <img *ngIf="item.imageUrl" [src]="item.imageUrl" [alt]="item.name" />
-      <h2>{{ item.name }}</h2>
-      <p *ngIf="item.description">{{ item.description }}</p>
-      <h3>
-        {{ displayedUnitPrice | currency:'USD':'symbol':'1.2-2' }}
-        <ion-note
-          *ngIf="extraPriceTotal>0"
-          color="medium"
-          style="margin-left: 8px"
-        >
-          (+{{ extraPriceTotal | currency:'USD':'symbol':'1.2-2' }} en opciones)
-        </ion-note>
-      </h3>
+    <!-- Sticky Header with Back Button -->
+    <div class="sticky-header">
+      <ion-buttons>
+        <ion-back-button
+          defaultHref="/restaurant/{id}"
+          class="custom-back-btn"
+        ></ion-back-button>
+      </ion-buttons>
+      <div class="header-spacer"></div>
     </div>
 
-    <!-- Cantidad -->
-    <ion-item>
-      <ion-label position="stacked">Cantidad</ion-label>
-      <ion-input type="number" min="1" [(ngModel)]="quantity"></ion-input>
-    </ion-item>
-
-    <!-- Comentario -->
-    <ion-item lines="full">
-      <ion-label position="stacked">Comentario (opcional)</ion-label>
-      <ion-textarea
-        rows="3"
-        placeholder="Ej: Sin cebolla"
-        [(ngModel)]="comment"
-      ></ion-textarea>
-    </ion-item>
-
-    <!-- Grupos de opciones -->
-    <ion-list *ngIf="groups?.length">
-      <ion-list-header>
-        <ion-label>Personaliza tu pedido</ion-label>
-      </ion-list-header>
+    <!-- Item Image -->
+    <div class="image-container">
       <div
-        *ngFor="let g of groups"
-        class="group-card"
-        [class.invalid]="!groupValid(g)"
-      >
-        <div class="group-head">
-          <div class="titles">
-            <h3>{{ g.name }}</h3>
-            <p *ngIf="g.description" class="muted">{{ g.description }}</p>
+        class="item-image"
+        [style.background-image]="item.imageUrl ? 'url(' + item.imageUrl + ')' : 'url(https://via.placeholder.com/800x320)'"
+      ></div>
+    </div>
+
+    <!-- Main Content -->
+    <main class="main-content">
+      <!-- Item Title and Description -->
+      <h1 class="item-title">{{ item.name }}</h1>
+      <p class="item-description" *ngIf="item.description">
+        {{ item.description }}
+      </p>
+
+      <!-- Quantity Selector -->
+      <div class="quantity-section">
+        <div class="quantity-left">
+          <div class="quantity-icon">
+            <ion-icon name="cart-outline"></ion-icon>
           </div>
-          <div class="rules">
-            <span class="rule" [class.req]="g.isRequired"
-              >{{ g.isRequired ? 'Requerido' : 'Opcional' }}</span
-            >
-            <span class="rule">min {{ g.minSelect }}</span>
-            <span class="rule">max {{ g.maxSelect || '∞' }}</span>
-          </div>
+          <p class="quantity-label">Cantidad</p>
         </div>
-
-        <!-- Si maxSelect === 1 -> radios; si no -> checkboxes -->
-        <ng-container *ngIf="g.maxSelect === 1; else multipleTpl">
-          <ion-radio-group
-            (ionChange)="onRadioChange(g.id, $event.detail.value)"
+        <div class="quantity-controls">
+          <button
+            class="quantity-btn minus"
+            (click)="decreaseQuantity()"
+            [disabled]="quantity <= 1"
           >
-            <ion-item *ngFor="let o of g.options">
-              <ion-label>
-                <div class="opt-row">
-                  <span>{{ o.name }}</span>
-                  <span class="chip-price" *ngIf="o.extraPrice"
-                    >+{{ o.extraPrice | currency:'USD':'symbol':'1.2-2' }}</span
-                  >
-                </div>
-              </ion-label>
-              <ion-radio slot="end" [value]="o.id"></ion-radio>
-            </ion-item>
-          </ion-radio-group>
-        </ng-container>
-        <ng-template #multipleTpl>
-          <ion-item *ngFor="let o of g.options">
-            <ion-label>
-              <div class="opt-row">
-                <span>{{ o.name }}</span>
-                <span class="chip-price" *ngIf="o.extraPrice"
-                  >+{{ o.extraPrice | currency:'USD':'symbol':'1.2-2' }}</span
-                >
-              </div>
-            </ion-label>
-            <ion-checkbox
-              slot="end"
-              [checked]="isChecked(g.id, o.id)"
-              (ionChange)="onCheckboxChange(g, o, $event.detail.checked)"
-            ></ion-checkbox>
-          </ion-item>
-        </ng-template>
-
-        <div class="group-foot" *ngIf="!groupValid(g)">
-          <ion-note color="danger"
-            >Revisa tu selección para este grupo</ion-note
-          >
+            -
+          </button>
+          <span class="quantity-value">{{ quantity }}</span>
+          <button class="quantity-btn plus" (click)="increaseQuantity()">
+            +
+          </button>
         </div>
       </div>
-    </ion-list>
 
-    <div class="actions">
-      <ion-button
-        expand="block"
-        [disabled]="!allValid()"
-        (click)="addToCart(false)"
-      >
-        Agregar al carrito
-      </ion-button>
-      <ion-button
-        expand="block"
-        color="primary"
-        [disabled]="!allValid()"
-        (click)="addToCart(true)"
-      >
-        <ion-icon name="cart-outline" slot="start"></ion-icon>
-        Agregar e ir a pagar
-      </ion-button>
+      <!-- Comments Section -->
+      <div class="comments-section">
+        <label for="comments" class="comments-label">Comentarios</label>
+        <textarea
+          id="comments"
+          class="comments-textarea"
+          placeholder="¿Instrucciones especiales? Ej: sin cebolla."
+          rows="3"
+          [(ngModel)]="comment"
+        ></textarea>
+      </div>
+
+      <!-- Customization Options -->
+      <div class="customization-section" *ngIf="groups?.length">
+        <h2 class="customization-title">Personalizar Pedido</h2>
+
+        <div class="options-list">
+          <!-- Option Group -->
+          <div
+            *ngFor="let g of groups"
+            class="option-group"
+            [class.invalid]="!groupValid(g)"
+          >
+            <div class="group-header">
+              <h3 class="group-name">{{ g.name }}</h3>
+              <span class="group-badge" [class.required]="g.isRequired">
+                {{ g.isRequired ? 'Requerido' : 'Opcional' }}
+              </span>
+            </div>
+
+            <!-- Single Selection (Radio) -->
+            <div class="options-container" *ngIf="g.maxSelect === 1">
+              <label
+                *ngFor="let o of g.options"
+                class="option-item"
+                [class.selected]="isChecked(g.id, o.id)"
+              >
+                <span class="option-name">{{ o.name }}</span>
+                <input
+                  type="radio"
+                  [name]="'group-' + g.id"
+                  [value]="o.id"
+                  (change)="onRadioChange(g.id, o.id)"
+                  class="option-radio"
+                />
+              </label>
+            </div>
+
+            <!-- Multiple Selection (Checkbox) -->
+            <div class="options-container" *ngIf="g.maxSelect !== 1">
+              <label
+                *ngFor="let o of g.options"
+                class="option-item"
+                [class.selected]="isChecked(g.id, o.id)"
+              >
+                <div class="option-left">
+                  <input
+                    type="checkbox"
+                    [checked]="isChecked(g.id, o.id)"
+                    (change)="onCheckboxChange(g, o, $any($event.target).checked)"
+                    class="option-checkbox"
+                  />
+                  <span class="option-name">{{ o.name }}</span>
+                </div>
+                <span class="option-price" *ngIf="o.extraPrice">
+                  + {{ o.extraPrice | currency:'USD':'symbol':'1.2-2' }}
+                </span>
+              </label>
+            </div>
+
+            <!-- Validation Error -->
+            <div class="group-error" *ngIf="!groupValid(g)">
+              <ion-note color="danger"
+                >Revisa tu selección para este grupo</ion-note
+              >
+            </div>
+          </div>
+        </div>
+      </div>
+    </main>
+
+    <!-- Fixed Bottom Actions -->
+    <div class="bottom-actions">
+      <div class="actions-container">
+        <button
+          class="action-btn secondary"
+          [disabled]="!allValid()"
+          (click)="addToCart(false)"
+        >
+          <span>Añadir al carrito</span>
+        </button>
+        <button
+          class="action-btn primary"
+          [disabled]="!allValid()"
+          (click)="addToCart(true)"
+        >
+          <span>Agregar e ir a pagar</span>
+        </button>
+      </div>
     </div>
   </ng-container>
 
+  <!-- Loading Template -->
   <ng-template #loadingTpl>
-    <div class="loading">
-      <ion-spinner></ion-spinner>
+    <div class="loading-container">
+      <ion-spinner name="crescent"></ion-spinner>
       <p>Cargando...</p>
     </div>
   </ng-template>
 </ion-content>
 
+<!-- Toast -->
 <ion-toast
   [isOpen]="showToast"
   [message]="toastMessage"

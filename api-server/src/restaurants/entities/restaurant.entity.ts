@@ -14,6 +14,8 @@ import { RestaurantCategory } from './restaurant-category.entity';
 import { MenuCategory } from './menu-category.entity';
 import { Order } from 'src/orders/entities/order.entity';
 import { MenuItem } from './menu-item.entity';
+import { City } from '../../common/enums/city.enum';
+
 @Entity('restaurants')
 export class Restaurant {
   @PrimaryGeneratedColumn('uuid')
@@ -27,6 +29,9 @@ export class Restaurant {
 
   @Column({ type: 'varchar', length: 20 })
   phone: string;
+
+  @Column({ type: 'enum', enum: City, nullable: true })
+  city: City;
 
   @Column({ name: 'image_url', type: 'varchar', nullable: true })
   imageUrl: string;

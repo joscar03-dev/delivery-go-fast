@@ -7,7 +7,9 @@ import {
   IsNumber,
   Min,
   Max,
+  IsEnum,
 } from 'class-validator';
+import { City } from '../../common/enums/city.enum';
 
 export class CreateRestaurantDto {
   @IsString()
@@ -20,6 +22,10 @@ export class CreateRestaurantDto {
 
   @IsPhoneNumber('PE')
   phone: string;
+
+  @IsEnum(City)
+  @IsOptional()
+  city?: City;
 
   @IsString()
   @IsOptional()

@@ -1,31 +1,74 @@
-<ion-header>
-  <ion-toolbar>
-    <ion-title size="large">Go Fast</ion-title>
-    <ion-buttons slot="end">
-      <ion-button fill="clear">
-        <ion-icon name="search"></ion-icon>
-      </ion-button>
-    </ion-buttons>
-  </ion-toolbar>
-</ion-header>
-
 <ion-content [fullscreen]="true">
-  <!-- Banner/Título principal -->
-  <div class="welcome-banner">
-    <h1>Go Fast</h1>
-    <p>Descubre los mejores restaurantes</p>
+  <!-- Fondo con forma de ola -->
+  <div class="wave-background">
+    <svg
+      viewBox="0 0 1440 320"
+      xmlns="http://www.w3.org/2000/svg"
+      preserveAspectRatio="none"
+    >
+      <path
+        fill="url(#gradient)"
+        fill-opacity="1"
+        d="M0,224L48,213.3C96,203,192,181,288,181.3C384,181,480,203,576,208C672,213,768,203,864,186.7C960,171,1056,149,1152,149.3C1248,149,1344,171,1392,181.3L1440,192L1440,0L1392,0C1344,0,1248,0,1152,0C1056,0,960,0,864,0C768,0,672,0,576,0C480,0,384,0,288,0C192,0,96,0,48,0L0,0Z"
+      ></path>
+      <defs>
+        <linearGradient id="gradient" x1="0%" y1="0%" x2="100%" y2="0%">
+          <stop
+            offset="0%"
+            style="stop-color: var(--ion-color-primary); stop-opacity: 1"
+          />
+          <stop
+            offset="100%"
+            style="stop-color: var(--ion-color-primary-shade); stop-opacity: 1"
+          />
+        </linearGradient>
+      </defs>
+    </svg>
+  </div>
+
+  <!-- Header personalizado dentro del content -->
+  <div class="custom-header">
+    <!-- Ciudad selector con estilo "Delivering to" -->
+    <div class="city-selector-container">
+      <p class="delivering-label">Entregando en</p>
+      <ion-select
+        [(ngModel)]="selectedCity"
+        interface="action-sheet"
+        placeholder="Ciudad"
+        class="city-select-new"
+      >
+        <ion-select-option *ngFor="let city of cities" [value]="city">
+          {{ city }}
+        </ion-select-option>
+      </ion-select>
+    </div>
+
+    <!-- Botones de acción a la derecha -->
+    <div class="action-buttons">
+      <ion-button fill="clear" routerLink="/tabs/search" class="search-btn">
+        <ion-icon name="search-outline" slot="icon-only"></ion-icon>
+      </ion-button>
+      <ion-button fill="clear" routerLink="/tabs/account" class="profile-btn">
+        <ion-icon name="person-circle-outline" slot="icon-only"></ion-icon>
+      </ion-button>
+    </div>
   </div>
 
   <!-- Carrusel de restaurantes con Swiper -->
-  <div class="swiper-container">
+  <!-- El carrusel muestra TODOS los restaurantes de la ciudad (sin filtro de categoría) -->
+  <div class="swiper-container" *ngIf="carouselRestaurants.length > 0">
     <swiper-container
-      slides-per-view="1.2"
-      space-between="10"
+      slides-per-view="1"
+      space-between="16"
       centered-slides="true"
       autoplay-delay="3000"
       autoplay-disable-on-interaction="false"
+      pagination="true"
     >
-      <swiper-slide *ngFor="let r of list" (click)="navigateToRestaurant(r.id)">
+      <swiper-slide
+        *ngFor="let r of carouselRestaurants"
+        (click)="navigateToRestaurant(r.id)"
+      >
         <div class="restaurant-card">
           <div class="restaurant-image">
             <img [src]="r.imageUrl || 'assets/shapes.svg'" [alt]="r.name" />
@@ -33,16 +76,26 @@
           <div class="restaurant-info">
             <h3>{{ r.name }}</h3>
             <p>{{ r.address }}</p>
-            <ion-chip *ngIf="r.category?.name" color="primary">
+            <span class="category-chip" *ngIf="r.category?.name">
               {{ r.category?.name }}
-            </ion-chip>
+            </span>
           </div>
         </div>
       </swiper-slide>
     </swiper-container>
   </div>
 
-  <div class="categories-filter">
+  <!-- Mensaje cuando no hay restaurantes -->
+  <div class="empty-state" *ngIf="carouselRestaurants.length === 0">
+    <ion-icon name="sad-outline"></ion-icon>
+    <h2>Aún no estamos por estos lares</h2>
+    <p>
+      No tenemos restaurantes disponibles en {{ selectedCity }} en este momento.
+    </p>
+  </div>
+
+  <!-- Filtro de categorías - solo se muestra si hay restaurantes en la ciudad -->
+  <div class="categories-filter" *ngIf="carouselRestaurants.length > 0">
     <swiper-container
       slides-per-view="auto"
       space-between="8"
@@ -50,21 +103,26 @@
       class="categories-swiper"
     >
       <swiper-slide class="chip-slide">
-        <ion-chip [outline]="!selectedCategory" (click)="setFilter(null)"
-          >Todos</ion-chip
+        <span
+          class="filter-chip"
+          [class.active]="!selectedCategory"
+          (click)="setFilter(null)"
         >
+          Todos
+        </span>
       </swiper-slide>
       <swiper-slide class="chip-slide" *ngFor="let c of categories">
-        <ion-chip
-          [outline]="selectedCategory !== c.name"
+        <span
+          class="filter-chip"
+          [class.active]="selectedCategory === c.name"
           (click)="setFilter(c.name)"
         >
           {{ c.name }}
-        </ion-chip>
+        </span>
       </swiper-slide>
     </swiper-container>
   </div>
-  <ion-grid>
+  <ion-grid *ngIf="filtered.length > 0">
     <ion-row>
       <ion-col size="12" size-md="6" size-lg="4" *ngFor="let r of filtered">
         <ion-card [routerLink]="['/restaurant', r.id]" button>
@@ -74,9 +132,9 @@
             <ion-card-subtitle>{{ r.address }}</ion-card-subtitle>
           </ion-card-header>
           <ion-card-content>
-            <ion-chip *ngIf="r.category?.name" color="primary">
+            <span class="category-chip" *ngIf="r.category?.name">
               {{ r.category?.name }}
-            </ion-chip>
+            </span>
           </ion-card-content>
         </ion-card>
       </ion-col>

@@ -9,6 +9,7 @@ import { Restaurant } from './entities/restaurant.entity';
 import { MenuItem } from './entities/menu-item.entity';
 import { RestaurantCategory } from './entities/restaurant-category.entity';
 import { MenuCategory } from './entities/menu-category.entity';
+import { RestaurantDeliveryConfig } from '../payments/entities/restaurant-delivery-config.entity';
 import { CreateRestaurantDto } from './dto/create-restaurant.dto';
 import { UpdateRestaurantDto } from './dto/update-restaurant.dto';
 import { CreateMenuItemDto } from './dto/create-menu-item.dto';
@@ -29,6 +30,8 @@ export class RestaurantsService {
     private readonly restaurantCategoryRepository: Repository<RestaurantCategory>,
     @InjectRepository(MenuCategory)
     private readonly menuCategoryRepository: Repository<MenuCategory>,
+    @InjectRepository(RestaurantDeliveryConfig)
+    private readonly deliveryConfigRepository: Repository<RestaurantDeliveryConfig>,
   ) {}
 
   // CRUD para Restaurantes
@@ -305,5 +308,62 @@ export class RestaurantsService {
     );
 
     return categories;
+  }
+
+  // Métodos para configuración de delivery
+  async getDeliveryConfig(
+    restaurantId: string,
+  ): Promise<RestaurantDeliveryConfig> {
+    const config = await this.deliveryConfigRepository.findOne({
+      where: { restaurantId },
+    });
+
+    if (!config) {
+      throw new NotFoundException(
+        `No se encontró configuración de delivery para el restaurante ${restaurantId}`,
+      );
+    }
+
+    return config;
+  }
+
+  async updateDeliveryConfig(
+    restaurantId: string,
+    updateDto: Partial<RestaurantDeliveryConfig>,
+  ): Promise<RestaurantDeliveryConfig> {
+    let config = await this.deliveryConfigRepository.findOne({
+      where: { restaurantId },
+    });
+
+    if (!config) {
+      // Crear configuración si no existe
+      config = this.deliveryConfigRepository.create({
+        restaurantId,
+        ...updateDto,
+      });
+    } else {
+      // Actualizar configuración existente
+      Object.assign(config, updateDto);
+    }
+
+    return await this.deliveryConfigRepository.save(config);
+  }
+
+  // Método para obtener restaurantes por dueño
+  async findByOwner(ownerId: string): Promise<Restaurant[]> {
+    console.log('🔍 Buscando restaurantes para owner ID:', ownerId);
+
+    const restaurants = await this.restaurantRepository.find({
+      where: { owner: { id: ownerId } },
+      relations: ['category', 'owner'],
+      order: { createdAt: 'DESC' },
+    });
+
+    console.log('📋 Restaurantes encontrados:', restaurants.length);
+    restaurants.forEach((r) => {
+      console.log(`  - ${r.name} (owner_id: ${r.owner?.id})`);
+    });
+
+    return restaurants;
   }
 }

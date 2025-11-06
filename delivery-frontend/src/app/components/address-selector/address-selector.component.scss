@@ -2,17 +2,25 @@ ion-content {
   --background: var(--ion-color-light);
 }
 
+.modal-content {
+  padding: 16px;
+  padding-bottom: 32px; // Más espacio en la parte inferior
+  background: var(--ion-color-light);
+  overflow-y: auto;
+  max-height: calc(100vh - 56px); // 56px es la altura del header
+}
+
 .loading-section {
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
   padding: 60px 20px;
-  
+
   ion-spinner {
     margin-bottom: 16px;
   }
-  
+
   p {
     color: var(--ion-color-medium);
     font-size: 14px;
@@ -30,14 +38,24 @@ ion-item {
   --padding-start: 16px;
   --padding-end: 16px;
   margin-bottom: 12px;
-  
+  transition: all 0.3s ease;
+
   &::part(native) {
     border-radius: 12px;
   }
-  
+
+  &.selected-address {
+    --background: var(--ion-color-primary-tint);
+    border: 2px solid var(--ion-color-primary);
+  }
+
   ion-icon[slot="start"] {
     font-size: 24px;
     margin-right: 12px;
+  }
+
+  ion-icon[slot="end"] {
+    font-size: 28px;
   }
 }
 
@@ -46,14 +64,14 @@ ion-item {
   align-items: center;
   gap: 8px;
   margin-bottom: 4px;
-  
+
   h3 {
     margin: 0;
     font-size: 16px;
     font-weight: 600;
     color: var(--ion-color-dark);
   }
-  
+
   ion-badge {
     font-size: 10px;
     padding: 4px 8px;
@@ -88,19 +106,19 @@ ion-item {
   justify-content: center;
   padding: 60px 20px;
   text-align: center;
-  
+
   ion-icon {
     color: var(--ion-color-medium);
     margin-bottom: 16px;
   }
-  
+
   h2 {
     font-size: 18px;
     font-weight: 600;
     color: var(--ion-color-dark);
     margin: 0 0 8px 0;
   }
-  
+
   p {
     font-size: 14px;
     color: var(--ion-color-medium);
@@ -108,10 +126,15 @@ ion-item {
   }
 }
 
-.add-button {
+.bottom-action {
   margin-top: 20px;
-  --border-radius: 12px;
-  font-weight: 600;
+  padding-top: 16px;
+  border-top: 1px solid var(--ion-color-light-shade);
+
+  ion-button {
+    --border-radius: 12px;
+    font-weight: 600;
+  }
 }
 
 // Radio button selected state

@@ -20,6 +20,10 @@ import { OrderStatus } from '../common/enums/order-status.enum';
 import { Role } from '../common/enums/role.enum';
 import { DeliveryGateway } from '../geolocation/delivery.gateway';
 import { NotificationsService } from '../notifications/notifications.service';
+import { PaymentsService } from '../payments/payments.service';
+import { CheckoutDto } from '../payments/dto/checkout.dto';
+import { Address } from '../users/entities/address.entity';
+import { OrderPayment } from '../payments/entities/order-payment.entity';
 
 @Injectable()
 export class OrdersService {
@@ -34,10 +38,13 @@ export class OrdersService {
     private readonly restaurantRepository: Repository<Restaurant>,
     @InjectRepository(MenuOption)
     private readonly menuOptionRepository: Repository<MenuOption>,
+    @InjectRepository(Address)
+    private readonly addressRepository: Repository<Address>,
     private readonly dataSource: DataSource,
     @Inject(forwardRef(() => DeliveryGateway))
     private readonly deliveryGateway: DeliveryGateway,
     private readonly notificationsService: NotificationsService,
+    private readonly paymentsService: PaymentsService,
   ) {}
 
   async create(
@@ -165,6 +172,239 @@ export class OrdersService {
       // Emitir evento de nuevo pedido creado vía Socket.IO
       if (completedOrder) {
         this.emitNewOrderEvent(completedOrder);
+      }
+
+      return completedOrder;
+    });
+  }
+
+  /**
+   * Método checkout: Crea orden con sistema de pago completo
+   * Incluye cálculo de delivery fee y registro de pago
+   */
+  async checkout(checkoutDto: CheckoutDto, clientId: string): Promise<Order> {
+    const {
+      restaurantId,
+      items,
+      deliveryAddressId,
+      paymentMethodCode,
+      cashAmount,
+      transactionReference,
+      paymentProofUrl,
+      notes,
+    } = checkoutDto;
+
+    // 1. Verificar que el restaurante existe
+    const restaurant = await this.restaurantRepository.findOne({
+      where: { id: restaurantId },
+    });
+
+    if (!restaurant) {
+      throw new NotFoundException(
+        `Restaurant with ID ${restaurantId} not found`,
+      );
+    }
+
+    // 2. Verificar que la dirección existe y pertenece al usuario
+    const address = await this.addressRepository.findOne({
+      where: { id: deliveryAddressId, user: { id: clientId } },
+    });
+
+    if (!address) {
+      throw new NotFoundException(
+        `Address with ID ${deliveryAddressId} not found or does not belong to the user`,
+      );
+    }
+
+    // 3. Verificar que todos los items del menú existen
+    const menuItemIds = items.map((item) => item.menuItemId);
+    const menuItems = await this.menuItemRepository.find({
+      where: {
+        id: In(menuItemIds),
+        restaurant: { id: restaurantId },
+      },
+    });
+
+    if (menuItems.length !== items.length) {
+      throw new BadRequestException(
+        'Some menu items are invalid or do not belong to this restaurant',
+      );
+    }
+
+    // 4. Calcular subtotal (productos sin delivery)
+    let subtotal = 0;
+    for (const itemDto of items) {
+      const menuItem = menuItems.find((mi) => mi.id === itemDto.menuItemId);
+      const baseUnit = Number(menuItem.price);
+
+      // Calcular extras por opciones
+      let extrasUnit = 0;
+      try {
+        if (itemDto.options && typeof itemDto.options === 'object') {
+          if (Array.isArray((itemDto.options as any).groups)) {
+            const groups = (itemDto.options as any).groups;
+            for (const g of groups) {
+              if (Array.isArray(g.options)) {
+                for (const opt of g.options) {
+                  if (opt.id) {
+                    const menuOpt = await this.menuOptionRepository.findOne({
+                      where: { id: opt.id },
+                    });
+                    if (menuOpt && menuOpt.extraPrice) {
+                      extrasUnit += Number(menuOpt.extraPrice);
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      } catch (error) {
+        // Si hay error calculando extras, continuar sin ellos
+      }
+
+      const unitTotal = baseUnit + extrasUnit;
+      const lineTotal = unitTotal * itemDto.quantity;
+      subtotal += lineTotal;
+    }
+
+    // 5. Calcular delivery fee
+    const deliveryFeeRaw = await this.paymentsService.calculateDeliveryFee(
+      restaurantId,
+      subtotal,
+    );
+
+    // Asegurar que sea número
+    const deliveryFee = Number(deliveryFeeRaw);
+
+    // 6. Total = subtotal + delivery (ambos como números)
+    const total = Number(subtotal) + Number(deliveryFee);
+
+    // 7. Validar método de pago
+    let changeAmount: number | undefined;
+    if (paymentMethodCode === 'cash') {
+      if (!cashAmount) {
+        throw new BadRequestException(
+          'Cash amount is required for cash payments',
+        );
+      }
+      changeAmount = this.paymentsService.validateCashPayment(
+        cashAmount,
+        total,
+      );
+    }
+
+    // 8. Crear orden y pago en transacción
+    return await this.dataSource.transaction(async (manager) => {
+      // Crear la orden
+      const order = manager.create(Order, {
+        client: { id: clientId },
+        restaurant: { id: restaurantId },
+        status: OrderStatus.PENDING,
+        notes,
+        deliveryAddress:
+          `${address.street}, ${address.city} ${address.postalCode || ''}`.trim(),
+        deliveryAddressId: address.id,
+        // Extraer coordenadas del Point de PostGIS si existe
+        deliveryLatitude: address.location
+          ? (address.location as any).coordinates[1]
+          : null,
+        deliveryLongitude: address.location
+          ? (address.location as any).coordinates[0]
+          : null,
+        subtotal: Number(subtotal),
+        deliveryFee: Number(deliveryFee),
+        total: Number(total),
+      } as any);
+
+      const savedOrder = await manager.save(Order, order);
+
+      // Crear los items del pedido
+      const orderItems: OrderItem[] = [];
+
+      for (const itemDto of items) {
+        const menuItem = menuItems.find((mi) => mi.id === itemDto.menuItemId);
+        const baseUnit = Number(menuItem.price);
+
+        // Calcular extras
+        let extrasUnit = 0;
+        try {
+          if (itemDto.options && typeof itemDto.options === 'object') {
+            if (Array.isArray((itemDto.options as any).groups)) {
+              const groups = (itemDto.options as any).groups;
+              for (const g of groups) {
+                if (Array.isArray(g.options)) {
+                  for (const opt of g.options) {
+                    if (opt.id) {
+                      const menuOpt = await this.menuOptionRepository.findOne({
+                        where: { id: opt.id },
+                      });
+                      if (menuOpt && menuOpt.extraPrice) {
+                        extrasUnit += Number(menuOpt.extraPrice);
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        } catch (error) {
+          // Si hay error calculando extras, continuar sin ellos
+        }
+
+        const unitTotal = baseUnit + extrasUnit;
+        const lineTotal = unitTotal * itemDto.quantity;
+
+        const orderItem = manager.create(OrderItem, {
+          order: savedOrder,
+          menuItem: { id: menuItem.id },
+          quantity: itemDto.quantity,
+          unit_price: baseUnit, // Cambiado de 'price' a 'unit_price'
+          comment: itemDto.comment,
+          options: itemDto.options,
+        });
+
+        orderItems.push(orderItem);
+      }
+
+      await manager.save(OrderItem, orderItems);
+
+      // Crear registro de pago dentro de la transacción
+      const payment = manager.create(OrderPayment, {
+        orderId: savedOrder.id,
+        paymentMethodCode,
+        amount: Number(total),
+        deliveryFee: Number(deliveryFee),
+        subtotal: Number(subtotal),
+        cashAmount: cashAmount ? Number(cashAmount) : undefined,
+        changeAmount: changeAmount ? Number(changeAmount) : undefined,
+        transactionReference,
+        paymentProofUrl,
+        notes,
+        paymentStatus: paymentMethodCode === 'cash' ? 'verified' : 'pending',
+        verifiedAt: paymentMethodCode === 'cash' ? new Date() : undefined,
+      });
+
+      await manager.save(OrderPayment, payment);
+
+      // Retornar el pedido completo
+      const completedOrder = await manager.findOne(Order, {
+        where: { id: savedOrder.id },
+        relations: [
+          'client',
+          'restaurant',
+          'driver',
+          'items',
+          'items.menuItem',
+        ],
+      });
+
+      // Emitir evento de nuevo pedido
+      if (completedOrder) {
+        this.emitNewOrderEvent(completedOrder);
+
+        // TODO: Enviar notificación push al restaurante
+        // await this.notificationsService.sendNewOrderNotification(...);
       }
 
       return completedOrder;

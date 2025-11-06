@@ -5,15 +5,11 @@ import {
   CUSTOM_ELEMENTS_SCHEMA,
 } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { FormsModule } from '@angular/forms';
 import {
-  IonHeader,
-  IonToolbar,
-  IonTitle,
   IonContent,
-  IonButtons,
   IonButton,
   IonIcon,
-  IonChip,
   IonGrid,
   IonRow,
   IonCol,
@@ -22,17 +18,32 @@ import {
   IonCardTitle,
   IonCardSubtitle,
   IonCardContent,
+  IonSelect,
+  IonSelectOption,
 } from '@ionic/angular/standalone';
 import { RouterLink, Router } from '@angular/router';
 import { RestaurantService } from '../services/restaurant.service';
 import type { RestaurantModel } from '../models/restaurant.model';
+import { CITIES, City } from '../models/city.enum';
 import { register } from 'swiper/element/bundle';
 import { addIcons } from 'ionicons';
-import { search } from 'ionicons/icons';
+import {
+  search,
+  searchOutline,
+  locationOutline,
+  sadOutline,
+  chevronDownOutline,
+  personCircleOutline,
+} from 'ionicons/icons';
 
 // Register icons
 addIcons({
   search,
+  searchOutline,
+  locationOutline,
+  sadOutline,
+  chevronDownOutline,
+  personCircleOutline,
 });
 
 register();
@@ -44,14 +55,10 @@ register();
   schemas: [CUSTOM_ELEMENTS_SCHEMA],
   imports: [
     CommonModule,
-    IonHeader,
-    IonToolbar,
-    IonTitle,
+    FormsModule,
     IonContent,
-    IonButtons,
     IonButton,
     IonIcon,
-    IonChip,
     IonGrid,
     IonRow,
     IonCol,
@@ -60,37 +67,54 @@ register();
     IonCardTitle,
     IonCardSubtitle,
     IonCardContent,
+    IonSelect,
+    IonSelectOption,
     RouterLink,
   ],
 })
 export class Tab1Page implements OnInit {
   private restaurantsSvc = inject(RestaurantService);
   private router = inject(Router);
+
   list: RestaurantModel[] = [];
-  categories: { id?: string; name: string }[] = [];
   selectedCategory: string | null = null; // name
+
+  // City filter
+  cities = CITIES;
+  selectedCity: string = City.BAGUA;
 
   ngOnInit(): void {
     this.restaurantsSvc.list().subscribe({
       next: (r) => {
         this.list = r || [];
-        const names = Array.from(
-          new Set(
-            (
-              this.list.map((x) => x.category?.name).filter(Boolean) as string[]
-            ).sort()
-          )
-        );
-        this.categories = names.map((name) => ({ name }));
       },
       error: () => {
         this.list = [];
-        this.categories = [];
       },
     });
   }
 
-  setFilter(name: string | null) {
+  // Getter para categorías filtradas por ciudad
+  get categories(): { id?: string; name: string }[] {
+    // Primero filtrar por ciudad (solo restaurantes CON ciudad)
+    const restaurantsByCity = this.selectedCity
+      ? this.list.filter((r) => r.city === this.selectedCity)
+      : this.list;
+
+    // Luego obtener categorías únicas de esos restaurantes
+    const isNonEmptyString = (v: unknown): v is string =>
+      typeof v === 'string' && v.trim().length > 0;
+
+    const categoryNames: string[] = restaurantsByCity
+      .map((x) => x.category?.name ?? null)
+      .filter(isNonEmptyString);
+
+    const names: string[] = Array.from(new Set(categoryNames)).sort();
+
+    return names.map((name: string) => ({ name }));
+  }
+
+  setFilter(name: string | null): void {
     this.selectedCategory = name;
   }
 
@@ -98,8 +122,39 @@ export class Tab1Page implements OnInit {
     this.router.navigate(['/restaurant', id]);
   }
 
+  // Getter para el carrusel - solo filtra por ciudad, NO por categoría
+  get carouselRestaurants(): RestaurantModel[] {
+    let result = this.list;
+
+    // Filter by city
+    if (this.selectedCity) {
+      result = result.filter(
+        (r: RestaurantModel) => r.city === this.selectedCity
+      );
+    }
+
+    return result;
+  }
+
+  // Getter para el grid - filtra por ciudad Y categoría
   get filtered(): RestaurantModel[] {
-    if (!this.selectedCategory) return this.list;
-    return this.list.filter((r) => r.category?.name === this.selectedCategory);
+    let result = this.list;
+
+    // Filter by city (solo restaurantes con la ciudad exacta)
+    if (this.selectedCity) {
+      result = result.filter(
+        (r: RestaurantModel) => r.city === this.selectedCity
+      );
+    }
+
+    // Filter by category
+    if (this.selectedCategory) {
+      result = result.filter(
+        (r: RestaurantModel) =>
+          (r.category?.name ?? null) === this.selectedCategory
+      );
+    }
+
+    return result;
   }
 }

@@ -1,194 +1,169 @@
-<ion-header>
-  <ion-toolbar>
-    <ion-buttons slot="start">
-      <ion-back-button defaultHref="/tabs/tab1"></ion-back-button>
-    </ion-buttons>
-    <ion-title>Mi Carrito</ion-title>
-    <ion-buttons slot="end" *ngIf="cartItems.length > 0">
-      <ion-button fill="clear" (click)="clearCart()">
-        <ion-icon name="trash-outline"></ion-icon>
-      </ion-button>
-    </ion-buttons>
-  </ion-toolbar>
-</ion-header>
+<ion-content>
+  <!-- Header sticky -->
+  <div class="sticky-header">
+    <button class="back-button" (click)="router.navigate(['/tabs/business'])">
+      <ion-icon name="arrow-back"></ion-icon>
+    </button>
+    <h1>Mi Carrito</h1>
+    <button
+      class="clear-button"
+      *ngIf="cartItems.length > 0"
+      (click)="clearCart()"
+    >
+      <ion-icon name="trash-outline"></ion-icon>
+    </button>
+    <div class="spacer" *ngIf="cartItems.length === 0"></div>
+  </div>
 
-<ion-content class="ion-padding">
   <!-- Carrito con productos -->
-  <div *ngIf="cartItems.length > 0; else emptyCart">
-    <!-- Dirección de entrega -->
-    <ion-card class="address-card">
-      <ion-card-header>
-        <ion-card-title>
-          <ion-icon name="location-outline"></ion-icon>
-          Dirección de Entrega
-        </ion-card-title>
-      </ion-card-header>
-      <ion-card-content>
-        <div *ngIf="selectedAddress; else noAddress">
-          <div class="address-info">
-            <h3>{{ selectedAddress.street }}</h3>
-            <p>{{ selectedAddress.city }}, {{ selectedAddress.postalCode }}</p>
-            <p *ngIf="selectedAddress.reference" class="reference">
-              {{ selectedAddress.reference }}
-            </p>
-          </div>
-          <ion-button
-            expand="block"
-            fill="outline"
-            (click)="openAddressSelector()"
-          >
-            Cambiar Dirección
-          </ion-button>
-        </div>
-        <ng-template #noAddress>
-          <p class="no-address">No tienes una dirección seleccionada</p>
-          <ion-button expand="block" (click)="openAddressSelector()">
-            Seleccionar Dirección
-          </ion-button>
-        </ng-template>
-      </ion-card-content>
-    </ion-card>
-
+  <div *ngIf="cartItems.length > 0; else emptyCart" class="cart-content">
     <!-- Información del restaurante -->
-    <div class="restaurant-info" *ngIf="cartItems[0]">
-      <h3>{{ cartItems[0].restaurantName }}</h3>
-      <p class="item-count">{{ itemCount }} producto(s)</p>
-    </div>
+    <section class="restaurant-section" *ngIf="cartItems[0]">
+      <p class="subtitle">Tu pedido de</p>
+      <h2 class="restaurant-name">{{ cartItems[0].restaurantName }}</h2>
+    </section>
+
+    <!-- Dirección de entrega -->
+    <section class="address-section">
+      <h2 class="section-title">Entregar en</h2>
+      <div class="address-card" *ngIf="selectedAddress; else noAddress">
+        <div class="address-icon">
+          <ion-icon name="location"></ion-icon>
+        </div>
+        <div class="address-info">
+          <p class="address-street">{{ selectedAddress.street }}</p>
+          <p class="address-details">
+            {{ selectedAddress.city }}, {{ selectedAddress.postalCode }}
+          </p>
+          <p class="address-reference" *ngIf="selectedAddress.reference">
+            {{ selectedAddress.reference }}
+          </p>
+        </div>
+        <button class="change-button" (click)="openAddressSelector()">
+          Cambiar
+        </button>
+      </div>
+      <ng-template #noAddress>
+        <div class="address-card">
+          <div class="address-icon">
+            <ion-icon name="location"></ion-icon>
+          </div>
+          <div class="address-info">
+            <p class="no-address-text">No tienes una dirección seleccionada</p>
+          </div>
+          <button class="change-button" (click)="openAddressSelector()">
+            Seleccionar
+          </button>
+        </div>
+      </ng-template>
+    </section>
 
     <!-- Lista de productos -->
-    <ion-list>
-      <ion-item-sliding *ngFor="let item of cartItems">
-        <ion-item>
-          <!-- Imagen del producto -->
-          <ion-thumbnail slot="start" *ngIf="item.image">
-            <img [src]="item.image" [alt]="item.name" />
-          </ion-thumbnail>
+    <section class="products-section">
+      <h2 class="section-title">Tus productos</h2>
+      <div class="products-list">
+        <div class="product-card" *ngFor="let item of cartItems">
+          <img
+            *ngIf="item.image"
+            [src]="item.image"
+            [alt]="item.name"
+            class="product-image"
+          />
+          <div class="product-info">
+            <p class="product-name">{{ item.name }}</p>
 
-          <!-- Información del producto -->
-          <ion-label>
-            <h3>{{ item.name }}</h3>
-            <p *ngIf="item.description">{{ item.description }}</p>
-            <p *ngIf="item.comment" class="muted">Nota: {{ item.comment }}</p>
+            <!-- Opciones seleccionadas -->
+            <p class="product-extras" *ngIf="optionGroups(item).length">
+              <span *ngFor="let g of optionGroups(item); let isLast = last">
+                <span *ngFor="let o of g.options; let isLastOption = last">
+                  + {{ o.name }}<span *ngIf="o.extraPrice">
+                    (${{ o.extraPrice }})</span
+                  ><span *ngIf="!isLastOption">, </span>
+                </span>
+                <span *ngIf="!isLast">; </span>
+              </span>
+            </p>
 
-            <!-- Opciones seleccionadas, formato amigable -->
-            <div *ngIf="optionGroups(item).length">
-              <div class="options">
-                <div class="group" *ngFor="let g of optionGroups(item)">
-                  <span class="group-name">{{ g.groupName }}</span>
-                  <div class="chips">
-                    <span class="chip" *ngFor="let o of g.options">
-                      {{ o.name }}
-                      <small *ngIf="o.extraPrice"
-                        >(+{{ o.extraPrice | currency:'USD':'symbol':'1.2-2'
-                        }})</small
-                      >
-                    </span>
-                  </div>
-                </div>
-              </div>
-            </div>
+            <!-- Nota del cliente -->
+            <p class="product-note" *ngIf="item.comment">
+              Nota: {{ item.comment }}
+            </p>
 
-            <!-- Controles de cantidad -->
-            <div class="quantity-controls">
-              <ion-button
-                fill="clear"
-                size="small"
-                (click)="updateQuantity(item.menuItemId, item.quantity - 1)"
-                [disabled]="item.quantity <= 1"
-              >
-                <ion-icon name="remove-outline"></ion-icon>
-              </ion-button>
-              <span class="quantity">{{ item.quantity }}</span>
-              <ion-button
-                fill="clear"
-                size="small"
-                (click)="updateQuantity(item.menuItemId, item.quantity + 1)"
-              >
-                <ion-icon name="add-outline"></ion-icon>
-              </ion-button>
-            </div>
+            <p class="product-price">${{ lineTotal(item) | number:'1.2-2' }}</p>
+          </div>
 
-            <!-- Desglose de precios -->
-            <div class="price-breakdown">
-              <div class="line">
-                <span>Precio base</span>
-                <span>{{ item.price | currency:'USD':'symbol':'1.2-2' }}</span>
-              </div>
-              <div class="line" *ngIf="extrasUnit(item) > 0">
-                <span>Extras</span>
-                <span
-                  >+{{ extrasUnit(item) | currency:'USD':'symbol':'1.2-2'
-                  }}</span
-                >
-              </div>
-              <div class="line total">
-                <span>Precio por unidad</span>
-                <span
-                  >{{ unitTotal(item) | currency:'USD':'symbol':'1.2-2' }}</span
-                >
-              </div>
-            </div>
-          </ion-label>
+          <!-- Controles de cantidad -->
+          <div class="quantity-controls">
+            <button
+              class="quantity-btn"
+              (click)="updateQuantity(item.menuItemId, item.quantity - 1)"
+              [disabled]="item.quantity <= 1"
+            >
+              -
+            </button>
+            <span class="quantity-value">{{ item.quantity }}</span>
+            <button
+              class="quantity-btn"
+              (click)="updateQuantity(item.menuItemId, item.quantity + 1)"
+            >
+              +
+            </button>
+          </div>
 
-          <!-- Precio total del item -->
-          <ion-note slot="end" class="item-total">
-            {{ lineTotal(item) | currency:'USD':'symbol':'1.2-2' }}
-          </ion-note>
-        </ion-item>
-
-        <!-- Opciones deslizables -->
-        <ion-item-options side="end">
-          <ion-item-option color="danger" (click)="removeItem(item.menuItemId)">
+          <!-- Botón eliminar (visible en móvil) -->
+          <button class="delete-btn" (click)="removeItem(item.menuItemId)">
             <ion-icon name="trash-outline"></ion-icon>
-            Eliminar
-          </ion-item-option>
-        </ion-item-options>
-      </ion-item-sliding>
-    </ion-list>
-
-    <!-- Resumen del pedido -->
-    <div class="order-summary">
-      <div class="line">
-        <span>Subtotal productos</span>
-        <span>{{ baseTotal | currency:'USD':'symbol':'1.2-2' }}</span>
+          </button>
+        </div>
       </div>
-      <div class="line" *ngIf="extrasTotal > 0">
-        <span>Extras</span>
-        <span>+{{ extrasTotal | currency:'USD':'symbol':'1.2-2' }}</span>
-      </div>
-      <div class="total-line">
-        <span>Total</span>
-        <span class="total-price"
-          >{{ totalPrice | currency:'USD':'symbol':'1.2-2' }}</span
-        >
-      </div>
-    </div>
-
-    <!-- Botón de realizar pedido -->
-    <div class="checkout-section">
-      <ion-button
-        expand="block"
-        size="large"
-        (click)="createOrder()"
-        [disabled]="loading"
-      >
-        <ion-spinner *ngIf="loading" size="small"></ion-spinner>
-        <span *ngIf="!loading">Realizar Pedido</span>
-      </ion-button>
-    </div>
+    </section>
   </div>
 
   <!-- Carrito vacío -->
   <ng-template #emptyCart>
     <div class="empty-cart">
-      <ion-icon name="basket-outline" size="large"></ion-icon>
+      <ion-icon name="basket-outline"></ion-icon>
       <h2>Tu carrito está vacío</h2>
       <p>Explora nuestros restaurantes y agrega productos deliciosos</p>
-      <ion-button routerLink="/tabs/tab1" fill="outline">
+      <button class="browse-btn" (click)="router.navigate(['/tabs/business'])">
         Ver Restaurantes
-      </ion-button>
+      </button>
     </div>
   </ng-template>
+
+  <!-- Footer fijo con total y botón -->
+  <footer class="cart-footer" *ngIf="cartItems.length > 0">
+    <div class="footer-content">
+      <div class="total-section">
+        <span class="total-label">Total</span>
+        <span class="total-price">${{ totalPrice | number:'1.2-2' }}</span>
+      </div>
+      <button
+        class="checkout-button"
+        (click)="createOrder()"
+        [disabled]="loading"
+      >
+        <ion-spinner *ngIf="loading" name="crescent"></ion-spinner>
+        <span *ngIf="!loading">Realizar Pedido</span>
+      </button>
+    </div>
+  </footer>
+
+  <!-- Modal de selección de dirección (declarativo pero controlado por ViewChild) -->
+  <ion-modal
+    #addressModal
+    [initialBreakpoint]="0.75"
+    [breakpoints]="[0, 0.5, 0.75, 1]"
+  >
+    <ng-template>
+      <app-address-selector
+        [selectedAddressId]="selectedAddress?.id"
+        (addressSelected)="onAddressSelected($event, addressModal)"
+        (modalCancelled)="addressModal.dismiss()"
+        (navigateToAddresses)="onNavigateToAddresses(addressModal)"
+      ></app-address-selector>
+    </ng-template>
+  </ion-modal>
 </ion-content>
 
 <!-- Alert para errores -->

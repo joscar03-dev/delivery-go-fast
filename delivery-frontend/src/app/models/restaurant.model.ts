@@ -41,6 +41,7 @@ export interface RestaurantModel {
   name: string;
   address: string;
   phone: string;
+  city?: string | null; // Ciudad del restaurante
   imageUrl?: string | null; // URL de la imagen del restaurante
   location?: GeoPoint | null; // PostGIS Point
   createdAt: string | Date;

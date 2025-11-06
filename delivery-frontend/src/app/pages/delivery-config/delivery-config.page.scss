@@ -1,0 +1,17 @@
+ion-card {
+  margin-bottom: 1rem;
+}
+
+ion-item {
+  --padding-start: 0;
+  --padding-end: 0;
+  --inner-padding-end: 0;
+}
+
+.bg-gradient-to-r {
+  background: linear-gradient(to right, #eff6ff, #faf5ff);
+}
+
+.space-y-2 > * + * {
+  margin-top: 0.5rem;
+}
