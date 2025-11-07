@@ -20,6 +20,7 @@ async function bootstrap() {
       'ionic://localhost', // Ionic iOS
       'https://localhost', // General
       'https://gofastdelivery.site', // Producción web
+      'https://www.gofastdelivery.site', // Producción web (www)
       'https://api.gofastdelivery.site', // Producción API
     ],
     credentials: true,
