@@ -32,21 +32,23 @@ export class PushNotificationService {
    * Se debe llamar después del login
    */
   async initializePushNotifications(): Promise<void> {
-    // Solo funciona en dispositivos nativos (iOS/Android)
-    if (!this.platform.is('capacitor')) {
-      console.log(
-        '📱 Push Notifications: Solo disponible en apps nativas (iOS/Android)'
-      );
-      return;
-    }
-
-    console.log('📱 Inicializando Push Notifications...');
-
     try {
+      // Solo funciona en dispositivos nativos (iOS/Android)
+      if (!this.platform.is('capacitor')) {
+        console.log(
+          '📱 Push Notifications: Solo disponible en apps nativas (iOS/Android)'
+        );
+        return;
+      }
+
+      console.log('📱 Inicializando Push Notifications...');
+
       await this.registerListeners();
       await this.registerDevice();
     } catch (error) {
-      console.error('Error inicializando push notifications:', error);
+      console.error('❌ Error inicializando push notifications:', error);
+      // ✅ No propagar el error, las notificaciones son opcionales
+      return;
     }
   }
 
@@ -54,49 +56,56 @@ export class PushNotificationService {
    * Registra los listeners de eventos de notificaciones
    */
   private async registerListeners(): Promise<void> {
-    // Cuando el dispositivo se registra exitosamente
-    await PushNotifications.addListener('registration', (token: Token) => {
-      console.log('📱 Push token recibido:', token.value);
-      this.currentToken = token.value;
-      this.sendTokenToBackend(token.value);
-    });
+    try {
+      // Cuando el dispositivo se registra exitosamente
+      await PushNotifications.addListener('registration', (token: Token) => {
+        console.log('📱 Push token recibido:', token.value);
+        this.currentToken = token.value;
+        this.sendTokenToBackend(token.value).catch((err) => {
+          console.error('Error enviando token al backend:', err);
+        });
+      });
 
-    // Cuando hay un error al registrar
-    await PushNotifications.addListener('registrationError', (error: any) => {
-      console.error('📱 Error en registro de push:', error);
-    });
+      // Cuando hay un error al registrar
+      await PushNotifications.addListener('registrationError', (error: any) => {
+        console.error('📱 Error en registro de push:', error);
+      });
 
-    // Cuando llega una notificación con la app en primer plano
-    await PushNotifications.addListener(
-      'pushNotificationReceived',
-      (notification: PushNotificationSchema) => {
-        console.log('📬 Notificación recibida (app abierta):', notification);
+      // Cuando llega una notificación con la app en primer plano
+      await PushNotifications.addListener(
+        'pushNotificationReceived',
+        (notification: PushNotificationSchema) => {
+          console.log('📬 Notificación recibida (app abierta):', notification);
 
-        // Aquí podrías mostrar un toast o actualizar la UI
-        // El Socket.IO ya manejará la actualización en tiempo real
-        console.log('💡 La actualización en tiempo real la maneja Socket.IO');
-      }
-    );
-
-    // Cuando el usuario toca/abre una notificación
-    await PushNotifications.addListener(
-      'pushNotificationActionPerformed',
-      (action: ActionPerformed) => {
-        console.log('🔔 Notificación tocada:', action);
-
-        const data = action.notification.data;
-
-        // Navegar a la pantalla correspondiente según los datos
-        if (data.screen && data.orderId) {
-          this.navigateToScreen(data.screen, data.orderId);
-        } else if (data.orderId) {
-          // Por defecto ir al detalle del pedido
-          this.router.navigate(['/order-detail', data.orderId]);
+          // Aquí podrías mostrar un toast o actualizar la UI
+          // El Socket.IO ya manejará la actualización en tiempo real
+          console.log('💡 La actualización en tiempo real la maneja Socket.IO');
         }
-      }
-    );
+      );
 
-    console.log('✅ Listeners de push notifications registrados');
+      // Cuando el usuario toca/abre una notificación
+      await PushNotifications.addListener(
+        'pushNotificationActionPerformed',
+        (action: ActionPerformed) => {
+          console.log('🔔 Notificación tocada:', action);
+
+          const data = action.notification.data;
+
+          // Navegar a la pantalla correspondiente según los datos
+          if (data.screen && data.orderId) {
+            this.navigateToScreen(data.screen, data.orderId);
+          } else if (data.orderId) {
+            // Por defecto ir al detalle del pedido
+            this.router.navigate(['/order-detail', data.orderId]);
+          }
+        }
+      );
+
+      console.log('✅ Listeners de push notifications registrados');
+    } catch (error) {
+      console.error('❌ Error registrando listeners:', error);
+      throw error; // Propagar para que initializePushNotifications lo maneje
+    }
   }
 
   /**
@@ -122,7 +131,8 @@ export class PushNotificationService {
       await PushNotifications.register();
       console.log('✅ Dispositivo registrado para push notifications');
     } catch (error) {
-      console.error('Error al registrar dispositivo:', error);
+      console.error('❌ Error al registrar dispositivo:', error);
+      throw error; // Propagar para que initializePushNotifications lo maneje
     }
   }
 

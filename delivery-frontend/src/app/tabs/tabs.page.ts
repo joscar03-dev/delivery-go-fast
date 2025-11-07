@@ -15,6 +15,7 @@ import {
 } from '@ionic/angular/standalone';
 import { addIcons } from 'ionicons';
 import { CommonModule } from '@angular/common';
+import { Router } from '@angular/router';
 import {
   triangle,
   ellipse,
@@ -49,6 +50,7 @@ export class TabsPage {
   public environmentInjector = inject(EnvironmentInjector);
   private auth = inject(AuthService);
   private cartService = inject(CartService);
+  private router = inject(Router);
 
   isSuperAdmin = computed(() => this.auth.hasRole('super_admin'));
   isDeliveryDriver = computed(() => this.auth.hasRole('driver'));
@@ -69,5 +71,9 @@ export class TabsPage {
       'bicycle-outline': bicycleOutline,
       'restaurant-outline': restaurantOutline,
     });
+  }
+
+  navigateToDeliveryDriver() {
+    this.router.navigate(['/delivery-driver']);
   }
 }

@@ -43,6 +43,8 @@ export class DeliveryDetailPage implements OnInit, OnDestroy {
 
   private subscriptions: Subscription[] = [];
   private locationUpdateInterval?: Subscription;
+  private socketListenersSetup = false; // 🔥 Bandera para evitar listeners duplicados
+  private locationTrackingActive = false; // 🔥 Bandera para evitar múltiples intervalos
 
   // Estados del flujo de entrega
   statusFlow = [
@@ -106,6 +108,16 @@ export class DeliveryDetailPage implements OnInit, OnDestroy {
   private setupSocketConnection(): void {
     if (!this.activeOrder) return;
 
+    // 🔥 Evitar configurar listeners duplicados
+    if (this.socketListenersSetup) {
+      console.log('⚠️ Listeners de socket ya configurados, saltando...');
+      // Solo unirse a la sala si está conectado
+      if (this.socketService.isConnected()) {
+        this.socketService.joinOrderRoom(this.activeOrder.id);
+      }
+      return;
+    }
+
     // Verificar si ya está conectado
     if (!this.socketService.isConnected()) {
       const token = localStorage.getItem('access_token');
@@ -138,7 +150,8 @@ export class DeliveryDetailPage implements OnInit, OnDestroy {
             '🔄 Estado del pedido actualizado, recargando...',
             update
           );
-          this.loadDeliveryById(this.activeOrder.id);
+          // 🔥 Solo recargar datos, NO volver a configurar socket/tracking
+          this.reloadDeliveryData(this.activeOrder.id);
         }
       }
     );
@@ -159,6 +172,9 @@ export class DeliveryDetailPage implements OnInit, OnDestroy {
       });
       await toast.present();
     });
+
+    // 🔥 Marcar listeners como configurados
+    this.socketListenersSetup = true;
   }
 
   /**
@@ -186,6 +202,22 @@ export class DeliveryDetailPage implements OnInit, OnDestroy {
       },
     });
     this.subscriptions.push(sub);
+  }
+
+  /**
+   * 🔥 Recarga solo los datos del pedido, sin reconfigurar socket/tracking
+   */
+  private reloadDeliveryData(orderId: string) {
+    const sub = this.deliveryService.getDeliveryById(orderId).subscribe({
+      next: (order: DeliveryOrder) => {
+        this.activeOrder = order;
+        this.currentStatus = order.status as OrderStatus;
+        console.log('✅ Datos del pedido actualizados');
+      },
+      error: (err: any) => {
+        console.error('Error al recargar datos del pedido:', err);
+      },
+    });
   }
 
   /**
@@ -261,6 +293,19 @@ export class DeliveryDetailPage implements OnInit, OnDestroy {
   private async startLocationTracking() {
     if (!this.activeOrder) return;
 
+    // 🔥 Evitar iniciar tracking múltiples veces
+    if (this.locationTrackingActive) {
+      console.log('⚠️ Tracking de ubicación ya activo, saltando...');
+      return;
+    }
+
+    // 🔥 Cancelar intervalo anterior si existe (por seguridad)
+    if (this.locationUpdateInterval) {
+      console.log('🛑 Cancelando intervalo de ubicación anterior');
+      this.locationUpdateInterval.unsubscribe();
+      this.locationUpdateInterval = undefined;
+    }
+
     try {
       // Verificar si estamos en web (navegador)
       const isWeb =
@@ -287,6 +332,7 @@ export class DeliveryDetailPage implements OnInit, OnDestroy {
         this.sendSimulatedLocation();
 
         console.log('📍 Seguimiento de ubicación simulada iniciado');
+        this.locationTrackingActive = true; // 🔥 Marcar tracking como activo
         return;
       }
 
@@ -311,6 +357,7 @@ export class DeliveryDetailPage implements OnInit, OnDestroy {
       await this.getCurrentPositionAndUpdate();
 
       console.log('📍 Seguimiento de ubicación iniciado');
+      this.locationTrackingActive = true; // 🔥 Marcar tracking como activo
     } catch (error) {
       console.error('Error al iniciar seguimiento de ubicación:', error);
 
@@ -320,6 +367,7 @@ export class DeliveryDetailPage implements OnInit, OnDestroy {
         this.sendSimulatedLocation();
       });
       this.sendSimulatedLocation();
+      this.locationTrackingActive = true; // 🔥 Marcar tracking como activo
     }
   }
 

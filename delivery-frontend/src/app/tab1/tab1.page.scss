@@ -304,6 +304,63 @@ ion-grid {
   }
 }
 
+// ✅ NUEVO: Filtro de categorías con scroll nativo (sin Swiper)
+.categories-filter-native {
+  padding: 15px 10px;
+  margin-bottom: 10px;
+  overflow: hidden;
+
+  .categories-scroll {
+    display: flex;
+    gap: 8px;
+    overflow-x: auto;
+    overflow-y: hidden;
+    scrollbar-width: none; /* Firefox */
+    -ms-overflow-style: none; /* IE/Edge */
+    padding: 2px 0; /* Para que el box-shadow no se corte */
+
+    /* Ocultar scrollbar en WebKit (Chrome, Safari) */
+    &::-webkit-scrollbar {
+      display: none;
+    }
+
+    .filter-chip {
+      display: inline-block;
+      padding: 6px 16px;
+      font-size: 14px;
+      font-weight: 500;
+      border-radius: 20px;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      user-select: none;
+      white-space: nowrap;
+      flex-shrink: 0; /* Evita que los chips se encojan */
+
+      // Estado NO seleccionado
+      background: #ffffff;
+      color: #1f2937;
+      border: 1.5px solid var(--ion-color-primary);
+
+      // Estado SELECCIONADO (con clase .active)
+      &.active {
+        background: var(--ion-color-primary);
+        color: #ffffff;
+        border-color: var(--ion-color-primary);
+        font-weight: 600;
+      }
+
+      &:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+      }
+
+      &:active {
+        transform: translateY(0);
+      }
+    }
+  }
+}
+
 .categories-filter {
   padding: 15px 10px;
   margin-bottom: 10px;

@@ -8,7 +8,7 @@ export const routes: Routes = [
     path: 'tabs',
     loadChildren: () => import('./tabs/tabs.routes').then((m) => m.routes),
   },
-  { path: '', redirectTo: 'tabs', pathMatch: 'full' },
+  { path: '', redirectTo: 'tabs/business', pathMatch: 'full' }, // ✅ Cambiado a business (sin guard)
   // Restaurantes (público)
   {
     path: 'restaurant/:id',
@@ -96,7 +96,7 @@ export const routes: Routes = [
     loadComponent: () =>
       import('./pages/admin/menu-items').then((m) => m.AdminMenuItemsPage),
   },
-  // Módulo de Repartidores (Delivery Driver) - Con Tabs
+  // Módulo de Repartidores (Delivery Driver) - Con sus propios tabs
   {
     path: 'delivery-driver',
     canMatch: [authGuard, rolesGuard],

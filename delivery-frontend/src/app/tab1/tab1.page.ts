@@ -1,9 +1,4 @@
-import {
-  Component,
-  OnInit,
-  inject,
-  CUSTOM_ELEMENTS_SCHEMA,
-} from '@angular/core';
+import { Component, inject, CUSTOM_ELEMENTS_SCHEMA } from '@angular/core'; // ✅ AGREGADO DE NUEVO
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import {
@@ -20,12 +15,13 @@ import {
   IonCardContent,
   IonSelect,
   IonSelectOption,
+  ViewWillEnter,
 } from '@ionic/angular/standalone';
 import { RouterLink, Router } from '@angular/router';
 import { RestaurantService } from '../services/restaurant.service';
 import type { RestaurantModel } from '../models/restaurant.model';
 import { CITIES, City } from '../models/city.enum';
-import { register } from 'swiper/element/bundle';
+import { register } from 'swiper/element/bundle'; // ✅ DESCOMENTADO (PRUEBA 2)
 import { addIcons } from 'ionicons';
 import {
   search,
@@ -46,13 +42,13 @@ addIcons({
   personCircleOutline,
 });
 
-register();
+register(); // ✅ DESCOMENTADO (PRUEBA 2)
 
 @Component({
   selector: 'app-tab1',
   templateUrl: 'tab1.page.html',
   styleUrls: ['tab1.page.scss'],
-  schemas: [CUSTOM_ELEMENTS_SCHEMA],
+  schemas: [CUSTOM_ELEMENTS_SCHEMA], // ✅ AGREGADO DE NUEVO (PRUEBA 1)
   imports: [
     CommonModule,
     FormsModule,
@@ -72,7 +68,7 @@ register();
     RouterLink,
   ],
 })
-export class Tab1Page implements OnInit {
+export class Tab1Page implements ViewWillEnter {
   private restaurantsSvc = inject(RestaurantService);
   private router = inject(Router);
 
@@ -83,12 +79,17 @@ export class Tab1Page implements OnInit {
   cities = CITIES;
   selectedCity: string = City.BAGUA;
 
-  ngOnInit(): void {
+  ionViewWillEnter(): void {
+    this.loadRestaurants();
+  }
+
+  loadRestaurants(): void {
     this.restaurantsSvc.list().subscribe({
       next: (r) => {
         this.list = r || [];
       },
-      error: () => {
+      error: (err) => {
+        console.error('Error loading restaurants:', err);
         this.list = [];
       },
     });

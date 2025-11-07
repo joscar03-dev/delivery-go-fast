@@ -142,12 +142,16 @@ export class AuthService {
     this.currentUserSubject.next(user);
     this.isAuthenticatedSubject.next(true);
 
-    // Inicializar push notifications después del login
-    this.pushNotificationService
-      .initializePushNotifications()
-      .catch((error) => {
-        console.warn('Error al inicializar push notifications:', error);
-      });
+    // Inicializar push notifications después del login (sin bloquear)
+    // Usamos setTimeout para que no bloquee el flujo principal
+    setTimeout(() => {
+      this.pushNotificationService
+        .initializePushNotifications()
+        .catch((error) => {
+          console.warn('Error al inicializar push notifications:', error);
+          // No hacer nada, las notificaciones son opcionales
+        });
+    }, 1000); // ✅ Delay de 1 segundo para no interferir con el login
 
     return user;
   }

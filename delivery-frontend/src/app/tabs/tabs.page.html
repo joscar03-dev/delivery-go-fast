@@ -23,8 +23,7 @@
     <!-- Tab para Repartidores -->
     <ion-tab-button
       *ngIf="isDeliveryDriver()"
-      routerLink="/delivery-driver"
-      routerDirection="forward"
+      (click)="navigateToDeliveryDriver()"
     >
       <ion-icon aria-hidden="true" name="bicycle-outline"></ion-icon>
       <ion-label>Entregas</ion-label>
