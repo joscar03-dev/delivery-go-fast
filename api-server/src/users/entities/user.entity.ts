@@ -7,24 +7,64 @@ import {
   ManyToOne,
   JoinColumn,
   OneToMany,
+  Index,
 } from 'typeorm';
 import { Role } from '../../auth/entities/role.entity';
 import { Restaurant } from 'src/restaurants/entities/restaurant.entity';
 import { Address } from './address.entity';
 import { Order } from 'src/orders/entities/order.entity';
+
+/**
+ * Tipo de método de autenticación
+ */
+export type AuthMethod = 'email' | 'phone' | 'social';
+
 @Entity('users') // Nombre de la tabla en la base de datos
 export class User {
   @PrimaryGeneratedColumn('uuid')
   id: string;
 
-  @Column({ type: 'varchar', length: 100, unique: true })
-  email: string;
+  // Email es opcional ahora - usuarios con phone pueden no tener email
+  @Column({ type: 'varchar', length: 100, unique: true, nullable: true })
+  email?: string;
 
-  @Column({ type: 'varchar' })
-  password_hash: string;
+  // Password es opcional - usuarios con phone auth no tienen password
+  @Column({ type: 'varchar', nullable: true })
+  password_hash?: string;
 
   @Column({ type: 'varchar', length: 50 })
   name: string;
+
+  // 🆕 PHONE AUTHENTICATION FIELDS
+
+  /**
+   * Número de teléfono con código de país (formato E.164)
+   * Ejemplo: +51987654321
+   */
+  @Column({ type: 'varchar', length: 20, unique: true, nullable: true })
+  @Index('idx_users_phone') // Índice para búsquedas rápidas
+  phone?: string;
+
+  /**
+   * Indica si el teléfono fue verificado con OTP
+   */
+  @Column({ name: 'phone_verified', type: 'boolean', default: false })
+  phoneVerified: boolean;
+
+  /**
+   * Método de autenticación usado por el usuario
+   * - 'email': Email + Password tradicional
+   * - 'phone': Teléfono + OTP
+   * - 'social': Google, Facebook, Apple
+   */
+  @Column({
+    name: 'auth_method',
+    type: 'varchar',
+    length: 20,
+    default: 'email',
+  })
+  @Index('idx_users_auth_method')
+  authMethod: AuthMethod;
 
   @CreateDateColumn({ type: 'timestamp with time zone' })
   created_at: Date;

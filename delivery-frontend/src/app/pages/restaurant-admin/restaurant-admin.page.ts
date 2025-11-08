@@ -15,10 +15,14 @@ import {
   IonItem,
   IonLabel,
   IonIcon,
-  IonButton,
   IonSpinner,
   IonNote,
   ToastController,
+  IonButtons,
+  IonBackButton,
+  ViewWillEnter,
+  IonRefresher,
+  IonRefresherContent,
 } from '@ionic/angular/standalone';
 import { addIcons } from 'ionicons';
 import {
@@ -52,12 +56,15 @@ import { RestaurantService } from '../../services/restaurant.service';
     IonItem,
     IonLabel,
     IonIcon,
-    IonButton,
     IonSpinner,
     IonNote,
+    IonButtons,
+    IonBackButton,
+    IonRefresher,
+    IonRefresherContent,
   ],
 })
-export class RestaurantAdminPage implements OnInit {
+export class RestaurantAdminPage implements OnInit, ViewWillEnter {
   myRestaurants: any[] = [];
   isLoading = false;
 
@@ -78,6 +85,13 @@ export class RestaurantAdminPage implements OnInit {
   }
 
   ngOnInit() {
+    // Se ejecuta solo una vez al inicializar el componente
+    this.loadMyRestaurants();
+  }
+
+  ionViewWillEnter() {
+    // Se ejecuta cada vez que la vista está a punto de ser mostrada
+    // Incluye cuando se navega de regreso desde otras páginas
     this.loadMyRestaurants();
   }
 
@@ -94,8 +108,26 @@ export class RestaurantAdminPage implements OnInit {
     }
   }
 
+  async handleRefresh(event: any) {
+    // Método para el pull-to-refresh
+    try {
+      this.myRestaurants =
+        (await this.restaurantService.getMyRestaurants().toPromise()) || [];
+      await this.showToast('Restaurantes actualizados', 'success');
+    } catch (error) {
+      console.error('Error al actualizar restaurantes:', error);
+      await this.showToast('Error al actualizar', 'danger');
+    } finally {
+      // Finalizar el refresh
+      event.target.complete();
+    }
+  }
+
   goToRestaurantDetail(restaurantId: string) {
-    this.router.navigate(['/tabs/restaurant-admin', restaurantId]);
+    // Navegar al formulario de edición del restaurante
+    this.router.navigate(['/restaurant-edit'], {
+      queryParams: { id: restaurantId },
+    });
   }
 
   goToDeliveryConfig(restaurantId: string) {
@@ -107,7 +139,8 @@ export class RestaurantAdminPage implements OnInit {
   }
 
   goToMenuManagement(restaurantId: string) {
-    this.router.navigate(['/tabs/restaurant-admin', restaurantId, 'menu']);
+    // Navegar a la gestión de items del menú
+    this.router.navigate(['/restaurant-menu-items', restaurantId]);
   }
 
   goToOrders(restaurantId: string) {

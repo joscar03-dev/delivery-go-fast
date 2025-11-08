@@ -1,0 +1,391 @@
+<ion-header>
+  <ion-toolbar>
+    <ion-buttons slot="start">
+      <ion-back-button
+        (click)="goBack()"
+        defaultHref="/tabs/profile"
+      ></ion-back-button>
+    </ion-buttons>
+    <ion-title>Solicitud de Conductor</ion-title>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content [fullscreen]="true">
+  <!-- Estado de la solicitud si existe -->
+  <div
+    *ngIf="application && application.status !== ApplicationStatus.DRAFT"
+    class="status-banner"
+  >
+    <ion-card [color]="getStatusColor()">
+      <ion-card-header>
+        <ion-card-title>Estado: {{ getStatusText() }}</ion-card-title>
+      </ion-card-header>
+      <ion-card-content>
+        <p *ngIf="application.status === ApplicationStatus.PENDING_CALL">
+          Tu solicitud está siendo revisada. El administrador te contactará
+          pronto para verificar tu información.
+        </p>
+        <p *ngIf="application.status === ApplicationStatus.PENDING_COMPLETION">
+          ¡Genial! El administrador aprobó tu información inicial. Ahora puedes
+          completar el paso 2 con tus documentos y fotos.
+        </p>
+        <p *ngIf="application.status === ApplicationStatus.PENDING_REVIEW">
+          Tu solicitud completa está siendo revisada por nuestro equipo.
+        </p>
+        <p *ngIf="application.status === ApplicationStatus.APPROVED">
+          ¡Felicidades! Tu solicitud ha sido aprobada. Ya puedes comenzar a
+          recibir pedidos.
+        </p>
+        <p *ngIf="application.status === ApplicationStatus.REJECTED">
+          Tu solicitud ha sido rechazada.
+          <span *ngIf="application.rejectionReason">
+            <br /><strong>Razón:</strong> {{ application.rejectionReason }}
+          </span>
+        </p>
+      </ion-card-content>
+    </ion-card>
+  </div>
+  <!-- Formulario solo si es editable (DRAFT o PENDING_COMPLETION) -->
+  <div *ngIf="isApplicationEditable()" class="form-container">
+    <!-- Indicador de pasos (solo mostrar paso 2 si está habilitado) -->
+    <ion-segment [value]="currentStage.toString()" mode="md">
+      <ion-segment-button value="1">
+        <ion-label>
+          <div class="segment-label">
+            <ion-icon name="person-outline"></ion-icon>
+            <span>Paso 1</span>
+          </div>
+        </ion-label>
+      </ion-segment-button>
+      <ion-segment-button
+        value="2"
+        *ngIf="canAccessStep2()"
+        (click)="currentStage = 2"
+      >
+        <ion-label>
+          <div class="segment-label">
+            <ion-icon name="document-text-outline"></ion-icon>
+            <span>Paso 2</span>
+          </div>
+        </ion-label>
+      </ion-segment-button>
+    </ion-segment>
+
+    <!-- Stage 1: Información básica -->
+    <div *ngIf="currentStage === 1" class="stage-content">
+      <ion-card>
+        <ion-card-header>
+          <ion-card-title>Información Básica</ion-card-title>
+          <ion-card-subtitle
+            >Completa estos datos para comenzar tu solicitud</ion-card-subtitle
+          >
+        </ion-card-header>
+        <ion-card-content>
+          <form [formGroup]="stage1Form">
+            <!-- DNI -->
+            <ion-item>
+              <ion-label position="stacked"
+                >DNI <ion-text color="danger">*</ion-text></ion-label
+              >
+              <ion-input
+                type="text"
+                formControlName="dni"
+                placeholder="12345678"
+                maxlength="8"
+                [disabled]="!!application"
+              >
+              </ion-input>
+            </ion-item>
+            <ion-note
+              *ngIf="stage1Form.get('dni')?.invalid && stage1Form.get('dni')?.touched"
+              color="danger"
+            >
+              Ingresa un DNI válido de 8 dígitos
+            </ion-note>
+
+            <!-- Tipo de vehículo -->
+            <ion-item>
+              <ion-label position="stacked"
+                >Tipo de Vehículo
+                <ion-text color="danger">*</ion-text></ion-label
+              >
+              <ion-select
+                formControlName="vehicleType"
+                placeholder="Selecciona tu vehículo"
+              >
+                <ion-select-option
+                  *ngFor="let type of vehicleTypes"
+                  [value]="type.value"
+                >
+                  {{ type.label }}
+                </ion-select-option>
+              </ion-select>
+            </ion-item>
+
+            <!-- Fecha de nacimiento -->
+            <ion-item>
+              <ion-label position="stacked"
+                >Fecha de Nacimiento
+                <ion-text color="danger">*</ion-text></ion-label
+              >
+              <ion-input
+                type="date"
+                formControlName="birthDate"
+                [max]="getMaxBirthDate()"
+              >
+              </ion-input>
+            </ion-item>
+            <ion-note
+              *ngIf="stage1Form.get('birthDate')?.invalid && stage1Form.get('birthDate')?.touched"
+              color="danger"
+            >
+              Debes ser mayor de 18 años
+            </ion-note>
+          </form>
+        </ion-card-content>
+      </ion-card>
+
+      <!-- Botones Stage 1 -->
+      <div class="button-container">
+        <ion-button
+          expand="block"
+          (click)="saveStage1()"
+          [disabled]="stage1Form.invalid"
+          color="primary"
+        >
+          Enviar Solicitud
+          <ion-icon slot="end" name="send"></ion-icon>
+        </ion-button>
+        <ion-note class="ion-text-center">
+          El administrador revisará tu información y te contactará para
+          continuar con el proceso.
+        </ion-note>
+      </div>
+    </div>
+
+    <!-- Stage 2: Información completa -->
+    <div *ngIf="currentStage === 2" class="stage-content">
+      <ion-card>
+        <ion-card-header>
+          <ion-card-title>Información Completa</ion-card-title>
+          <ion-card-subtitle
+            >Completa tu perfil para enviar la solicitud</ion-card-subtitle
+          >
+        </ion-card-header>
+        <ion-card-content>
+          <form [formGroup]="stage2Form">
+            <!-- Información Personal -->
+            <ion-list-header>
+              <ion-label>Datos Personales</ion-label>
+            </ion-list-header>
+
+            <ion-item>
+              <ion-label position="stacked"
+                >Nombre Completo
+                <ion-text color="danger">*</ion-text></ion-label
+              >
+              <ion-input
+                type="text"
+                formControlName="fullName"
+                placeholder="Juan Pérez García"
+              >
+              </ion-input>
+            </ion-item>
+
+            <ion-item>
+              <ion-label position="stacked"
+                >Teléfono <ion-text color="danger">*</ion-text></ion-label
+              >
+              <ion-input
+                type="tel"
+                formControlName="phone"
+                placeholder="987654321"
+                maxlength="9"
+              >
+              </ion-input>
+            </ion-item>
+
+            <ion-item>
+              <ion-label position="stacked"
+                >Correo Electrónico
+                <ion-text color="danger">*</ion-text></ion-label
+              >
+              <ion-input
+                type="email"
+                formControlName="email"
+                placeholder="ejemplo@correo.com"
+              >
+              </ion-input>
+            </ion-item>
+
+            <!-- Información de Licencia -->
+            <ion-list-header>
+              <ion-label>Licencia de Conducir</ion-label>
+            </ion-list-header>
+
+            <ion-item>
+              <ion-label position="stacked">Número de Licencia</ion-label>
+              <ion-input
+                type="text"
+                formControlName="licenseNumber"
+                placeholder="Q12345678"
+              >
+              </ion-input>
+            </ion-item>
+
+            <ion-item>
+              <ion-label position="stacked">Fecha de Vencimiento</ion-label>
+              <ion-input type="date" formControlName="licenseExpiry">
+              </ion-input>
+            </ion-item>
+
+            <!-- Información del Vehículo -->
+            <ion-list-header>
+              <ion-label>Datos del Vehículo</ion-label>
+            </ion-list-header>
+
+            <ion-item>
+              <ion-label position="stacked">Placa</ion-label>
+              <ion-input
+                type="text"
+                formControlName="vehiclePlate"
+                placeholder="ABC-123"
+              >
+              </ion-input>
+            </ion-item>
+
+            <ion-item>
+              <ion-label position="stacked">Marca</ion-label>
+              <ion-input
+                type="text"
+                formControlName="vehicleBrand"
+                placeholder="Honda, Yamaha, Toyota..."
+              >
+              </ion-input>
+            </ion-item>
+
+            <ion-item>
+              <ion-label position="stacked">Modelo</ion-label>
+              <ion-input
+                type="text"
+                formControlName="vehicleModel"
+                placeholder="CBR 150, Yaris..."
+              >
+              </ion-input>
+            </ion-item>
+
+            <ion-item>
+              <ion-label position="stacked">Año</ion-label>
+              <ion-input
+                type="number"
+                formControlName="vehicleYear"
+                placeholder="2020"
+              >
+              </ion-input>
+            </ion-item>
+
+            <!-- Contacto de Emergencia -->
+            <ion-list-header>
+              <ion-label>Contacto de Emergencia</ion-label>
+            </ion-list-header>
+
+            <ion-item>
+              <ion-label position="stacked">Nombre</ion-label>
+              <ion-input
+                type="text"
+                formControlName="emergencyContactName"
+                placeholder="María Pérez"
+              >
+              </ion-input>
+            </ion-item>
+
+            <ion-item>
+              <ion-label position="stacked">Teléfono</ion-label>
+              <ion-input
+                type="tel"
+                formControlName="emergencyContactPhone"
+                placeholder="987654321"
+                maxlength="9"
+              >
+              </ion-input>
+            </ion-item>
+
+            <!-- Documentos y Fotos -->
+            <ion-list-header>
+              <ion-label>Documentos (Fotos)</ion-label>
+            </ion-list-header>
+
+            <div class="photos-section">
+              <app-photo-upload
+                label="Foto del DNI"
+                [photo]="dniPhoto"
+                [required]="true"
+                (photoChange)="onPhotoChange('dniPhoto', $event)"
+              ></app-photo-upload>
+
+              <app-photo-upload
+                label="Licencia (Frente)"
+                [photo]="licenseFrontPhoto"
+                [required]="true"
+                (photoChange)="onPhotoChange('licenseFrontPhoto', $event)"
+              ></app-photo-upload>
+
+              <app-photo-upload
+                label="Licencia (Reverso)"
+                [photo]="licenseBackPhoto"
+                [required]="false"
+                (photoChange)="onPhotoChange('licenseBackPhoto', $event)"
+              ></app-photo-upload>
+
+              <app-photo-upload
+                label="Foto del Vehículo"
+                [photo]="vehiclePhoto"
+                [required]="true"
+                (photoChange)="onPhotoChange('vehiclePhoto', $event)"
+              ></app-photo-upload>
+            </div>
+          </form>
+        </ion-card-content>
+      </ion-card>
+
+      <!-- Botones Stage 2 -->
+      <div class="button-container">
+        <ion-button expand="block" fill="outline" (click)="goToStage1()">
+          <ion-icon slot="start" name="arrow-back"></ion-icon>
+          Volver al Paso 1
+        </ion-button>
+
+        <ion-button
+          expand="block"
+          (click)="saveStage2()"
+          fill="outline"
+          color="medium"
+        >
+          <ion-icon slot="start" name="save-outline"></ion-icon>
+          Guardar Borrador
+        </ion-button>
+
+        <ion-button
+          expand="block"
+          (click)="submitApplication()"
+          color="success"
+          [disabled]="stage2Form.invalid"
+        >
+          <ion-icon slot="start" name="send"></ion-icon>
+          Enviar Solicitud
+        </ion-button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Mensaje si la solicitud no es editable -->
+  <div *ngIf="!isApplicationEditable() && application" class="readonly-message">
+    <ion-card>
+      <ion-card-content>
+        <p class="ion-text-center">
+          No puedes editar tu solicitud mientras está en revisión.
+        </p>
+      </ion-card-content>
+    </ion-card>
+  </div>
+</ion-content>

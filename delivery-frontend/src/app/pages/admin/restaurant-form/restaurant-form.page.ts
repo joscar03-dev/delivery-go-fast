@@ -22,6 +22,7 @@ import {
 import { ReactiveFormsModule, FormBuilder, Validators } from '@angular/forms';
 import { RestaurantService } from '../../../services/restaurant.service';
 import { UserService } from '../../../services/user.service';
+import { AuthService } from '../../../services/auth.service';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { ImageCompressor } from '../../../common/utils/image-compressor.util';
 import { CITIES, City } from '../../../models/city.enum';
@@ -74,6 +75,7 @@ export class AdminRestaurantFormPage {
   private route = inject(ActivatedRoute);
   private router = inject(Router);
   private users = inject(UserService);
+  private auth = inject(AuthService);
 
   form = this.fb.nonNullable.group({
     name: this.fb.nonNullable.control<string>('', [Validators.required]),
@@ -97,11 +99,23 @@ export class AdminRestaurantFormPage {
   loadingOwners = false;
   locating = false;
   imagePreview: string | null = null;
+  isRestaurantOwner = false; // Nueva propiedad
+  currentUserName = ''; // Nombre del usuario actual
 
   // Lista de ciudades disponibles
   cities = CITIES;
 
   constructor() {
+    // Detectar si el usuario actual es restaurant_owner
+    this.isRestaurantOwner = this.auth.hasRole('restaurant_owner');
+
+    // Obtener nombre del usuario actual
+    this.auth.currentUser$.subscribe((user) => {
+      if (user) {
+        this.currentUserName = user.name || user.email || 'Usuario actual';
+      }
+    });
+
     // Leer ID si viene por query para modo edición
     const id = this.route.snapshot.queryParamMap.get('id');
     if (id) {
@@ -147,25 +161,39 @@ export class AdminRestaurantFormPage {
     // Cargar posibles owners (usuarios con rol restaurant_owner; opcional incluir super_admin)
     this.loadingOwners = true;
     this.form.get('ownerId')?.disable();
-    this.users.getAllUsers().subscribe({
-      next: (list) => {
-        const owners = (list || []).filter(
-          (u: any) => u.role === 'restaurant_owner' || u.role === 'super_admin'
-        );
-        this.owners = owners.map((u: any) => ({
-          id: u.id,
-          label: u.name || u.email,
-          role: u.role,
-        }));
-        this.loadingOwners = false;
-        this.form.get('ownerId')?.enable();
-      },
-      error: () => {
-        this.owners = [];
-        this.loadingOwners = false;
-        this.form.get('ownerId')?.enable();
-      },
-    });
+
+    // Si es restaurant_owner, establecer su propio ID y mantener deshabilitado
+    if (this.isRestaurantOwner) {
+      this.auth.currentUser$.subscribe((user) => {
+        if (user?.id) {
+          this.form.patchValue({ ownerId: user.id });
+          // Mantener deshabilitado para restaurant_owner
+          this.loadingOwners = false;
+        }
+      });
+    } else {
+      // Solo super_admin puede elegir el dueño
+      this.users.getAllUsers().subscribe({
+        next: (list) => {
+          const owners = (list || []).filter(
+            (u: any) =>
+              u.role === 'restaurant_owner' || u.role === 'super_admin'
+          );
+          this.owners = owners.map((u: any) => ({
+            id: u.id,
+            label: u.name || u.email,
+            role: u.role,
+          }));
+          this.loadingOwners = false;
+          this.form.get('ownerId')?.enable();
+        },
+        error: () => {
+          this.owners = [];
+          this.loadingOwners = false;
+          this.form.get('ownerId')?.enable();
+        },
+      });
+    }
   }
 
   async useMyLocation() {
@@ -201,6 +229,10 @@ export class AdminRestaurantFormPage {
       },
       { enableHighAccuracy: true, timeout: 10000, maximumAge: 0 }
     );
+  }
+
+  getCurrentOwnerName(): string {
+    return this.currentUserName || 'Tú';
   }
 
   onImageSelected(event: Event) {

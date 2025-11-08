@@ -6,9 +6,10 @@ import {
   AlertController,
   ModalController,
 } from '@ionic/angular/standalone';
-import { ActivatedRoute } from '@angular/router';
+import { ActivatedRoute, Router } from '@angular/router';
 import { ReactiveFormsModule, FormBuilder, Validators } from '@angular/forms';
 import { RestaurantService } from '../../../services/restaurant.service';
+import { AuthService } from '../../../services/auth.service';
 
 @Component({
   selector: 'app-admin-menu-categories',
@@ -18,7 +19,9 @@ import { RestaurantService } from '../../../services/restaurant.service';
 })
 export class AdminMenuCategoriesPage implements OnInit {
   private route = inject(ActivatedRoute);
+  private router = inject(Router);
   private restaurants = inject(RestaurantService);
+  private auth = inject(AuthService);
   private toast = inject(ToastController);
   private alert = inject(AlertController);
   private modal = inject(ModalController);
@@ -28,9 +31,16 @@ export class AdminMenuCategoriesPage implements OnInit {
   restaurant?: any;
   list: any[] = [];
   loading = false;
+  backHref = '/admin/restaurants'; // Valor por defecto para super_admin
 
   ngOnInit(): void {
     this.restaurantId = this.route.snapshot.paramMap.get('id')!;
+
+    // Determinar el href de regreso según el rol
+    if (this.auth.hasRole('restaurant_owner')) {
+      this.backHref = '/tabs/restaurant-admin';
+    }
+
     this.restaurants
       .getById(this.restaurantId)
       .subscribe({ next: (r) => (this.restaurant = r) });
@@ -55,6 +65,11 @@ export class AdminMenuCategoriesPage implements OnInit {
         ).present();
       },
     });
+  }
+
+  goToItems() {
+    // Navegar a la gestión de items del menú
+    this.router.navigate(['/restaurant-menu-items', this.restaurantId]);
   }
 
   async openCreateModal() {

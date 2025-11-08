@@ -6,27 +6,16 @@ import {
 } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import {
-  IonHeader,
   IonBackButton,
-  IonToolbar,
-  IonTitle,
   IonContent,
   IonButtons,
   IonIcon,
-  IonChip,
-  IonLabel,
-  IonList,
-  IonListHeader,
-  IonItem,
-  IonThumbnail,
   IonSpinner,
-  IonButton,
   IonToast,
 } from '@ionic/angular/standalone';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { RestaurantService } from '../../services/restaurant.service';
 import { CartService } from '../../services/cart.service';
-import { WaveBackgroundComponent } from '../../components/wave-background/wave-background.component';
 import type {
   RestaurantModel,
   MenuItemModel,
@@ -62,23 +51,12 @@ addIcons({
   standalone: true,
   imports: [
     CommonModule,
-    IonHeader,
-    IonToolbar,
-    IonTitle,
     IonContent,
     IonButtons,
     IonIcon,
     IonBackButton,
-    IonChip,
-    IonLabel,
-    IonList,
-    IonListHeader,
-    IonItem,
-    IonThumbnail,
     IonSpinner,
-    IonButton,
     IonToast,
-    WaveBackgroundComponent,
   ],
   schemas: [CUSTOM_ELEMENTS_SCHEMA],
   templateUrl: './restaurant-detail.page.html',

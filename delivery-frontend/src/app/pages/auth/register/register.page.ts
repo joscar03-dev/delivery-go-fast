@@ -22,6 +22,7 @@ export class RegisterPage {
   form = this.fb.nonNullable.group({
     name: ['', [Validators.required, Validators.minLength(2)]],
     email: ['', [Validators.required, Validators.email]],
+    phone: ['', [Validators.pattern(/^\d{9}$/)]],
     password: ['', [Validators.required, Validators.minLength(6)]],
     confirmPassword: ['', [Validators.required]],
   });
@@ -30,7 +31,8 @@ export class RegisterPage {
 
   async submit() {
     if (this.form.invalid || this.loading) return;
-    const { name, email, password, confirmPassword } = this.form.getRawValue();
+    const { name, email, phone, password, confirmPassword } =
+      this.form.getRawValue();
     if (password !== confirmPassword) {
       const toast = await this.toastCtrl.create({
         message: 'Las contraseñas no coinciden',
@@ -40,7 +42,12 @@ export class RegisterPage {
       return toast.present();
     }
     this.loading = true;
-    this.auth.register({ name, email, password }).subscribe({
+    // Solo enviar phone si tiene valor
+    const registerData: any = { name, email, password };
+    if (phone) {
+      registerData.phone = phone;
+    }
+    this.auth.register(registerData).subscribe({
       next: async () => {
         this.loading = false;
         const redirectUrl =

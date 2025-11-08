@@ -1,0 +1,161 @@
+.status-banner {
+  padding: 16px;
+
+  ion-card {
+    margin: 0;
+
+    ion-card-title {
+      font-size: 1.2rem;
+      font-weight: 600;
+    }
+
+    ion-card-content {
+      p {
+        margin: 0;
+        line-height: 1.5;
+      }
+    }
+  }
+}
+
+.form-container {
+  padding: 16px;
+}
+
+ion-segment {
+  margin-bottom: 20px;
+
+  .segment-label {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 4px;
+
+    ion-icon {
+      font-size: 24px;
+    }
+
+    span {
+      font-size: 12px;
+    }
+  }
+}
+
+.stage-content {
+  animation: fadeIn 0.3s ease-in;
+
+  ion-card {
+    margin-bottom: 20px;
+
+    ion-card-subtitle {
+      margin-top: 8px;
+      color: var(--ion-color-medium);
+    }
+  }
+
+  ion-item {
+    --padding-start: 0;
+    --inner-padding-end: 0;
+    margin-bottom: 16px;
+
+    ion-label {
+      margin-bottom: 8px;
+    }
+  }
+
+  ion-note {
+    display: block;
+    margin-top: 4px;
+    margin-left: 4px;
+    font-size: 12px;
+  }
+
+  ion-list-header {
+    padding-left: 0;
+    margin-top: 24px;
+    margin-bottom: 12px;
+
+    ion-label {
+      font-size: 1rem;
+      font-weight: 600;
+      color: var(--ion-color-primary);
+    }
+  }
+}
+
+.button-container {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin-top: 24px;
+  padding-bottom: 24px;
+
+  ion-button {
+    margin: 0;
+  }
+}
+
+.readonly-message {
+  padding: 16px;
+
+  ion-card {
+    ion-card-content {
+      p {
+        margin: 0;
+        color: var(--ion-color-medium);
+      }
+    }
+  }
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+// Mejoras para formularios
+ion-input,
+ion-select,
+ion-textarea {
+  --padding-start: 12px;
+  --padding-end: 12px;
+  --padding-top: 8px;
+  --padding-bottom: 8px;
+  border: 1px solid var(--ion-color-light-shade);
+  border-radius: 8px;
+  margin-top: 4px;
+
+  &:focus-within {
+    border-color: var(--ion-color-primary);
+  }
+}
+
+ion-select {
+  --placeholder-color: var(--ion-color-medium);
+}
+
+// Estilos responsivos
+@media (min-width: 768px) {
+  .form-container {
+    max-width: 600px;
+    margin: 0 auto;
+  }
+}
+
+// Sección de fotos
+.photos-section {
+  padding: 16px 0;
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 20px;
+
+  @media (min-width: 768px) {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}

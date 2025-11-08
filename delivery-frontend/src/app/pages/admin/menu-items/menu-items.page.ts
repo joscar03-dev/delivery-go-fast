@@ -7,13 +7,14 @@ import {
   ModalController,
   ActionSheetController,
 } from '@ionic/angular/standalone';
-import { ActivatedRoute } from '@angular/router';
+import { ActivatedRoute, Router } from '@angular/router';
 import { ReactiveFormsModule, FormBuilder, Validators } from '@angular/forms';
 import {
   RestaurantService,
   CreateMenuItemDto,
   UpdateMenuItemDto,
 } from '../../../services/restaurant.service';
+import { AuthService } from '../../../services/auth.service';
 import { addIcons } from 'ionicons';
 import {
   createOutline,
@@ -41,7 +42,9 @@ addIcons({
 })
 export class AdminMenuItemsPage implements OnInit {
   private route = inject(ActivatedRoute);
+  private router = inject(Router);
   private restaurants = inject(RestaurantService);
+  private auth = inject(AuthService);
   private toast = inject(ToastController);
   private alert = inject(AlertController);
   private modal = inject(ModalController);
@@ -53,6 +56,7 @@ export class AdminMenuItemsPage implements OnInit {
   loading = false;
   categories: Array<{ id: string; name: string }> = [];
   loadingCategories = false;
+  backHref = '/admin/restaurants'; // Valor por defecto para super_admin
 
   form = this.fb.nonNullable.group({
     name: this.fb.nonNullable.control<string>('', [Validators.required]),
@@ -66,6 +70,12 @@ export class AdminMenuItemsPage implements OnInit {
 
   ngOnInit(): void {
     this.restaurantId = this.route.snapshot.paramMap.get('id')!;
+
+    // Determinar el href de regreso según el rol
+    if (this.auth.hasRole('restaurant_owner')) {
+      this.backHref = '/tabs/restaurant-admin';
+    }
+
     this.load();
     this.loadCategories();
     this.restaurants
@@ -110,6 +120,11 @@ export class AdminMenuItemsPage implements OnInit {
   getCategoryName(categoryId?: string | null): string | undefined {
     if (!categoryId) return undefined;
     return this.categories.find((c) => c.id === categoryId)?.name;
+  }
+
+  goToCategories() {
+    // Navegar a la gestión de categorías del menú
+    this.router.navigate(['/restaurant-menu-categories', this.restaurantId]);
   }
 
   async openCreateModal() {

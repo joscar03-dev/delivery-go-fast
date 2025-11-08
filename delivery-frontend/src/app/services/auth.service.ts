@@ -134,6 +134,50 @@ export class AuthService {
     return wanted.includes(user.role);
   }
 
+  /**
+   * Recarga la información del usuario actual desde el backend
+   * Y refresca el token para obtener uno con el rol actualizado
+   * Útil cuando el rol del usuario cambia (ej: de client a driver)
+   */
+  reloadCurrentUser(): Observable<User> {
+    // Primero refrescar el token para obtener uno con el rol actualizado
+    return this.refresh().pipe(
+      switchMap((newAccessToken) => {
+        // Decodificar el nuevo token para obtener el rol actualizado
+        const decoded = this.safeDecode(newAccessToken);
+
+        // Luego obtener los datos completos del usuario
+        return this.http.get<User>(`${this.base}/users/me`).pipe(
+          tap((userData) => {
+            // Construir usuario con el rol del nuevo token
+            const currentUser = this.currentUserSubject.value;
+            if (currentUser) {
+              const roleFromToken = Array.isArray(decoded?.roles)
+                ? decoded?.roles?.[0]
+                : Array.isArray(decoded?.role)
+                ? (decoded?.role as string[])[0]
+                : (decoded?.role as string | undefined);
+
+              const updatedUser: User = {
+                ...currentUser,
+                ...userData,
+                role: (roleFromToken as User['role']) ?? userData.role,
+              };
+
+              localStorage.setItem('user', JSON.stringify(updatedUser));
+              this.currentUserSubject.next(updatedUser);
+
+              console.log(
+                '✅ Usuario recargado con nuevo rol:',
+                updatedUser.role
+              );
+            }
+          })
+        );
+      })
+    );
+  }
+
   private handleAuthResponse(res: RawAuthResponse): User {
     const tokens = this.normalizeTokens(res);
     const decoded = this.safeDecode(tokens.accessToken);

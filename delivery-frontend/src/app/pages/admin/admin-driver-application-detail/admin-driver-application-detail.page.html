@@ -1,0 +1,260 @@
+<ion-header>
+  <ion-toolbar>
+    <ion-buttons slot="start">
+      <ion-back-button
+        (click)="goBack()"
+        defaultHref="/admin/driver-applications"
+      ></ion-back-button>
+    </ion-buttons>
+    <ion-title>Detalle de Solicitud</ion-title>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content [fullscreen]="true" *ngIf="application">
+  <!-- Estado -->
+  <div class="status-banner">
+    <ion-chip [color]="getStatusColor(application.status)" class="status-chip">
+      <ion-label>{{ getStatusText(application.status) }}</ion-label>
+    </ion-chip>
+  </div>
+
+  <div class="content-container">
+    <!-- Información Personal -->
+    <ion-card>
+      <ion-card-header>
+        <ion-card-title>
+          <ion-icon name="person-outline"></ion-icon>
+          Información Personal
+        </ion-card-title>
+      </ion-card-header>
+      <ion-card-content>
+        <ion-list lines="none">
+          <ion-item>
+            <ion-label class="label-title">Nombre Completo</ion-label>
+            <ion-note slot="end"
+              >{{ application.user?.name || 'Usuario sin nombre' }}</ion-note
+            >
+          </ion-item>
+          <ion-item>
+            <ion-label class="label-title">DNI</ion-label>
+            <ion-note slot="end">{{ application.dni }}</ion-note>
+          </ion-item>
+          <ion-item>
+            <ion-label class="label-title">Fecha de Nacimiento</ion-label>
+            <ion-note slot="end"
+              >{{ application.birthDate | date:'dd/MM/yyyy' }}</ion-note
+            >
+          </ion-item>
+          <ion-item>
+            <ion-label class="label-title">Teléfono</ion-label>
+            <ion-note slot="end">
+              <a
+                [href]="'tel:' + (application.phone || application.user?.phone)"
+                *ngIf="application.phone || application.user?.phone"
+              >
+                {{ application.phone || application.user?.phone }}
+              </a>
+              <span *ngIf="!application.phone && !application.user?.phone"
+                >No proporcionado</span
+              >
+            </ion-note>
+          </ion-item>
+          <ion-item>
+            <ion-label class="label-title">Email</ion-label>
+            <ion-note slot="end">
+              <a
+                [href]="'mailto:' + (application.email || application.user?.email)"
+                *ngIf="application.email || application.user?.email"
+              >
+                {{ application.email || application.user?.email }}
+              </a>
+              <span *ngIf="!application.email && !application.user?.email"
+                >No proporcionado</span
+              >
+            </ion-note>
+          </ion-item>
+        </ion-list>
+      </ion-card-content>
+    </ion-card>
+
+    <!-- Información del Vehículo -->
+    <ion-card>
+      <ion-card-header>
+        <ion-card-title>
+          <ion-icon name="car-outline"></ion-icon>
+          Vehículo
+        </ion-card-title>
+      </ion-card-header>
+      <ion-card-content>
+        <ion-list lines="none">
+          <ion-item>
+            <ion-label class="label-title">Tipo</ion-label>
+            <ion-note slot="end"
+              >{{ getVehicleTypeLabel(application.vehicleType) }}</ion-note
+            >
+          </ion-item>
+          <ion-item *ngIf="application.vehiclePlate">
+            <ion-label class="label-title">Placa</ion-label>
+            <ion-note slot="end">{{ application.vehiclePlate }}</ion-note>
+          </ion-item>
+          <ion-item *ngIf="application.vehicleBrand">
+            <ion-label class="label-title">Marca</ion-label>
+            <ion-note slot="end">{{ application.vehicleBrand }}</ion-note>
+          </ion-item>
+          <ion-item *ngIf="application.vehicleModel">
+            <ion-label class="label-title">Modelo</ion-label>
+            <ion-note slot="end">{{ application.vehicleModel }}</ion-note>
+          </ion-item>
+          <ion-item *ngIf="application.vehicleYear">
+            <ion-label class="label-title">Año</ion-label>
+            <ion-note slot="end">{{ application.vehicleYear }}</ion-note>
+          </ion-item>
+        </ion-list>
+      </ion-card-content>
+    </ion-card>
+
+    <!-- Licencia de Conducir -->
+    <ion-card *ngIf="application.licenseNumber">
+      <ion-card-header>
+        <ion-card-title>
+          <ion-icon name="card-outline"></ion-icon>
+          Licencia de Conducir
+        </ion-card-title>
+      </ion-card-header>
+      <ion-card-content>
+        <ion-list lines="none">
+          <ion-item>
+            <ion-label class="label-title">Número</ion-label>
+            <ion-note slot="end">{{ application.licenseNumber }}</ion-note>
+          </ion-item>
+          <ion-item *ngIf="application.licenseExpiry">
+            <ion-label class="label-title">Vencimiento</ion-label>
+            <ion-note slot="end"
+              >{{ application.licenseExpiry | date:'dd/MM/yyyy' }}</ion-note
+            >
+          </ion-item>
+        </ion-list>
+      </ion-card-content>
+    </ion-card>
+
+    <!-- Contacto de Emergencia -->
+    <ion-card *ngIf="application.emergencyContactName">
+      <ion-card-header>
+        <ion-card-title>
+          <ion-icon name="medical-outline"></ion-icon>
+          Contacto de Emergencia
+        </ion-card-title>
+      </ion-card-header>
+      <ion-card-content>
+        <ion-list lines="none">
+          <ion-item>
+            <ion-label class="label-title">Nombre</ion-label>
+            <ion-note slot="end"
+              >{{ application.emergencyContactName }}</ion-note
+            >
+          </ion-item>
+          <ion-item *ngIf="application.emergencyContactPhone">
+            <ion-label class="label-title">Teléfono</ion-label>
+            <ion-note slot="end">
+              <a [href]="'tel:' + application.emergencyContactPhone">
+                {{ application.emergencyContactPhone }}
+              </a>
+            </ion-note>
+          </ion-item>
+        </ion-list>
+      </ion-card-content>
+    </ion-card>
+
+    <!-- Fotos de Documentos -->
+    <ion-card
+      *ngIf="application.dniPhoto || application.licenseFrontPhoto || application.vehiclePhoto"
+    >
+      <ion-card-header>
+        <ion-card-title>
+          <ion-icon name="images-outline"></ion-icon>
+          Documentos
+        </ion-card-title>
+      </ion-card-header>
+      <ion-card-content>
+        <div class="photos-grid">
+          <div class="photo-item" *ngIf="application.dniPhoto">
+            <img [src]="application.dniPhoto" alt="DNI" />
+            <p>DNI</p>
+          </div>
+          <div class="photo-item" *ngIf="application.licenseFrontPhoto">
+            <img
+              [src]="application.licenseFrontPhoto"
+              alt="Licencia - Frente"
+            />
+            <p>Licencia - Frente</p>
+          </div>
+          <div class="photo-item" *ngIf="application.licenseBackPhoto">
+            <img
+              [src]="application.licenseBackPhoto"
+              alt="Licencia - Reverso"
+            />
+            <p>Licencia - Reverso</p>
+          </div>
+          <div class="photo-item" *ngIf="application.vehiclePhoto">
+            <img [src]="application.vehiclePhoto" alt="Vehículo" />
+            <p>Vehículo</p>
+          </div>
+        </div>
+      </ion-card-content>
+    </ion-card>
+
+    <!-- Información de Revisión -->
+    <ion-card
+      *ngIf="application.status === ApplicationStatus.REJECTED && application.rejectionReason"
+    >
+      <ion-card-header>
+        <ion-card-title color="danger">
+          <ion-icon name="close-circle-outline"></ion-icon>
+          Motivo de Rechazo
+        </ion-card-title>
+      </ion-card-header>
+      <ion-card-content>
+        <p>{{ application.rejectionReason }}</p>
+      </ion-card-content>
+    </ion-card>
+
+    <!-- Botones de Acción -->
+    <div class="action-buttons">
+      <ion-button
+        *ngIf="application.status === ApplicationStatus.PENDING_CALL"
+        expand="block"
+        color="success"
+        (click)="approveCall()"
+      >
+        <ion-icon slot="start" name="checkmark-circle-outline"></ion-icon>
+        Aprobar Llamada
+      </ion-button>
+
+      <ion-button
+        *ngIf="application.status === ApplicationStatus.PENDING_REVIEW"
+        expand="block"
+        color="success"
+        (click)="approveFinal()"
+      >
+        <ion-icon slot="start" name="checkmark-done-outline"></ion-icon>
+        Aprobar Solicitud
+      </ion-button>
+
+      <ion-button
+        *ngIf="application.status === ApplicationStatus.PENDING_REVIEW"
+        expand="block"
+        color="danger"
+        fill="outline"
+        (click)="reject()"
+      >
+        <ion-icon slot="start" name="close-circle-outline"></ion-icon>
+        Rechazar Solicitud
+      </ion-button>
+    </div>
+  </div>
+</ion-content>
+
+<ion-content *ngIf="!application" class="ion-text-center ion-padding">
+  <ion-spinner></ion-spinner>
+  <p>Cargando...</p>
+</ion-content>

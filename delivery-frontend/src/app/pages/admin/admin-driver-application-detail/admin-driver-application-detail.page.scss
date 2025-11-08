@@ -1,0 +1,135 @@
+.status-banner {
+  padding: 16px;
+  text-align: center;
+  background: var(--ion-color-light);
+
+  .status-chip {
+    font-size: 1rem;
+    font-weight: 600;
+    padding: 8px 20px;
+    height: auto;
+  }
+}
+
+.content-container {
+  padding: 16px;
+  max-width: 800px;
+  margin: 0 auto;
+}
+
+ion-card {
+  margin-bottom: 16px;
+
+  ion-card-header {
+    ion-card-title {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 1.1rem;
+
+      ion-icon {
+        font-size: 24px;
+        color: var(--ion-color-primary);
+      }
+    }
+  }
+
+  ion-list {
+    padding: 0;
+
+    ion-item {
+      --padding-start: 0;
+      --inner-padding-end: 0;
+      --min-height: 44px;
+
+      .label-title {
+        font-weight: 600;
+        color: var(--ion-color-medium);
+      }
+
+      ion-note {
+        font-size: 0.95rem;
+        color: var(--ion-color-dark);
+        text-align: right;
+
+        a {
+          color: var(--ion-color-primary);
+          text-decoration: none;
+
+          &:hover {
+            text-decoration: underline;
+          }
+        }
+      }
+    }
+  }
+}
+
+.photos-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+  gap: 16px;
+  margin-top: 12px;
+
+  .photo-item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 8px;
+
+    img {
+      width: 100%;
+      height: 150px;
+      object-fit: cover;
+      border-radius: 8px;
+      border: 1px solid var(--ion-color-light-shade);
+      cursor: pointer;
+      transition: transform 0.2s ease;
+
+      &:hover {
+        transform: scale(1.05);
+      }
+    }
+
+    p {
+      margin: 0;
+      font-size: 0.85rem;
+      font-weight: 500;
+      color: var(--ion-color-medium);
+      text-align: center;
+    }
+  }
+}
+
+.action-buttons {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding: 16px 0;
+  margin-bottom: 24px;
+
+  ion-button {
+    margin: 0;
+  }
+}
+
+// Responsive
+@media (min-width: 768px) {
+  .photos-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .action-buttons {
+    flex-direction: row;
+
+    ion-button {
+      flex: 1;
+    }
+  }
+}
+
+@media (min-width: 1024px) {
+  .photos-grid {
+    grid-template-columns: repeat(4, 1fr);
+  }
+}

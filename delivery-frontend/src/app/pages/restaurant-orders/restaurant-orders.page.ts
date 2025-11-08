@@ -10,7 +10,7 @@ import {
   IonSegmentButton,
   IonLabel,
   IonList,
-  IonItem,
+  IonBackButton,
   IonCard,
   IonCardHeader,
   IonCardTitle,
@@ -29,6 +29,7 @@ import {
 } from '@ionic/angular/standalone';
 import { OrderService } from '../../services/order.service';
 import { SocketService } from '../../services/socket.service';
+import { AuthService } from '../../services/auth.service';
 import { Order, OrderStatus } from '../../models/order.model';
 import { addIcons } from 'ionicons';
 import {
@@ -81,6 +82,7 @@ addIcons({
     IonSegment,
     IonSegmentButton,
     IonLabel,
+    IonBackButton,
     IonList,
     IonCard,
     IonCardHeader,
@@ -100,6 +102,7 @@ addIcons({
 export class RestaurantOrdersPage implements OnInit, OnDestroy {
   private orderService = inject(OrderService);
   private socketService = inject(SocketService);
+  private auth = inject(AuthService);
   private toastCtrl = inject(ToastController);
   private alertCtrl = inject(AlertController);
 
@@ -107,6 +110,7 @@ export class RestaurantOrdersPage implements OnInit, OnDestroy {
   orders: Order[] = [];
   loading = false;
   isSocketConnected = false;
+  backHref = '/tabs/restaurant-admin'; // Valor por defecto
   private subscriptions: Subscription[] = [];
 
   ngOnInit() {

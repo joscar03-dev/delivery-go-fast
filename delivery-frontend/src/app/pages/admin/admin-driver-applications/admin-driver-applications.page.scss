@@ -1,0 +1,139 @@
+.applications-container {
+  padding: 16px;
+}
+
+.empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 60px 20px;
+  text-align: center;
+  color: var(--ion-color-medium);
+
+  ion-icon {
+    margin-bottom: 16px;
+    color: var(--ion-color-medium-shade);
+  }
+
+  h3 {
+    margin: 8px 0;
+    font-size: 1.2rem;
+    font-weight: 600;
+  }
+
+  p {
+    margin: 4px 0;
+    font-size: 0.9rem;
+  }
+}
+
+ion-card {
+  margin-bottom: 16px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+
+  &:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  }
+}
+
+.card-header-content {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 12px;
+
+  .applicant-info {
+    flex: 1;
+    min-width: 0;
+
+    ion-card-title {
+      font-size: 1.1rem;
+      font-weight: 600;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    ion-card-subtitle {
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      margin-top: 4px;
+      font-size: 0.85rem;
+
+      ion-icon {
+        font-size: 14px;
+      }
+    }
+  }
+
+  ion-badge {
+    flex-shrink: 0;
+    padding: 6px 12px;
+    font-size: 0.75rem;
+    font-weight: 600;
+    text-transform: uppercase;
+  }
+}
+
+.application-details {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+
+  .detail-item {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 0.9rem;
+    color: var(--ion-color-dark);
+
+    ion-icon {
+      font-size: 18px;
+      color: var(--ion-color-primary);
+    }
+
+    span {
+      flex: 1;
+    }
+  }
+}
+
+.quick-actions {
+  display: flex;
+  gap: 8px;
+  margin-top: 12px;
+  padding-top: 12px;
+  border-top: 1px solid var(--ion-color-light);
+
+  ion-button {
+    flex: 1;
+    margin: 0;
+  }
+}
+
+// Segment personalizado
+ion-toolbar ion-segment {
+  padding: 8px;
+
+  ion-segment-button {
+    min-width: auto;
+    --indicator-height: 0;
+
+    ion-badge {
+      font-size: 0.75rem;
+      padding: 4px 10px;
+    }
+  }
+}
+
+// Responsive
+@media (min-width: 768px) {
+  .applications-container {
+    max-width: 900px;
+    margin: 0 auto;
+  }
+}

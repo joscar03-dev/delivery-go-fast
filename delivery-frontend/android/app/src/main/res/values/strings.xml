@@ -4,4 +4,8 @@
     <string name="title_activity_main">Delivery Go Fast</string>
     <string name="package_name">com.deliverygofast1.app</string>
     <string name="custom_url_scheme">com.deliverygofast1.app</string>
+    
+    <!-- Permission descriptions for Camera -->
+    <string name="camera_permission_description">La app necesita acceso a la cámara para tomar fotos de tus documentos (DNI, licencia, vehículo) al solicitar ser conductor.</string>
+    <string name="photos_permission_description">La app necesita acceso a tus fotos para seleccionar imágenes de tus documentos al solicitar ser conductor.</string>
 </resources>

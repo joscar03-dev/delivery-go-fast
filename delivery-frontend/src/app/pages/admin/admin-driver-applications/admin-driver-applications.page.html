@@ -1,0 +1,123 @@
+<ion-header>
+  <ion-toolbar>
+    <ion-buttons slot="start">
+      <ion-back-button defaultHref="/tabs/admin"></ion-back-button>
+    </ion-buttons>
+    <ion-title>Solicitudes de Conductores</ion-title>
+  </ion-toolbar>
+  <ion-toolbar>
+    <ion-segment
+      [value]="selectedStatus"
+      (ionChange)="onFilterChange($event)"
+      scrollable
+    >
+      <ion-segment-button
+        *ngFor="let option of statusOptions"
+        [value]="option.value"
+      >
+        <ion-label>
+          <ion-badge [color]="option.color"> {{ option.label }} </ion-badge>
+        </ion-label>
+      </ion-segment-button>
+    </ion-segment>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content [fullscreen]="true">
+  <ion-refresher slot="fixed" (ionRefresh)="doRefresh($event)">
+    <ion-refresher-content></ion-refresher-content>
+  </ion-refresher>
+
+  <!-- Lista de solicitudes -->
+  <div class="applications-container">
+    <div
+      *ngIf="filteredApplications.length === 0 && !isLoading"
+      class="empty-state"
+    >
+      <ion-icon name="document-text-outline" size="large"></ion-icon>
+      <h3>No hay solicitudes</h3>
+      <p>No se encontraron solicitudes con el filtro seleccionado</p>
+    </div>
+
+    <ion-card
+      *ngFor="let application of filteredApplications"
+      button
+      (click)="viewDetail(application)"
+    >
+      <ion-card-header>
+        <div class="card-header-content">
+          <div class="applicant-info">
+            <ion-card-title
+              >{{ application.user?.name || 'Usuario sin nombre'
+              }}</ion-card-title
+            >
+            <ion-card-subtitle>
+              <ion-icon name="card-outline"></ion-icon>
+              DNI: {{ application.dni }}
+            </ion-card-subtitle>
+          </div>
+          <ion-badge [color]="getStatusColor(application.status)">
+            {{ getStatusText(application.status) }}
+          </ion-badge>
+        </div>
+      </ion-card-header>
+
+      <ion-card-content>
+        <div class="application-details">
+          <div class="detail-item">
+            <ion-icon name="car-outline"></ion-icon>
+            <span>{{ getVehicleTypeLabel(application.vehicleType) }}</span>
+          </div>
+
+          <div
+            class="detail-item"
+            *ngIf="application.phone || application.user?.phone"
+          >
+            <ion-icon name="call-outline"></ion-icon>
+            <span>{{ application.phone || application.user?.phone }}</span>
+          </div>
+
+          <div
+            class="detail-item"
+            *ngIf="application.email || application.user?.email"
+          >
+            <ion-icon name="mail-outline"></ion-icon>
+            <span>{{ application.email || application.user?.email }}</span>
+          </div>
+
+          <div class="detail-item">
+            <ion-icon name="calendar-outline"></ion-icon>
+            <span
+              >Solicitado: {{ application.createdAt | date:'dd/MM/yyyy' }}</span
+            >
+          </div>
+
+          <!-- Botones de acción rápida -->
+          <div
+            class="quick-actions"
+            *ngIf="application.status === ApplicationStatus.PENDING_CALL"
+          >
+            <ion-button size="small" color="success" fill="outline">
+              <ion-icon slot="start" name="checkmark-circle-outline"></ion-icon>
+              Aprobar Llamada
+            </ion-button>
+          </div>
+
+          <div
+            class="quick-actions"
+            *ngIf="application.status === ApplicationStatus.PENDING_REVIEW"
+          >
+            <ion-button size="small" color="success" fill="outline">
+              <ion-icon slot="start" name="checkmark-done-outline"></ion-icon>
+              Aprobar
+            </ion-button>
+            <ion-button size="small" color="danger" fill="outline">
+              <ion-icon slot="start" name="close-circle-outline"></ion-icon>
+              Rechazar
+            </ion-button>
+          </div>
+        </div>
+      </ion-card-content>
+    </ion-card>
+  </div>
+</ion-content>

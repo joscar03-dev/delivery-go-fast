@@ -74,7 +74,12 @@
 
       <!-- Business & Partnership Group -->
       <div class="options-group">
-        <ion-item button lines="none" class="option-item">
+        <ion-item
+          button
+          lines="none"
+          class="option-item"
+          (click)="navigateToDriverApplication()"
+        >
           <div class="option-icon" slot="start">
             <ion-icon name="bicycle-outline"></ion-icon>
           </div>

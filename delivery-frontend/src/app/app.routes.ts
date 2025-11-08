@@ -32,6 +32,15 @@ export const routes: Routes = [
     loadComponent: () =>
       import('./pages/profile/profile.page').then((m) => m.ProfilePage),
   },
+  // Solicitud de conductor (Driver Application)
+  {
+    path: 'driver-application',
+    canMatch: [authGuard],
+    loadComponent: () =>
+      import('./driver-application/driver-application.page').then(
+        (m) => m.DriverApplicationPage
+      ),
+  },
   {
     path: 'auth/login',
     canMatch: [guestGuard],
@@ -61,6 +70,25 @@ export const routes: Routes = [
       import('./pages/admin/restaurant-list/restaurant-list.page').then(
         (m) => m.AdminRestaurantListPage
       ),
+  },
+  // Admin Driver Applications
+  {
+    path: 'admin/driver-applications',
+    canMatch: [authGuard, rolesGuard],
+    data: { roles: ['super_admin'] },
+    loadComponent: () =>
+      import(
+        './pages/admin/admin-driver-applications/admin-driver-applications.page'
+      ).then((m) => m.AdminDriverApplicationsPage),
+  },
+  {
+    path: 'admin/driver-applications/:id',
+    canMatch: [authGuard, rolesGuard],
+    data: { roles: ['super_admin'] },
+    loadComponent: () =>
+      import(
+        './pages/admin/admin-driver-application-detail/admin-driver-application-detail.page'
+      ).then((m) => m.AdminDriverApplicationDetailPage),
   },
   {
     path: 'admin/restaurants/form',
@@ -145,5 +173,33 @@ export const routes: Routes = [
       import('./pages/restaurant-orders/restaurant-orders.page').then(
         (m) => m.RestaurantOrdersPage
       ),
+  },
+  // Editar información del restaurante (para restaurant_owner)
+  {
+    path: 'restaurant-edit',
+    canMatch: [authGuard, rolesGuard],
+    data: { roles: ['restaurant_owner', 'super_admin'] },
+    loadComponent: () =>
+      import('./pages/admin/restaurant-form/restaurant-form.page').then(
+        (m) => m.AdminRestaurantFormPage
+      ),
+  },
+  // Gestión de categorías del menú (para restaurant_owner)
+  {
+    path: 'restaurant-menu-categories/:id',
+    canMatch: [authGuard, rolesGuard],
+    data: { roles: ['restaurant_owner', 'super_admin'] },
+    loadComponent: () =>
+      import('./pages/admin/menu-categories').then(
+        (m) => m.AdminMenuCategoriesPage
+      ),
+  },
+  // Gestión de items del menú (para restaurant_owner)
+  {
+    path: 'restaurant-menu-items/:id',
+    canMatch: [authGuard, rolesGuard],
+    data: { roles: ['restaurant_owner', 'super_admin'] },
+    loadComponent: () =>
+      import('./pages/admin/menu-items').then((m) => m.AdminMenuItemsPage),
   },
 ];

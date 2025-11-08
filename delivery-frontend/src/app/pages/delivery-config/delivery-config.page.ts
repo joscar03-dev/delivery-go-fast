@@ -13,7 +13,6 @@ import {
   IonCardHeader,
   IonCardTitle,
   IonCardContent,
-  IonList,
   IonItem,
   IonLabel,
   IonInput,
@@ -52,7 +51,6 @@ import { RestaurantService } from '../../services/restaurant.service';
     IonCardHeader,
     IonCardTitle,
     IonCardContent,
-    IonList,
     IonItem,
     IonLabel,
     IonInput,
@@ -105,12 +103,14 @@ export class DeliveryConfigPage implements OnInit {
         .getDeliveryConfig(this.restaurantId)
         .toPromise();
       if (config) {
+        // Asegurar que todos los valores numéricos sean válidos, nunca null
         this.deliveryConfig = {
-          deliveryFee: Number(config.deliveryFee) || 5.0,
-          freeDeliveryThreshold: Number(config.freeDeliveryThreshold) || 0,
-          minOrderAmount: Number(config.minOrderAmount) || 0,
-          maxDeliveryDistance: config.maxDeliveryDistance || 10,
-          estimatedDeliveryTime: config.estimatedDeliveryTime || 30,
+          deliveryFee: Number(config.deliveryFee ?? 5.0) || 5.0,
+          freeDeliveryThreshold: Number(config.freeDeliveryThreshold ?? 0) || 0,
+          minOrderAmount: Number(config.minOrderAmount ?? 0) || 0,
+          maxDeliveryDistance: Number(config.maxDeliveryDistance ?? 10) || 10,
+          estimatedDeliveryTime:
+            Number(config.estimatedDeliveryTime ?? 30) || 30,
           isDeliveryEnabled: config.isDeliveryEnabled ?? true,
         };
       }

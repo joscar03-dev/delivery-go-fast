@@ -2,22 +2,12 @@ import { Component, OnInit, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router, RouterLink } from '@angular/router';
 import {
-  IonHeader,
-  IonToolbar,
   IonButtons,
   IonBackButton,
-  IonTitle,
   IonContent,
-  IonCard,
-  IonCardHeader,
-  IonCardTitle,
-  IonCardSubtitle,
-  IonCardContent,
   IonButton,
   IonSpinner,
   IonText,
-  IonList,
-  IonListHeader,
   IonItem,
   IonIcon,
   IonLabel,
@@ -63,22 +53,12 @@ addIcons({
     CommonModule,
     RouterLink,
     WaveBackgroundComponent,
-    IonHeader,
-    IonToolbar,
     IonButtons,
     IonBackButton,
-    IonTitle,
     IonContent,
-    IonCard,
-    IonCardHeader,
-    IonCardTitle,
-    IonCardSubtitle,
-    IonCardContent,
     IonButton,
     IonSpinner,
     IonText,
-    IonList,
-    IonListHeader,
     IonItem,
     IonIcon,
     IonLabel,
@@ -95,14 +75,46 @@ export class ProfilePage implements OnInit {
   loading = false;
 
   ngOnInit(): void {
+    this.loadProfile();
+  }
+
+  ionViewWillEnter(): void {
+    // Recargar el perfil cada vez que se entra a la página
+    // Esto asegura que el rol esté actualizado si fue aprobado como driver
+    this.loadProfile();
+  }
+
+  private loadProfile(): void {
     this.loading = true;
-    this.userService.getProfile().subscribe({
-      next: (u) => {
-        this.user = u;
-        this.loading = false;
+
+    // Primero recargar el usuario actual para actualizar el rol
+    this.auth.reloadCurrentUser().subscribe({
+      next: () => {
+        // Luego obtener el perfil completo
+        this.userService.getProfile().subscribe({
+          next: (u) => {
+            this.user = u;
+            this.loading = false;
+          },
+          error: (err) => {
+            console.error('Error loading profile:', err);
+            this.loading = false;
+          },
+        });
       },
-      error: () => {
-        this.loading = false;
+      error: (err) => {
+        console.error('Error reloading user:', err);
+        // Si falla, intentar cargar el perfil de todas formas
+        this.userService.getProfile().subscribe({
+          next: (u) => {
+            this.user = u;
+            this.loading = false;
+          },
+          error: (err2) => {
+            console.error('Error loading profile:', err2);
+            this.loading = false;
+          },
+        });
       },
     });
   }
@@ -117,5 +129,10 @@ export class ProfilePage implements OnInit {
     this.router.navigate(['/tabs/addresses'], {
       state: { returnUrl: '/tabs/account' },
     });
+  }
+
+  navigateToDriverApplication() {
+    console.log('🚀 Navigating to driver application');
+    this.router.navigate(['/driver-application']);
   }
 }

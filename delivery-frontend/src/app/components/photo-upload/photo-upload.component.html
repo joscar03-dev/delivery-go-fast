@@ -1,0 +1,35 @@
+<div class="photo-upload-container">
+  <div class="photo-label">
+    <ion-text color="medium">{{ label }}</ion-text>
+    <ion-text color="danger" *ngIf="required">*</ion-text>
+  </div>
+
+  <div class="photo-preview" *ngIf="photo; else noPhoto">
+    <img [src]="photo" alt="Foto cargada" />
+    <div class="photo-overlay">
+      <ion-button fill="clear" (click)="selectPhoto()">
+        <ion-icon
+          slot="icon-only"
+          name="camera-outline"
+          color="light"
+        ></ion-icon>
+      </ion-button>
+      <ion-button fill="clear" (click)="removePhoto()">
+        <ion-icon
+          slot="icon-only"
+          name="trash-outline"
+          color="light"
+        ></ion-icon>
+      </ion-button>
+    </div>
+  </div>
+
+  <ng-template #noPhoto>
+    <div class="photo-placeholder" (click)="selectPhoto()">
+      <ion-icon name="camera-outline" size="large" color="medium"></ion-icon>
+      <ion-text color="medium">
+        <p>Toca para agregar foto</p>
+      </ion-text>
+    </div>
+  </ng-template>
+</div>

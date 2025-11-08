@@ -1,11 +1,17 @@
 <ion-header>
   <ion-toolbar>
     <ion-buttons slot="start">
-      <ion-back-button defaultHref="/admin/restaurants"></ion-back-button>
+      <ion-back-button [defaultHref]="backHref"></ion-back-button>
     </ion-buttons>
     <ion-title>Categorías de Menú</ion-title>
   </ion-toolbar>
   <ion-toolbar color="light">
+    <ion-buttons slot="start">
+      <ion-button (click)="goToItems()">
+        <ion-icon slot="start" name="list-outline"></ion-icon>
+        Ítems del Menú
+      </ion-button>
+    </ion-buttons>
     <ion-buttons slot="end">
       <ion-button (click)="openCreateModal()">Nueva categoría</ion-button>
     </ion-buttons>

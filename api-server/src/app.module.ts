@@ -9,6 +9,7 @@ import { DeliveriesModule } from './deliveries/deliveries.module';
 import { GeolocationModule } from './geolocation/geolocation.module';
 import { NotificationsModule } from './notifications/notifications.module';
 import { PaymentsModule } from './payments/payments.module';
+import { DriverApplicationsModule } from './driver-applications/driver-applications.module';
 import * as Joi from 'joi';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
@@ -57,6 +58,7 @@ import { AppService } from './app.service';
     GeolocationModule,
     NotificationsModule,
     PaymentsModule,
+    DriverApplicationsModule,
   ],
   controllers: [AppController],
   providers: [AppService],

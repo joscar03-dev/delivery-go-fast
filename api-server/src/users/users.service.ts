@@ -98,10 +98,112 @@ export class UsersService {
     await this.userRepository.remove(user);
   }
 
+  async updateUserRole(userId: string, roleName: RoleEnum): Promise<User> {
+    const user = await this.userRepository.findOne({
+      where: { id: userId },
+      relations: ['role'],
+    });
+
+    if (!user) {
+      throw new NotFoundException('User not found');
+    }
+
+    let role = await this.roleRepository.findOne({
+      where: { name: roleName },
+    });
+
+    if (!role) {
+      role = this.roleRepository.create({ name: roleName });
+      role = await this.roleRepository.save(role);
+    }
+
+    user.role = role;
+    return await this.userRepository.save(user);
+  }
+
   async updateRefreshToken(
     userId: string,
     hashedRefreshToken: string | null,
   ): Promise<void> {
     await this.userRepository.update(userId, { hashedRefreshToken });
+  }
+
+  // 🆕 PHONE AUTHENTICATION METHODS
+
+  /**
+   * Buscar usuario por número de teléfono
+   */
+  async findOneByPhone(phone: string): Promise<User | undefined> {
+    return await this.userRepository.findOne({
+      where: { phone },
+      relations: ['role'],
+    });
+  }
+
+  /**
+   * Crear usuario con autenticación por teléfono
+   */
+  async createWithPhone(data: {
+    name: string;
+    phone: string;
+    phoneVerified: boolean;
+    authMethod: 'phone';
+    role: RoleEnum;
+  }): Promise<User> {
+    // Buscar o crear el rol
+    let role = await this.roleRepository.findOne({
+      where: { name: data.role },
+    });
+
+    if (!role) {
+      role = this.roleRepository.create({ name: data.role });
+      role = await this.roleRepository.save(role);
+    }
+
+    const newUser = this.userRepository.create({
+      name: data.name,
+      phone: data.phone,
+      phoneVerified: data.phoneVerified,
+      authMethod: data.authMethod,
+      role: role,
+      // email y password_hash son NULL para usuarios con phone auth
+    });
+
+    return await this.userRepository.save(newUser);
+  }
+
+  /**
+   * Actualizar estado de verificación de teléfono
+   */
+  async updatePhoneVerified(userId: string, verified: boolean): Promise<void> {
+    await this.userRepository.update(userId, { phoneVerified: verified });
+  }
+
+  /**
+   * Agregar o actualizar teléfono de un usuario existente
+   */
+  async updatePhone(
+    userId: string,
+    phone: string,
+    phoneVerified: boolean,
+  ): Promise<void> {
+    await this.userRepository.update(userId, {
+      phone,
+      phoneVerified,
+    });
+  }
+
+  /**
+   * Buscar usuario por email o teléfono
+   * Útil para login híbrido
+   */
+  async findOneByEmailOrPhone(identifier: string): Promise<User | undefined> {
+    // Detectar si es email (contiene @) o teléfono (empieza con +)
+    if (identifier.includes('@')) {
+      return this.findOneByEmail(identifier);
+    } else if (identifier.startsWith('+')) {
+      return this.findOneByPhone(identifier);
+    }
+    return undefined;
   }
 }

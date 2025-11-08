@@ -11,20 +11,65 @@
   <form [formGroup]="form" (ngSubmit)="submit()" novalidate>
     <ion-list lines="full">
       <ion-item>
-        <ion-input label="Nombre" label-placement="floating" formControlName="name" required></ion-input>
+        <ion-input
+          label="Nombre"
+          label-placement="floating"
+          formControlName="name"
+          required
+        ></ion-input>
       </ion-item>
       <ion-item>
-        <ion-input type="email" label="Correo" label-placement="floating" formControlName="email" required></ion-input>
+        <ion-input
+          type="email"
+          label="Correo"
+          label-placement="floating"
+          formControlName="email"
+          required
+        ></ion-input>
       </ion-item>
       <ion-item>
-        <ion-input type="password" label="Contraseña" label-placement="floating" formControlName="password" required></ion-input>
+        <ion-input
+          type="tel"
+          label="Teléfono (opcional)"
+          label-placement="floating"
+          formControlName="phone"
+          maxlength="9"
+          placeholder="987654321"
+        >
+        </ion-input>
+      </ion-item>
+      <ion-note
+        *ngIf="form.get('phone')?.invalid && form.get('phone')?.touched"
+        color="danger"
+        class="ion-padding-start"
+      >
+        El teléfono debe tener exactamente 9 dígitos
+      </ion-note>
+      <ion-item>
+        <ion-input
+          type="password"
+          label="Contraseña"
+          label-placement="floating"
+          formControlName="password"
+          required
+        ></ion-input>
       </ion-item>
       <ion-item>
-        <ion-input type="password" label="Confirmar contraseña" label-placement="floating" formControlName="confirmPassword" required></ion-input>
+        <ion-input
+          type="password"
+          label="Confirmar contraseña"
+          label-placement="floating"
+          formControlName="confirmPassword"
+          required
+        ></ion-input>
       </ion-item>
     </ion-list>
 
-    <ion-button type="submit" expand="block" [disabled]="form.invalid || loading">
+    <ion-button
+      type="submit"
+      expand="block"
+      [disabled]="form.invalid || loading"
+    >
       {{ loading ? 'Creando…' : 'Crear cuenta' }}
     </ion-button>
 

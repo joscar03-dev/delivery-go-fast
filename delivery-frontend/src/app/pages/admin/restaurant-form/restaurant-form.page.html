@@ -132,7 +132,9 @@
           >
         </ion-select>
       </ion-item>
-      <ion-item class="custom-item">
+
+      <!-- Campo de dueño: Solo lectura para restaurant_owner, editable para super_admin -->
+      <ion-item class="custom-item" *ngIf="!isRestaurantOwner">
         <ion-select
           label="Dueño (opcional)"
           labelPlacement="stacked"
@@ -143,6 +145,15 @@
             >{{ o.label }} ({{ o.role }})</ion-select-option
           >
         </ion-select>
+      </ion-item>
+
+      <ion-item class="custom-item" *ngIf="isRestaurantOwner">
+        <ion-input
+          label="Dueño"
+          labelPlacement="stacked"
+          [value]="currentUserName"
+          readonly
+        ></ion-input>
       </ion-item>
 
       <div class="save-button-container">
