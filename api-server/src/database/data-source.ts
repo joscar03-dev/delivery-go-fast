@@ -10,10 +10,10 @@ export default new DataSource({
   username: process.env.DB_USERNAME,
   password: process.env.DB_PASSWORD,
   database: process.env.DB_DATABASE,
-  synchronize: false,
+  synchronize: true, // ⚠️ true para crear tablas automáticamente en desarrollo
   logging: false,
-  // Entities are not needed to run migrations; omit to avoid path alias issues in CLI
-  entities: [],
+  // Cargar todas las entidades para que TypeORM pueda crear las tablas
+  entities: [__dirname + '/../**/*.entity{.ts,.js}'],
   migrations: [
     __dirname + '/migrations/*{.ts,.js}', // src/database/migrations
     __dirname + '/../../migrations/*{.ts,.js}', // src/migrations (if exists)

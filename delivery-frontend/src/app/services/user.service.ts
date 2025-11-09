@@ -15,6 +15,11 @@ export class UserService {
     return this.http.get<User>(`${this.base}/users/me`);
   }
 
+  // 🆕 Actualizar propio perfil
+  updateMyProfile(data: { name?: string; email?: string }): Observable<User> {
+    return this.http.patch<User>(`${this.base}/users/me`, data);
+  }
+
   getAllUsers(): Observable<User[]> {
     return this.http.get<User[]>(`${this.base}/users`);
   }

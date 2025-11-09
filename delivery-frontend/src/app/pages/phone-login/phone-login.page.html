@@ -1,0 +1,151 @@
+<ion-header [translucent]="true">
+  <ion-toolbar color="primary">
+    <ion-buttons slot="start">
+      <ion-button (click)="goBack()">
+        <ion-icon name="arrow-back" slot="icon-only"></ion-icon>
+      </ion-button>
+    </ion-buttons>
+    <ion-title>Iniciar con Teléfono</ion-title>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content [fullscreen]="true" class="ion-padding">
+  <!-- Contenedor del reCAPTCHA (invisible) -->
+  <div id="recaptcha-container"></div>
+
+  <!-- PASO 1: Ingreso de número de teléfono -->
+  <div *ngIf="currentStep === 'phone'" class="step-container">
+    <div class="logo-container">
+      <ion-icon name="call" color="primary" class="phone-icon"></ion-icon>
+    </div>
+
+    <h1 class="title">Ingresa tu número</h1>
+    <p class="subtitle">Te enviaremos un código de verificación por SMS</p>
+
+    <!-- País y número -->
+    <div class="phone-input-container">
+      <ion-item lines="none" class="country-code-item">
+        <ion-label>Código</ion-label>
+        <ion-input
+          [(ngModel)]="countryCode"
+          placeholder="+51"
+          type="tel"
+          maxlength="4"
+          class="country-code-input"
+        ></ion-input>
+      </ion-item>
+
+      <ion-item lines="none" class="phone-number-item">
+        <ion-label position="floating">Número de teléfono</ion-label>
+        <ion-input
+          [(ngModel)]="phoneNumber"
+          placeholder="987654321"
+          type="tel"
+          maxlength="15"
+          (keyup.enter)="sendOTP()"
+        ></ion-input>
+      </ion-item>
+    </div>
+
+    <!-- Ejemplo de formato -->
+    <p class="format-hint">Ejemplo: +51 987654321</p>
+
+    <!-- Mensajes -->
+    <ion-text color="danger" *ngIf="errorMessage" class="message">
+      <p>{{ errorMessage }}</p>
+    </ion-text>
+    <ion-text color="success" *ngIf="successMessage" class="message">
+      <p>{{ successMessage }}</p>
+    </ion-text>
+
+    <!-- Botón enviar código -->
+    <ion-button
+      expand="block"
+      (click)="sendOTP()"
+      [disabled]="isLoading"
+      class="action-button"
+    >
+      <ion-spinner *ngIf="isLoading" name="crescent"></ion-spinner>
+      <span *ngIf="!isLoading">Enviar código</span>
+    </ion-button>
+
+    <p class="terms-text">
+      Al continuar, aceptas nuestros términos y condiciones
+    </p>
+  </div>
+
+  <!-- PASO 2: Ingreso de código OTP -->
+  <div *ngIf="currentStep === 'otp'" class="step-container">
+    <div class="logo-container">
+      <ion-icon
+        name="checkmark-circle"
+        color="success"
+        class="phone-icon"
+      ></ion-icon>
+    </div>
+
+    <h1 class="title">Verifica tu código</h1>
+    <p class="subtitle">
+      Ingresa el código de 6 dígitos enviado a<br />
+      <strong>{{ fullPhoneNumber }}</strong>
+    </p>
+
+    <!-- Input del código OTP -->
+    <ion-item lines="none" class="otp-item">
+      <ion-label position="floating">Código OTP</ion-label>
+      <ion-input
+        [(ngModel)]="otpCode"
+        placeholder="123456"
+        type="tel"
+        maxlength="6"
+        inputmode="numeric"
+        (keyup.enter)="verifyOTP()"
+        class="otp-input"
+      ></ion-input>
+    </ion-item>
+
+    <!-- Mensajes -->
+    <ion-text color="danger" *ngIf="errorMessage" class="message">
+      <p>{{ errorMessage }}</p>
+    </ion-text>
+    <ion-text color="success" *ngIf="successMessage" class="message">
+      <p>{{ successMessage }}</p>
+    </ion-text>
+
+    <!-- Botón verificar -->
+    <ion-button
+      expand="block"
+      (click)="verifyOTP()"
+      [disabled]="isLoading || otpCode.length !== 6"
+      class="action-button"
+    >
+      <ion-spinner *ngIf="isLoading" name="crescent"></ion-spinner>
+      <span *ngIf="!isLoading">Verificar código</span>
+    </ion-button>
+
+    <!-- Reenviar código -->
+    <div class="resend-container">
+      <p *ngIf="!canResend" class="resend-timer">
+        Reenviar código en {{ resendTimer }}s
+      </p>
+      <ion-button
+        *ngIf="canResend"
+        fill="clear"
+        (click)="resendOTP()"
+        class="resend-button"
+      >
+        Reenviar código
+      </ion-button>
+    </div>
+
+    <!-- Botón cambiar número -->
+    <ion-button
+      expand="block"
+      fill="outline"
+      (click)="goBack()"
+      class="back-button"
+    >
+      Cambiar número
+    </ion-button>
+  </div>
+</ion-content>

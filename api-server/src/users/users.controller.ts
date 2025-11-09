@@ -27,6 +27,19 @@ export class UsersController {
     return this.sanitizeUser(u);
   }
 
+  // 🆕 Actualizar propio perfil
+  @UseGuards(JwtAuthGuard)
+  @Patch('me')
+  async updateMyProfile(@Req() req: any, @Body() dto: UpdateUserDto) {
+    const userId = req.user.id || req.user.sub;
+
+    // Remover campos que el usuario no puede cambiar por sí mismo
+    const { role, ...safeDto } = dto;
+
+    const updated = await this.usersService.update(userId, safeDto);
+    return this.sanitizeUser(updated);
+  }
+
   // Listado de usuarios (solo super admin)
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles(RoleEnum.SUPER_ADMIN)
@@ -60,6 +73,8 @@ export class UsersController {
       id: u.id,
       email: u.email,
       name: u.name,
+      phone: u.phone, // ✅ Agregar campo phone
+      phoneVerified: u.phoneVerified, // ✅ Agregar phoneVerified
       role: u.role?.name ?? u.role,
       created_at: u.created_at,
       updated_at: u.updated_at,

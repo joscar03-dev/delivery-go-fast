@@ -2,7 +2,7 @@
 /dist
 /node_modules
 /build
-docker-compose.yml
+
 # Logs
 logs
 *.log
@@ -18,7 +18,7 @@ lerna-debug.log*
 # Tests
 /coverage
 /.nyc_output
-
+/docker-compose.yml
 # IDEs and editors
 /.idea
 .project

@@ -86,8 +86,8 @@ export class OrderHistoryPage implements OnInit, OnDestroy {
     console.log('Token presente:', !!token);
 
     if (!token) {
-      console.log('No hay token, usando datos de prueba');
-      this.orders = this.getMockOrders();
+      console.log('⚠️ No hay token, redirigiendo al login');
+      this.router.navigate(['/auth/login']);
       return;
     }
 
@@ -222,140 +222,35 @@ export class OrderHistoryPage implements OnInit, OnDestroy {
 
     this.orderService.getOrderHistory().subscribe({
       next: (orders) => {
-        console.log('Respuesta del servicio:', orders);
+        console.log('✅ Respuesta del servicio:', orders);
         this.orders = orders || [];
-        console.log('Pedidos cargados:', this.orders.length);
-        console.log('Primer pedido:', this.orders[0]);
+        console.log(`📦 Pedidos cargados: ${this.orders.length}`);
 
-        // Si no hay pedidos, usar datos de prueba
-        if (this.orders.length === 0) {
-          console.log('No hay pedidos, usando datos de prueba');
-          this.orders = this.getMockOrders();
+        if (this.orders.length > 0) {
+          console.log('📋 Primer pedido:', this.orders[0]);
+        } else {
+          console.log('ℹ️ No tienes pedidos aún');
         }
+
         this.loading = false;
       },
       error: (error) => {
-        console.error('Error loading orders:', error);
-        console.error('Error status:', error.status);
-        console.error('Error message:', error.message);
+        console.error('❌ Error loading orders:', error);
+        console.error('Status:', error.status);
+        console.error('Message:', error.message);
 
         // Verificar si es un error de autenticación
         if (error.status === 401 || error.status === 403) {
-          console.log('Error de autenticación, redirigiendo al login');
-          // Aquí podrías redirigir al login
+          console.log('🔐 Error de autenticación, redirigiendo al login');
+          this.router.navigate(['/auth/login']);
+        } else {
+          // Para otros errores, mostrar lista vacía
+          this.orders = [];
         }
 
-        // En caso de error, mostrar datos de prueba para development
-        console.log('Usando datos de prueba debido al error');
-        this.orders = this.getMockOrders();
         this.loading = false;
       },
     });
-  }
-
-  private getMockOrders(): Order[] {
-    return [
-      {
-        id: '1',
-        client: {
-          id: '1',
-          name: 'Usuario Test',
-          email: 'test@test.com',
-          role: 'client',
-        },
-        restaurant: {
-          id: '1',
-          name: 'Restaurante Italiano',
-          address: 'Av. Principal 123',
-          phone: '555-0123',
-          createdAt: new Date().toISOString(),
-          updatedAt: new Date().toISOString(),
-        },
-        status: OrderStatus.DELIVERED,
-        total: 45.5,
-        notes: 'Sin cebolla por favor',
-        deliveryAddress: 'Mi casa 456',
-        items: [
-          {
-            id: '1',
-            menuItemId: '1',
-            quantity: 2,
-            price: 15.5,
-            total: 31.0,
-            menuItem: {
-              id: '1',
-              name: 'Pizza Margherita',
-              price: 15.5,
-              description: 'Pizza clásica italiana',
-            },
-          },
-          {
-            id: '2',
-            menuItemId: '2',
-            quantity: 1,
-            price: 14.5,
-            total: 14.5,
-            menuItem: {
-              id: '2',
-              name: 'Lasagna Bolognesa',
-              price: 14.5,
-              description: 'Lasagna tradicional',
-            },
-          },
-        ],
-        createdAt: new Date(Date.now() - 86400000).toISOString(), // Ayer
-        updatedAt: new Date().toISOString(),
-      },
-      {
-        id: '2',
-        client: {
-          id: '1',
-          name: 'Usuario Test',
-          email: 'test@test.com',
-          role: 'client',
-        },
-        restaurant: {
-          id: '2',
-          name: 'Burger Palace',
-          address: 'Calle Comercio 789',
-          phone: '555-0456',
-          createdAt: new Date().toISOString(),
-          updatedAt: new Date().toISOString(),
-        },
-        status: OrderStatus.PREPARING,
-        total: 28.9,
-        items: [
-          {
-            id: '3',
-            menuItemId: '3',
-            quantity: 1,
-            price: 18.9,
-            total: 18.9,
-            menuItem: {
-              id: '3',
-              name: 'Burger Deluxe',
-              price: 18.9,
-              description: 'Hamburguesa premium',
-            },
-          },
-          {
-            id: '4',
-            menuItemId: '4',
-            quantity: 1,
-            price: 10.0,
-            total: 10.0,
-            menuItem: {
-              id: '4',
-              name: 'Papas Fritas',
-              price: 10.0,
-              description: 'Papas crujientes',
-            },
-          },
-        ],
-        createdAt: new Date(Date.now() - 3600000).toISOString(), // Hace 1 hora
-        updatedAt: new Date().toISOString(),
-      },
-    ];
   }
 
   refresh(event: any): void {
@@ -367,6 +262,7 @@ export class OrderHistoryPage implements OnInit, OnDestroy {
   }
 
   goToOrderDetail(orderId: string): void {
+    console.log(`🔍 Navegando al detalle del pedido: ${orderId}`);
     this.router.navigate(['/tabs/order-detail', orderId]);
   }
 

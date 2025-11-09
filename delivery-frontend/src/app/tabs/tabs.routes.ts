@@ -22,9 +22,17 @@ export const routes: Routes = [
       },
       {
         path: 'account',
-        canMatch: [authGuard],
         loadComponent: () =>
           import('../pages/profile/profile.page').then((m) => m.ProfilePage),
+      },
+      // Editar perfil (dentro de tabs)
+      {
+        path: 'edit-profile',
+        canMatch: [authGuard],
+        loadComponent: () =>
+          import('../pages/edit-profile/edit-profile.page').then(
+            (m) => m.EditProfilePage
+          ),
       },
       // Carrito (dentro de tabs)
       {

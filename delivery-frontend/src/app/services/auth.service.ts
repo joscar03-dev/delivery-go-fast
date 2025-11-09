@@ -37,6 +37,17 @@ export interface RegisterDto {
   role?: User['role'];
 }
 
+export interface PhoneLoginDto {
+  phone: string;
+  firebaseToken: string;
+}
+
+export interface PhoneRegisterDto {
+  name: string;
+  phone: string;
+  firebaseToken: string;
+}
+
 @Injectable({ providedIn: 'root' })
 export class AuthService {
   private http = inject(HttpClient);
@@ -87,6 +98,72 @@ export class AuthService {
         switchMap(() =>
           this.login({ email: dto.email, password: dto.password })
         )
+      );
+  }
+
+  /**
+   * Inicio de sesión con teléfono y OTP (Firebase token)
+   */
+  loginWithPhone(dto: PhoneLoginDto): Observable<RawAuthResponse> {
+    return this.http
+      .post<RawAuthResponse>(`${this.base}/auth/phone/login`, dto)
+      .pipe(
+        tap((res) => {
+          // Guardar tokens y usuario
+          this.handleAuthResponse(res);
+        })
+      );
+  }
+
+  /**
+   * Registro con teléfono y OTP (Firebase token)
+   */
+  registerWithPhone(dto: PhoneRegisterDto): Observable<RawAuthResponse> {
+    return this.http
+      .post<RawAuthResponse>(`${this.base}/auth/phone/register`, dto)
+      .pipe(
+        tap((res) => {
+          // Guardar tokens y usuario
+          this.handleAuthResponse(res);
+        })
+      );
+  }
+
+  /**
+   * Guardar token de acceso
+   */
+  saveToken(token: string): Promise<void> {
+    return Promise.resolve(this.setAccessToken(token));
+  }
+
+  /**
+   * Guardar refresh token
+   */
+  saveRefreshToken(token: string): Promise<void> {
+    return Promise.resolve(localStorage.setItem('refresh_token', token));
+  }
+
+  /**
+   * Obtener datos del usuario actual
+   */
+  getUserData(): Promise<User | null> {
+    return Promise.resolve(this.currentUserSubject.value);
+  }
+
+  /**
+   * Agregar teléfono verificado al perfil del usuario actual
+   */
+  addPhoneToProfile(phone: string, firebaseToken: string): Observable<any> {
+    return this.http
+      .post(`${this.base}/auth/phone/add`, {
+        phone,
+        firebaseToken,
+      })
+      .pipe(
+        tap(() => {
+          // Recargar el usuario actual para actualizar el perfil
+          this.reloadCurrentUser().subscribe();
+        })
       );
   }
 
@@ -234,9 +311,11 @@ export class AuthService {
       : (payload?.role as string | undefined);
 
     const id = (fallback?.id ?? payload?.sub ?? '').toString();
+    const name = fallback?.name ?? '';
+
     return {
       id,
-      name: fallback?.name ?? '',
+      name,
       email: (fallback?.email ?? payload?.email ?? '').toString(),
       role: (roleFromToken as User['role']) ?? fallback?.role,
       avatarUrl: fallback?.avatarUrl,

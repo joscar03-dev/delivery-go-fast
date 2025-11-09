@@ -7,175 +7,306 @@
     <ion-buttons>
       <ion-back-button defaultHref="/tabs/business"></ion-back-button>
     </ion-buttons>
-    <h1 class="header-title">Mi Perfil</h1>
+    <h1 class="header-title">{{ isLoggedIn ? 'Mi Perfil' : 'Cuenta' }}</h1>
     <div class="header-spacer"></div>
   </div>
 
   <div class="content-wrapper">
     <ng-container *ngIf="!loading; else loadingTpl">
-      <!-- Profile Header Section -->
-      <section class="profile-header" *ngIf="user; else emptyTpl">
-        <div class="profile-info">
-          <div class="profile-avatar">
-            <ion-icon name="person-circle-outline"></ion-icon>
+      <!-- Vista cuando NO hay sesión -->
+      <ng-container *ngIf="!isLoggedIn">
+        <!-- Guest Header -->
+        <section class="profile-header">
+          <div class="profile-info">
+            <div class="profile-avatar">
+              <ion-icon name="person-circle-outline"></ion-icon>
+            </div>
+            <div class="profile-details">
+              <h2 class="profile-name">Bienvenido</h2>
+              <p class="profile-email">
+                Inicia sesión para acceder a tu cuenta
+              </p>
+            </div>
           </div>
-          <div class="profile-details">
-            <h2 class="profile-name">{{ user.name || user.email }}</h2>
-            <p class="profile-email">{{ user.email }}</p>
-          </div>
+          <ion-button
+            class="edit-profile-btn"
+            expand="block"
+            (click)="goToLogin()"
+          >
+            <span>Iniciar Sesión</span>
+          </ion-button>
+        </section>
+
+        <!-- Public Options Group -->
+        <div class="options-group">
+          <ion-item button lines="none" class="option-item">
+            <div class="option-icon" slot="start">
+              <ion-icon name="storefront-outline"></ion-icon>
+            </div>
+            <ion-label>
+              <h3>¿Tienes un negocio?</h3>
+            </ion-label>
+            <ion-icon
+              name="chevron-forward-outline"
+              slot="end"
+              class="chevron-icon"
+            ></ion-icon>
+          </ion-item>
+
+          <div class="divider"></div>
+
+          <ion-item button lines="none" class="option-item">
+            <div class="option-icon" slot="start">
+              <ion-icon name="headset-outline"></ion-icon>
+            </div>
+            <ion-label>
+              <h3>Contactar soporte</h3>
+            </ion-label>
+            <ion-icon
+              name="chevron-forward-outline"
+              slot="end"
+              class="chevron-icon"
+            ></ion-icon>
+          </ion-item>
+
+          <div class="divider"></div>
+
+          <ion-item button lines="none" class="option-item">
+            <div class="option-icon" slot="start">
+              <ion-icon name="document-text-outline"></ion-icon>
+            </div>
+            <ion-label>
+              <h3>Términos y condiciones</h3>
+            </ion-label>
+            <ion-icon
+              name="chevron-forward-outline"
+              slot="end"
+              class="chevron-icon"
+            ></ion-icon>
+          </ion-item>
+
+          <div class="divider"></div>
+
+          <ion-item button lines="none" class="option-item">
+            <div class="option-icon" slot="start">
+              <ion-icon name="shield-checkmark-outline"></ion-icon>
+            </div>
+            <ion-label>
+              <h3>Políticas de privacidad</h3>
+            </ion-label>
+            <ion-icon
+              name="chevron-forward-outline"
+              slot="end"
+              class="chevron-icon"
+            ></ion-icon>
+          </ion-item>
         </div>
-        <ion-button class="edit-profile-btn" expand="block">
-          <span>Editar Perfil</span>
-        </ion-button>
-      </section>
+      </ng-container>
 
-      <!-- Account Management Group -->
-      <div class="options-group">
-        <ion-item
-          button
-          routerLink="/tabs/order-history"
-          lines="none"
-          class="option-item"
-        >
-          <div class="option-icon" slot="start">
-            <ion-icon name="receipt-outline"></ion-icon>
+      <!-- Vista cuando SÍ hay sesión -->
+      <ng-container *ngIf="isLoggedIn">
+        <!-- Profile Header Section -->
+        <section class="profile-header" *ngIf="user; else emptyTpl">
+          <div class="profile-info">
+            <div class="profile-avatar">
+              <ion-icon name="person-circle-outline"></ion-icon>
+            </div>
+            <div class="profile-details">
+              <h2 class="profile-name">{{ user.name || user.email }}</h2>
+              <p class="profile-email">{{ user.email }}</p>
+
+              <!-- Phone Number Display -->
+              <div class="profile-phone" *ngIf="user.phone">
+                <ion-icon
+                  name="checkmark-circle-outline"
+                  class="verified-icon"
+                ></ion-icon>
+                <span>{{ user.phone }}</span>
+              </div>
+            </div>
           </div>
-          <ion-label>
-            <h3>Historial de Pedidos</h3>
-          </ion-label>
-          <ion-icon
-            name="chevron-forward-outline"
-            slot="end"
-            class="chevron-icon"
-          ></ion-icon>
-        </ion-item>
+          <ion-button
+            class="edit-profile-btn"
+            expand="block"
+            (click)="goToEditProfile()"
+          >
+            <span>Editar Perfil</span>
+          </ion-button>
+        </section>
 
-        <div class="divider"></div>
+        <!-- Account Management Group -->
+        <div class="options-group">
+          <!-- Add Phone Number (si no tiene teléfono) -->
+          <ion-item
+            button
+            lines="none"
+            class="option-item"
+            (click)="addPhoneNumber()"
+            *ngIf="user && !user.phone"
+          >
+            <div class="option-icon option-icon-primary" slot="start">
+              <ion-icon name="add-circle-outline"></ion-icon>
+            </div>
+            <ion-label>
+              <h3>Agregar Teléfono</h3>
+              <p>Verifica tu número para más seguridad</p>
+            </ion-label>
+            <ion-icon
+              name="chevron-forward-outline"
+              slot="end"
+              class="chevron-icon"
+            ></ion-icon>
+          </ion-item>
 
-        <ion-item
-          button
-          (click)="goToAddresses()"
-          lines="none"
-          class="option-item"
-        >
-          <div class="option-icon" slot="start">
-            <ion-icon name="location-outline"></ion-icon>
-          </div>
-          <ion-label>
-            <h3>Gestionar Direcciones</h3>
-          </ion-label>
-          <ion-icon
-            name="chevron-forward-outline"
-            slot="end"
-            class="chevron-icon"
-          ></ion-icon>
-        </ion-item>
-      </div>
+          <div class="divider" *ngIf="user && !user.phone"></div>
 
-      <!-- Business & Partnership Group -->
-      <div class="options-group">
-        <ion-item
-          button
-          lines="none"
-          class="option-item"
-          (click)="navigateToDriverApplication()"
-        >
-          <div class="option-icon" slot="start">
-            <ion-icon name="bicycle-outline"></ion-icon>
-          </div>
-          <ion-label>
-            <h3>Registrarse como driver</h3>
-          </ion-label>
-          <ion-icon
-            name="chevron-forward-outline"
-            slot="end"
-            class="chevron-icon"
-          ></ion-icon>
-        </ion-item>
+          <ion-item
+            button
+            routerLink="/tabs/order-history"
+            lines="none"
+            class="option-item"
+          >
+            <div class="option-icon" slot="start">
+              <ion-icon name="receipt-outline"></ion-icon>
+            </div>
+            <ion-label>
+              <h3>Historial de Pedidos</h3>
+            </ion-label>
+            <ion-icon
+              name="chevron-forward-outline"
+              slot="end"
+              class="chevron-icon"
+            ></ion-icon>
+          </ion-item>
 
-        <div class="divider"></div>
+          <div class="divider"></div>
 
-        <ion-item button lines="none" class="option-item">
-          <div class="option-icon" slot="start">
-            <ion-icon name="storefront-outline"></ion-icon>
-          </div>
-          <ion-label>
-            <h3>¿Tienes un negocio?</h3>
-          </ion-label>
-          <ion-icon
-            name="chevron-forward-outline"
-            slot="end"
-            class="chevron-icon"
-          ></ion-icon>
-        </ion-item>
-      </div>
+          <ion-item
+            button
+            (click)="goToAddresses()"
+            lines="none"
+            class="option-item"
+          >
+            <div class="option-icon" slot="start">
+              <ion-icon name="location-outline"></ion-icon>
+            </div>
+            <ion-label>
+              <h3>Gestionar Direcciones</h3>
+            </ion-label>
+            <ion-icon
+              name="chevron-forward-outline"
+              slot="end"
+              class="chevron-icon"
+            ></ion-icon>
+          </ion-item>
+        </div>
 
-      <!-- Support & Legal Group -->
-      <div class="options-group">
-        <ion-item button lines="none" class="option-item">
-          <div class="option-icon" slot="start">
-            <ion-icon name="headset-outline"></ion-icon>
-          </div>
-          <ion-label>
-            <h3>Contactar soporte</h3>
-          </ion-label>
-          <ion-icon
-            name="chevron-forward-outline"
-            slot="end"
-            class="chevron-icon"
-          ></ion-icon>
-        </ion-item>
+        <!-- Business & Partnership Group -->
+        <div class="options-group">
+          <ion-item
+            button
+            lines="none"
+            class="option-item"
+            (click)="navigateToDriverApplication()"
+          >
+            <div class="option-icon" slot="start">
+              <ion-icon name="bicycle-outline"></ion-icon>
+            </div>
+            <ion-label>
+              <h3>Registrarse como driver</h3>
+            </ion-label>
+            <ion-icon
+              name="chevron-forward-outline"
+              slot="end"
+              class="chevron-icon"
+            ></ion-icon>
+          </ion-item>
 
-        <div class="divider"></div>
+          <div class="divider"></div>
 
-        <ion-item button lines="none" class="option-item">
-          <div class="option-icon" slot="start">
-            <ion-icon name="document-text-outline"></ion-icon>
-          </div>
-          <ion-label>
-            <h3>Términos y condiciones</h3>
-          </ion-label>
-          <ion-icon
-            name="chevron-forward-outline"
-            slot="end"
-            class="chevron-icon"
-          ></ion-icon>
-        </ion-item>
+          <ion-item button lines="none" class="option-item">
+            <div class="option-icon" slot="start">
+              <ion-icon name="storefront-outline"></ion-icon>
+            </div>
+            <ion-label>
+              <h3>¿Tienes un negocio?</h3>
+            </ion-label>
+            <ion-icon
+              name="chevron-forward-outline"
+              slot="end"
+              class="chevron-icon"
+            ></ion-icon>
+          </ion-item>
+        </div>
 
-        <div class="divider"></div>
+        <!-- Support & Legal Group -->
+        <div class="options-group">
+          <ion-item button lines="none" class="option-item">
+            <div class="option-icon" slot="start">
+              <ion-icon name="headset-outline"></ion-icon>
+            </div>
+            <ion-label>
+              <h3>Contactar soporte</h3>
+            </ion-label>
+            <ion-icon
+              name="chevron-forward-outline"
+              slot="end"
+              class="chevron-icon"
+            ></ion-icon>
+          </ion-item>
 
-        <ion-item button lines="none" class="option-item">
-          <div class="option-icon" slot="start">
-            <ion-icon name="shield-checkmark-outline"></ion-icon>
-          </div>
-          <ion-label>
-            <h3>Políticas de privacidad</h3>
-          </ion-label>
-          <ion-icon
-            name="chevron-forward-outline"
-            slot="end"
-            class="chevron-icon"
-          ></ion-icon>
-        </ion-item>
-      </div>
+          <div class="divider"></div>
 
-      <!-- Session & Account Actions -->
-      <div class="action-buttons">
-        <ion-button
-          expand="block"
-          fill="clear"
-          class="logout-btn"
-          (click)="logout()"
-        >
-          <ion-icon name="log-out-outline" slot="start"></ion-icon>
-          <span>Cerrar Sesión</span>
-        </ion-button>
+          <ion-item button lines="none" class="option-item">
+            <div class="option-icon" slot="start">
+              <ion-icon name="document-text-outline"></ion-icon>
+            </div>
+            <ion-label>
+              <h3>Términos y condiciones</h3>
+            </ion-label>
+            <ion-icon
+              name="chevron-forward-outline"
+              slot="end"
+              class="chevron-icon"
+            ></ion-icon>
+          </ion-item>
 
-        <ion-button expand="block" fill="clear" class="delete-account-btn">
-          <ion-icon name="trash-outline" slot="start"></ion-icon>
-          <span>Eliminar cuenta</span>
-        </ion-button>
-      </div>
+          <div class="divider"></div>
+
+          <ion-item button lines="none" class="option-item">
+            <div class="option-icon" slot="start">
+              <ion-icon name="shield-checkmark-outline"></ion-icon>
+            </div>
+            <ion-label>
+              <h3>Políticas de privacidad</h3>
+            </ion-label>
+            <ion-icon
+              name="chevron-forward-outline"
+              slot="end"
+              class="chevron-icon"
+            ></ion-icon>
+          </ion-item>
+        </div>
+
+        <!-- Session & Account Actions -->
+        <div class="action-buttons">
+          <ion-button
+            expand="block"
+            fill="clear"
+            class="logout-btn"
+            (click)="logout()"
+          >
+            <ion-icon name="log-out-outline" slot="start"></ion-icon>
+            <span>Cerrar Sesión</span>
+          </ion-button>
+
+          <ion-button expand="block" fill="clear" class="delete-account-btn">
+            <ion-icon name="trash-outline" slot="start"></ion-icon>
+            <span>Eliminar cuenta</span>
+          </ion-button>
+        </div>
+      </ng-container>
+      <!-- Fin vista cuando SÍ hay sesión -->
     </ng-container>
   </div>
 
@@ -190,4 +321,7 @@
       <ion-text color="medium">No se pudo cargar el perfil.</ion-text>
     </div>
   </ng-template>
+
+  <!-- reCAPTCHA container (invisible) -->
+  <div id="recaptcha-container-profile"></div>
 </ion-content>

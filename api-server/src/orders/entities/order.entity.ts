@@ -1,6 +1,6 @@
-import { OrderStatus } from 'src/common/enums/order-status.enum';
-import { Restaurant } from 'src/restaurants/entities/restaurant.entity';
-import { User } from 'src/users/entities/user.entity';
+import { OrderStatus } from '../../common/enums/order-status.enum';
+import { Restaurant } from '../../restaurants/entities/restaurant.entity';
+import { User } from '../../users/entities/user.entity';
 import { OrderItem } from './order-item.entity';
 import {
   Column,

@@ -127,8 +127,14 @@ export class AuthService {
         secret: this.configService.get<string>('JWT_REFRESH_SECRET'),
       });
 
-      // Verificar si el usuario aún existe en la DB
-      const user = await this.usersService.findOneByEmail(payload.email);
+      // Buscar usuario por ID (sub) en lugar de email
+      // Esto permite refresh para usuarios con phone O email
+      const userId = payload.sub;
+      if (!userId) {
+        throw new UnauthorizedException('Token inválido');
+      }
+
+      const user = await this.usersService.findOneById(userId);
       if (!user) {
         throw new UnauthorizedException('Usuario no encontrado');
       }
@@ -146,10 +152,11 @@ export class AuthService {
         throw new UnauthorizedException('Token de refresco no válido');
       }
 
-      // Generar nuevos tokens usando el método privado
+      // Generar nuevos tokens con los datos actuales del usuario
       const newPayload = {
         sub: user.id,
-        email: user.email,
+        email: user.email, // Puede ser null para usuarios phone-only
+        phone: user.phone, // Incluir phone en el payload
         role: user.role?.name || 'CLIENT',
       };
       return await this._generateTokens(newPayload);

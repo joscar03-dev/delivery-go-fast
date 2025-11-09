@@ -1,14 +1,45 @@
 import { Component, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
-import { IonicModule, ToastController } from '@ionic/angular';
+import {
+  IonHeader,
+  IonToolbar,
+  IonButtons,
+  IonBackButton,
+  IonTitle,
+  IonContent,
+  IonList,
+  IonItem,
+  IonInput,
+  IonNote,
+  IonButton,
+  IonIcon,
+  ToastController,
+} from '@ionic/angular/standalone';
 import { ActivatedRoute, Router } from '@angular/router';
 import { AuthService } from '../../../services/auth.service';
+import { addIcons } from 'ionicons';
+import { call } from 'ionicons/icons';
 
 @Component({
   selector: 'app-login',
   standalone: true,
-  imports: [CommonModule, IonicModule, ReactiveFormsModule],
+  imports: [
+    CommonModule,
+    ReactiveFormsModule,
+    IonHeader,
+    IonToolbar,
+    IonButtons,
+    IonBackButton,
+    IonTitle,
+    IonContent,
+    IonList,
+    IonItem,
+    IonInput,
+    IonNote,
+    IonButton,
+    IonIcon,
+  ],
   templateUrl: './login.page.html',
   styleUrls: ['./login.page.scss'],
 })
@@ -25,6 +56,10 @@ export class LoginPage {
   });
 
   loading = false;
+
+  constructor() {
+    addIcons({ call });
+  }
 
   async submit() {
     if (this.form.invalid || this.loading) return;
@@ -47,5 +82,15 @@ export class LoginPage {
         toast.present();
       },
     });
+  }
+
+  goToPhoneLogin() {
+    console.log('🚀 Navigating to phone login');
+    this.router.navigate(['/auth/phone-login']);
+  }
+
+  goToRegister() {
+    console.log('🚀 Navigating to register');
+    this.router.navigate(['/auth/register']);
   }
 }

@@ -10,9 +10,9 @@ import {
   Index,
 } from 'typeorm';
 import { Role } from '../../auth/entities/role.entity';
-import { Restaurant } from 'src/restaurants/entities/restaurant.entity';
+import { Restaurant } from '../../restaurants/entities/restaurant.entity';
 import { Address } from './address.entity';
-import { Order } from 'src/orders/entities/order.entity';
+import { Order } from '../../orders/entities/order.entity';
 
 /**
  * Tipo de método de autenticación

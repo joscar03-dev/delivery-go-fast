@@ -1,7 +1,7 @@
 <ion-header>
   <ion-toolbar>
     <ion-buttons slot="start">
-      <ion-back-button defaultHref="/tabs/tab1"></ion-back-button>
+      <ion-back-button defaultHref="/tabs/business"></ion-back-button>
     </ion-buttons>
     <ion-title>Crear cuenta</ion-title>
   </ion-toolbar>
@@ -74,7 +74,7 @@
     </ion-button>
 
     <div class="aux-links">
-      <a routerLink="/auth/login">Ya tengo una cuenta</a>
+      <a (click)="goToLogin()">Ya tengo una cuenta</a>
     </div>
   </form>
 </ion-content>

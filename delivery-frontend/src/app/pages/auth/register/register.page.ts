@@ -65,4 +65,9 @@ export class RegisterPage {
       },
     });
   }
+
+  goToLogin() {
+    console.log('🚀 Navigating to login');
+    this.router.navigate(['/auth/login']);
+  }
 }

@@ -6,7 +6,7 @@ import {
   PrimaryGeneratedColumn,
 } from 'typeorm';
 import { Order } from './order.entity';
-import { MenuItem } from 'src/restaurants/entities/menu-item.entity';
+import { MenuItem } from '../../restaurants/entities/menu-item.entity';
 @Entity('order_items')
 export class OrderItem {
   @PrimaryGeneratedColumn('uuid')

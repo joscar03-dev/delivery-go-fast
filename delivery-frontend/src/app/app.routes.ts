@@ -32,6 +32,15 @@ export const routes: Routes = [
     loadComponent: () =>
       import('./pages/profile/profile.page').then((m) => m.ProfilePage),
   },
+  // Editar Perfil
+  {
+    path: 'edit-profile',
+    canMatch: [authGuard],
+    loadComponent: () =>
+      import('./pages/edit-profile/edit-profile.page').then(
+        (m) => m.EditProfilePage
+      ),
+  },
   // Solicitud de conductor (Driver Application)
   {
     path: 'driver-application',
@@ -201,5 +210,12 @@ export const routes: Routes = [
     data: { roles: ['restaurant_owner', 'super_admin'] },
     loadComponent: () =>
       import('./pages/admin/menu-items').then((m) => m.AdminMenuItemsPage),
+  },
+  {
+    path: 'auth/phone-login',
+    loadComponent: () =>
+      import('./pages/phone-login/phone-login.page').then(
+        (m) => m.PhoneLoginPage
+      ),
   },
 ];

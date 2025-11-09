@@ -53,8 +53,24 @@
       {{ loading ? 'Ingresando…' : 'Ingresar' }}
     </ion-button>
 
+    <!-- Separador "O" -->
+    <div class="separator">
+      <span>O</span>
+    </div>
+
+    <!-- Botón de inicio con teléfono -->
+    <ion-button
+      expand="block"
+      fill="outline"
+      (click)="goToPhoneLogin()"
+      class="phone-login-button"
+    >
+      <ion-icon slot="start" name="call"></ion-icon>
+      Iniciar con Teléfono
+    </ion-button>
+
     <div class="aux-links">
-      <a routerLink="/auth/register">Crear cuenta</a>
+      <a (click)="goToRegister()">Crear cuenta</a>
     </div>
   </form>
 </ion-content>

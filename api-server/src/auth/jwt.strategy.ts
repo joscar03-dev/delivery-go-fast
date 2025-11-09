@@ -18,17 +18,26 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
   }
 
   // Este método se llama después de que el token se valida con éxito
-  async validate(payload: { sub: string; email: string; role: string }) {
-    const user = await this.usersService.findOneByEmail(payload.email);
+  async validate(payload: {
+    sub: string;
+    email?: string;
+    phone?: string;
+    role: string;
+  }) {
+    // ✅ BUSCAR POR ID (sub) en lugar de email
+    // Esto funciona tanto para usuarios con email como con solo teléfono
+    const user = await this.usersService.findOneById(payload.sub);
+
     if (!user) {
-      throw new UnauthorizedException();
+      throw new UnauthorizedException('Usuario no encontrado');
     }
+
     // Lo que retornes aquí se adjuntará al objeto request (request.user)
-    // Incluimos el 'sub' del payload para que esté disponible en req.user.sub
     return {
-      sub: payload.sub, // ✅ Agregar el ID desde el payload
-      id: user.id, // También incluir como 'id' por compatibilidad
-      email: payload.email,
+      sub: payload.sub,
+      id: user.id,
+      email: user.email,
+      phone: user.phone,
       role: payload.role,
       name: user.name,
     };

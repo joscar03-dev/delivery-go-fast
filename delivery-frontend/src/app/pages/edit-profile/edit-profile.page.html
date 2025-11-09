@@ -1,0 +1,113 @@
+<ion-header [translucent]="true">
+  <ion-toolbar>
+    <ion-buttons slot="start">
+      <ion-back-button defaultHref="/tabs/account"></ion-back-button>
+    </ion-buttons>
+    <ion-title>Editar Perfil</ion-title>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content [fullscreen]="true" class="ion-padding">
+  <div *ngIf="loading" class="flex items-center justify-center h-full">
+    <ion-spinner name="crescent" color="primary"></ion-spinner>
+  </div>
+
+  <div *ngIf="!loading" class="max-w-2xl mx-auto">
+    <ion-card class="shadow-md rounded-xl overflow-hidden">
+      <ion-card-content class="p-6">
+        <div class="mb-6 text-center">
+          <div class="profile-avatar mx-auto mb-4">
+            <ion-icon
+              name="person-circle-outline"
+              class="text-6xl text-primary"
+            ></ion-icon>
+          </div>
+          <p class="text-sm text-gray-500">Actualiza tu información personal</p>
+        </div>
+
+        <form (ngSubmit)="save()" class="space-y-4">
+          <!-- Nombre -->
+          <ion-item class="mb-4 border border-gray-200 rounded-lg">
+            <ion-icon
+              name="person-outline"
+              slot="start"
+              color="primary"
+            ></ion-icon>
+            <ion-label position="floating">Nombre completo *</ion-label>
+            <ion-input
+              type="text"
+              [(ngModel)]="name"
+              name="name"
+              required
+              minlength="2"
+              placeholder="Ej: Juan Pérez"
+            ></ion-input>
+          </ion-item>
+
+          <!-- Email (solo si no tiene teléfono) -->
+          <ion-item
+            *ngIf="!user?.phone"
+            class="mb-4 border border-gray-200 rounded-lg"
+          >
+            <ion-icon
+              name="mail-outline"
+              slot="start"
+              color="primary"
+            ></ion-icon>
+            <ion-label position="floating">Correo electrónico</ion-label>
+            <ion-input
+              type="email"
+              [(ngModel)]="email"
+              name="email"
+              [required]="!user?.phone"
+              placeholder="tu@email.com"
+            ></ion-input>
+          </ion-item>
+
+          <!-- Teléfono (solo lectura si existe) -->
+          <ion-item
+            *ngIf="user?.phone"
+            class="mb-4 border border-gray-200 rounded-lg"
+            disabled
+          >
+            <ion-icon
+              name="call-outline"
+              slot="start"
+              color="primary"
+            ></ion-icon>
+            <ion-label position="floating">Teléfono (verificado)</ion-label>
+            <ion-input type="tel" [value]="user?.phone" readonly></ion-input>
+          </ion-item>
+
+          <ion-note
+            class="text-xs text-gray-500 block mb-4"
+            *ngIf="user?.phone"
+          >
+            El teléfono no puede ser modificado una vez verificado
+          </ion-note>
+
+          <!-- Botones -->
+          <div class="flex gap-3 mt-6">
+            <ion-button
+              expand="block"
+              fill="outline"
+              class="flex-1"
+              routerLink="/tabs/account"
+            >
+              Cancelar
+            </ion-button>
+            <ion-button
+              expand="block"
+              type="submit"
+              class="flex-1"
+              [disabled]="!name || name.length < 2"
+            >
+              <ion-icon slot="start" name="save-outline"></ion-icon>
+              Guardar
+            </ion-button>
+          </div>
+        </form>
+      </ion-card-content>
+    </ion-card>
+  </div>
+</ion-content>

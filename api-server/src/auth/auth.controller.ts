@@ -8,8 +8,7 @@ import {
   PhoneRegisterDto,
   AddPhoneDto,
 } from './dto/phone-auth.dto';
-// import { JwtAuthGuard } from './guards/jwt-auth.guard';
-// import { UseGuards } from '@nestjs/common';
+import { JwtAuthGuard } from './guards/jwt-auth.guard';
 
 @Controller('auth')
 export class AuthController {
@@ -88,12 +87,12 @@ export class AuthController {
    *
    * Body:
    * {
-   *   "phone": "+51987654321",
+   *   "phone": "+51927885314",
    *   "firebaseToken": "eyJhbGci..."
    * }
    */
   @Post('phone/add')
-  // @UseGuards(JwtAuthGuard) // Descomentar cuando esté listo
+  @UseGuards(JwtAuthGuard)
   addPhoneToUser(@Body() addPhoneDto: AddPhoneDto, @Request() req: any) {
     // El userId viene del JWT token después de la autenticación
     const userId = req.user?.sub || req.user?.id;

@@ -12,7 +12,7 @@ import {
 } from 'typeorm';
 import { RestaurantCategory } from './restaurant-category.entity';
 import { MenuCategory } from './menu-category.entity';
-import { Order } from 'src/orders/entities/order.entity';
+import { Order } from '../../orders/entities/order.entity';
 import { MenuItem } from './menu-item.entity';
 import { City } from '../../common/enums/city.enum';
 

@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "336750932075",
+    "project_id": "delivery-go-fast",
+    "storage_bucket": "delivery-go-fast.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:336750932075:android:6c1bfca9dbe623c3c2012e",
+        "android_client_info": {
+          "package_name": "com.deliverygofast1.app"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBJcdKmNkUT-H7ah3gu8S6avui6RyiWRgU"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
