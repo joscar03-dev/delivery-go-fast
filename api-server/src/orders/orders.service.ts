@@ -8,6 +8,7 @@ import {
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository, DataSource, In } from 'typeorm';
+import { EventEmitter2 } from '@nestjs/event-emitter';
 import { Order } from './entities/order.entity';
 import { OrderItem } from './entities/order-item.entity';
 import { MenuItem } from '../restaurants/entities/menu-item.entity';
@@ -24,6 +25,9 @@ import { PaymentsService } from '../payments/payments.service';
 import { CheckoutDto } from '../payments/dto/checkout.dto';
 import { Address } from '../users/entities/address.entity';
 import { OrderPayment } from '../payments/entities/order-payment.entity';
+import { User } from '../users/entities/user.entity';
+import { OrderCreatedEvent } from './events/order-created.event';
+import { OrderStatusChangedEvent } from './events/order-status-changed.event';
 
 @Injectable()
 export class OrdersService {
@@ -45,6 +49,7 @@ export class OrdersService {
     private readonly deliveryGateway: DeliveryGateway,
     private readonly notificationsService: NotificationsService,
     private readonly paymentsService: PaymentsService,
+    private readonly eventEmitter: EventEmitter2,
   ) {}
 
   async create(
@@ -670,6 +675,110 @@ export class OrdersService {
   }
 
   /**
+   * Asignar driver a pedido para delivery propio del restaurante
+   * Permite a RESTAURANT_OWNER asignar drivers a sus propios pedidos
+   */
+  async assignRestaurantDriver(
+    orderId: string,
+    driverId: string,
+    userId: string,
+    userRole: Role,
+  ): Promise<Order> {
+    // Buscar el pedido con todas las relaciones necesarias
+    const order = await this.orderRepository.findOne({
+      where: { id: orderId },
+      relations: ['client', 'restaurant', 'restaurant.owner', 'driver'],
+    });
+
+    if (!order) {
+      throw new NotFoundException(`Order with ID ${orderId} not found`);
+    }
+
+    // Verificar que el pedido pertenezca al restaurante del owner (si no es SUPER_ADMIN)
+    if (userRole === Role.RESTAURANT_OWNER) {
+      if (!order.restaurant.owner || order.restaurant.owner.id !== userId) {
+        throw new ForbiddenException(
+          'You can only assign drivers to your own restaurant orders',
+        );
+      }
+    }
+
+    // Verificar que el pedido esté en estado válido para asignación
+    const validStatuses = [
+      OrderStatus.CONFIRMED,
+      OrderStatus.PREPARING,
+      OrderStatus.READY_FOR_PICKUP,
+    ];
+
+    if (!validStatuses.includes(order.status)) {
+      throw new BadRequestException(
+        'Order must be CONFIRMED, PREPARING, or READY_FOR_PICKUP to assign driver',
+      );
+    }
+
+    // Verificar que no tenga ya un driver asignado
+    if (order.driver) {
+      throw new BadRequestException(
+        'Order already has a driver assigned. Cannot reassign driver.',
+      );
+    }
+
+    // Verificar que el driver sea válido y tenga rol de DRIVER
+    const driver = await this.dataSource.getRepository(User).findOne({
+      where: { id: driverId },
+      relations: ['role'],
+    });
+
+    if (!driver || driver.role.name !== Role.DRIVER) {
+      throw new BadRequestException(
+        'Invalid driver ID or user is not a driver',
+      );
+    }
+
+    const previousStatus = order.status;
+
+    // Asignar el driver
+    order.driver = driver;
+
+    // Si el pedido estaba CONFIRMED, cambiarlo a PREPARING
+    if (order.status === OrderStatus.CONFIRMED) {
+      order.status = OrderStatus.PREPARING;
+    }
+    // Si ya está en PREPARING o READY_FOR_PICKUP, mantener ese estado
+
+    const updatedOrder = await this.orderRepository.save(order);
+
+    // Emitir evento de actualización
+    this.emitOrderStatusUpdate(
+      updatedOrder.id,
+      updatedOrder.status,
+      previousStatus,
+    );
+
+    // Enviar notificación al driver
+    try {
+      await this.notificationsService.sendToUser(driverId, {
+        title: '🚗 Nuevo Pedido Asignado',
+        body: `Se te ha asignado el pedido #${orderId.substring(0, 8)}. ¡Prepárate para recogerlo!`,
+        data: {
+          type: 'driver_assigned',
+          orderId: orderId,
+        },
+      });
+      console.log(`✅ Notificación enviada al driver ${driverId}`);
+    } catch (error) {
+      console.error('Error enviando notificación al driver:', error);
+      // No lanzar error, solo loggear (la asignación ya se hizo)
+    }
+
+    console.log(
+      `✅ Driver ${driverId} asignado al pedido ${orderId} por ${userRole} ${userId}`,
+    );
+
+    return updatedOrder;
+  }
+
+  /**
    * Emite un evento Socket.IO cuando cambia el estado de un pedido
    * Y envía una Push Notification (Sistema Híbrido)
    */
@@ -689,24 +798,31 @@ export class OrdersService {
         `✅ [Socket.IO] Estado actualizado para pedido ${orderId}: ${previousStatus} → ${newStatus}`,
       );
 
-      // 2. Enviar Push Notification al cliente (para app cerrada/background)
+      // 2. Emitir evento de cambio de estado (notificación automática vía event listener)
       const order = await this.orderRepository.findOne({
         where: { id: orderId },
-        relations: ['client', 'restaurant'],
+        relations: ['client', 'restaurant', 'restaurant.owner', 'driver'],
       });
 
-      if (order?.client?.id) {
-        await this.notificationsService.sendOrderStatusNotification(
-          order.client.id,
-          {
-            orderId: order.id,
-            orderNumber: order.id.substring(0, 8),
-            status: newStatus,
-            restaurantName: order.restaurant?.name || 'Restaurante',
-          },
+      if (order && order.client && order.restaurant) {
+        this.eventEmitter.emit(
+          'order.status.changed',
+          new OrderStatusChangedEvent(
+            order.id,
+            order.id.substring(0, 8), // orderNumber
+            order.client.id,
+            order.restaurant.id,
+            order.restaurant.owner?.id || '',
+            order.restaurant.name,
+            previousStatus,
+            newStatus,
+            order.driver?.id,
+            Number(order.total),
+            order.client.name,
+          ),
         );
         console.log(
-          `✅ [Push Notification] Enviada al cliente para pedido ${orderId}`,
+          `✅ [Event] Evento 'order.status.changed' emitido para pedido ${orderId}`,
         );
       }
     } catch (error) {
@@ -736,19 +852,27 @@ export class OrdersService {
         `✅ [Socket.IO] Evento 'new-order-available' emitido para pedido ${order.id}`,
       );
 
-      // 2. Enviar Push Notification al dueño del restaurante (para app cerrada/background)
-      if (order.restaurant?.owner?.id) {
-        await this.notificationsService.sendNewOrderNotification(
-          order.restaurant.owner.id,
-          {
-            orderId: order.id,
-            orderNumber: orderData.orderNumber,
-            totalAmount: orderData.totalAmount,
-            customerName: order.client?.name || 'Cliente',
-          },
+      // 2. Emitir evento de pedido creado (notificación automática vía event listener)
+      if (
+        order.restaurant?.owner?.id &&
+        order.client?.id &&
+        order.restaurant?.id
+      ) {
+        this.eventEmitter.emit(
+          'order.created',
+          new OrderCreatedEvent(
+            order.id,
+            orderData.orderNumber,
+            order.client.id,
+            order.restaurant.id,
+            order.restaurant.owner.id,
+            orderData.totalAmount,
+            order.client.name || 'Cliente',
+            orderData.deliveryAddress || 'Dirección no especificada',
+          ),
         );
         console.log(
-          `✅ [Push Notification] Enviada al restaurante para pedido ${order.id}`,
+          `✅ [Event] Evento 'order.created' emitido para pedido ${order.id}`,
         );
       }
     } catch (error) {

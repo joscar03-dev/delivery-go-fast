@@ -1,5 +1,5 @@
-import { IsOptional, IsEnum, IsString, IsUUID } from 'class-validator';
-import { Transform } from 'class-transformer';
+import { IsOptional, IsEnum, IsNumber, IsUUID } from 'class-validator';
+import { Transform, Type } from 'class-transformer';
 import { OrderStatus } from '../../common/enums/order-status.enum';
 
 export class FindOrdersDto {
@@ -12,12 +12,20 @@ export class FindOrdersDto {
   restaurantId?: string;
 
   @IsOptional()
-  @IsString()
-  @Transform(({ value }) => parseInt(value, 10))
+  @Type(() => Number)
+  @IsNumber()
+  @Transform(({ value }) => {
+    const num = parseInt(value, 10);
+    return isNaN(num) ? 1 : num;
+  })
   page?: number = 1;
 
   @IsOptional()
-  @IsString()
-  @Transform(({ value }) => parseInt(value, 10))
+  @Type(() => Number)
+  @IsNumber()
+  @Transform(({ value }) => {
+    const num = parseInt(value, 10);
+    return isNaN(num) ? 10 : num;
+  })
   limit?: number = 10;
 }

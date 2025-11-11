@@ -33,6 +33,7 @@ import {
   statsChartOutline,
   addCircleOutline,
   chevronForwardOutline,
+  peopleOutline,
 } from 'ionicons/icons';
 import { RestaurantService } from '../../services/restaurant.service';
 
@@ -81,6 +82,7 @@ export class RestaurantAdminPage implements OnInit, ViewWillEnter {
       statsChartOutline,
       addCircleOutline,
       chevronForwardOutline,
+      peopleOutline,
     });
   }
 
@@ -141,6 +143,13 @@ export class RestaurantAdminPage implements OnInit, ViewWillEnter {
   goToMenuManagement(restaurantId: string) {
     // Navegar a la gestión de items del menú
     this.router.navigate(['/restaurant-menu-items', restaurantId]);
+  }
+
+  goToManageDrivers(restaurantId: string) {
+    // Navegar a la gestión de repartidores del restaurante
+    this.router.navigate(['/manage-drivers'], {
+      queryParams: { restaurantId },
+    });
   }
 
   goToOrders(restaurantId: string) {

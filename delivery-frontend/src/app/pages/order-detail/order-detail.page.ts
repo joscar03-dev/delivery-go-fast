@@ -232,6 +232,17 @@ export class OrderDetailPage implements OnInit, OnDestroy {
     }
   }
 
+  /**
+   * Formatea la velocidad del driver de forma segura
+   */
+  getDriverSpeed(): string {
+    if (!this.driverLocation?.speed) {
+      return '0.0';
+    }
+    const speed = Number(this.driverLocation.speed);
+    return isNaN(speed) ? '0.0' : speed.toFixed(1);
+  }
+
   getStatusColor(status: OrderStatus): string {
     switch (status) {
       case OrderStatus.PENDING:

@@ -1,0 +1,271 @@
+<ion-header>
+  <ion-toolbar>
+    <ion-buttons slot="start">
+      <ion-back-button
+        defaultHref="/admin/restaurant-applications"
+      ></ion-back-button>
+    </ion-buttons>
+    <ion-title>Detalle de Solicitud</ion-title>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content [fullscreen]="true">
+  <!-- Loading State -->
+  <div *ngIf="isLoading" class="loading-container">
+    <ion-spinner name="crescent"></ion-spinner>
+    <p>Cargando...</p>
+  </div>
+
+  <!-- Content -->
+  <div *ngIf="!isLoading && application" class="detail-container">
+    <!-- Estado Badge -->
+    <div class="status-badge-container">
+      <ion-badge
+        [color]="getStatusColor(application.status)"
+        class="status-badge-large"
+      >
+        {{ getStatusText(application.status) }}
+      </ion-badge>
+    </div>
+
+    <!-- Información del Negocio -->
+    <ion-card>
+      <ion-card-header>
+        <ion-card-title>
+          <ion-icon name="storefront-outline"></ion-icon>
+          Información del Negocio
+        </ion-card-title>
+      </ion-card-header>
+      <ion-card-content>
+        <ion-list lines="none">
+          <ion-item>
+            <ion-label>
+              <h3>Nombre del Negocio</h3>
+              <p>{{ application.businessName }}</p>
+            </ion-label>
+          </ion-item>
+
+          <ion-item>
+            <ion-label>
+              <h3>Teléfono</h3>
+              <p>
+                <a href="tel:{{ application.businessPhone }}">
+                  {{ application.businessPhone }}
+                </a>
+              </p>
+            </ion-label>
+          </ion-item>
+
+          <ion-item *ngIf="application.businessEmail">
+            <ion-label>
+              <h3>Email</h3>
+              <p>
+                <a href="mailto:{{ application.businessEmail }}">
+                  {{ application.businessEmail }}
+                </a>
+              </p>
+            </ion-label>
+          </ion-item>
+
+          <ion-item>
+            <ion-label>
+              <h3>Categoría</h3>
+              <p>{{ application.category?.name || 'Sin categoría' }}</p>
+            </ion-label>
+          </ion-item>
+
+          <ion-item>
+            <ion-label>
+              <h3>Ciudad</h3>
+              <p>{{ application.city }}</p>
+            </ion-label>
+          </ion-item>
+
+          <ion-item>
+            <ion-label class="ion-text-wrap">
+              <h3>Dirección</h3>
+              <p>{{ application.address }}</p>
+            </ion-label>
+          </ion-item>
+        </ion-list>
+      </ion-card-content>
+    </ion-card>
+
+    <!-- Información del Representante -->
+    <ion-card>
+      <ion-card-header>
+        <ion-card-title>
+          <ion-icon name="person-outline"></ion-icon>
+          Datos del Representante
+        </ion-card-title>
+      </ion-card-header>
+      <ion-card-content>
+        <ion-list lines="none">
+          <ion-item>
+            <ion-label>
+              <h3>Nombre Completo</h3>
+              <p>{{ application.ownerName }}</p>
+            </ion-label>
+          </ion-item>
+
+          <ion-item>
+            <ion-label>
+              <h3>DNI</h3>
+              <p>{{ application.ownerDni }}</p>
+            </ion-label>
+          </ion-item>
+        </ion-list>
+      </ion-card-content>
+    </ion-card>
+
+    <!-- Usuario Solicitante -->
+    <ion-card *ngIf="application.user">
+      <ion-card-header>
+        <ion-card-title>
+          <ion-icon name="person-circle-outline"></ion-icon>
+          Usuario Solicitante
+        </ion-card-title>
+      </ion-card-header>
+      <ion-card-content>
+        <ion-list lines="none">
+          <ion-item>
+            <ion-label>
+              <h3>Nombre</h3>
+              <p>{{ application.user.name }}</p>
+            </ion-label>
+          </ion-item>
+
+          <ion-item>
+            <ion-label>
+              <h3>Email</h3>
+              <p>
+                <a href="mailto:{{ application.user.email }}">
+                  {{ application.user.email }}
+                </a>
+              </p>
+            </ion-label>
+          </ion-item>
+
+          <ion-item *ngIf="application.user.phone">
+            <ion-label>
+              <h3>Teléfono</h3>
+              <p>
+                <a href="tel:{{ application.user.phone }}">
+                  {{ application.user.phone }}
+                </a>
+              </p>
+            </ion-label>
+          </ion-item>
+        </ion-list>
+      </ion-card-content>
+    </ion-card>
+
+    <!-- Comentarios Adicionales -->
+    <ion-card *ngIf="application.additionalComments">
+      <ion-card-header>
+        <ion-card-title>
+          <ion-icon name="chatbox-outline"></ion-icon>
+          Comentarios Adicionales
+        </ion-card-title>
+      </ion-card-header>
+      <ion-card-content>
+        <p class="additional-comments">{{ application.additionalComments }}</p>
+      </ion-card-content>
+    </ion-card>
+
+    <!-- Información de Revisión -->
+    <ion-card>
+      <ion-card-header>
+        <ion-card-title>
+          <ion-icon name="document-text-outline"></ion-icon>
+          Información de Revisión
+        </ion-card-title>
+      </ion-card-header>
+      <ion-card-content>
+        <ion-list lines="none">
+          <ion-item>
+            <ion-label>
+              <h3>Fecha de Solicitud</h3>
+              <p>{{ application.createdAt | date: 'dd/MM/yyyy HH:mm' }}</p>
+            </ion-label>
+          </ion-item>
+
+          <ion-item *ngIf="application.reviewedAt">
+            <ion-label>
+              <h3>Fecha de Revisión</h3>
+              <p>{{ application.reviewedAt | date: 'dd/MM/yyyy HH:mm' }}</p>
+            </ion-label>
+          </ion-item>
+
+          <ion-item *ngIf="application.adminNotes">
+            <ion-label class="ion-text-wrap">
+              <h3>Notas del Administrador</h3>
+              <p>{{ application.adminNotes }}</p>
+            </ion-label>
+          </ion-item>
+        </ion-list>
+      </ion-card-content>
+    </ion-card>
+
+    <!-- Action Buttons -->
+    <div class="action-buttons">
+      <!-- Aprobar -->
+      <ion-button
+        *ngIf="application.status !== ApplicationStatus.APPROVED"
+        expand="block"
+        color="success"
+        (click)="approveApplication()"
+      >
+        <ion-icon name="checkmark-circle-outline" slot="start"></ion-icon>
+        Aprobar y Crear Restaurante
+      </ion-button>
+
+      <!-- Rechazar -->
+      <ion-button
+        *ngIf="application.status !== ApplicationStatus.REJECTED"
+        expand="block"
+        color="danger"
+        fill="outline"
+        (click)="rejectApplication()"
+      >
+        <ion-icon name="close-circle-outline" slot="start"></ion-icon>
+        Rechazar
+      </ion-button>
+
+      <!-- Cambiar a En Revisión -->
+      <ion-button
+        *ngIf="application.status === ApplicationStatus.PENDING"
+        expand="block"
+        color="warning"
+        fill="outline"
+        (click)="updateStatus(ApplicationStatus.UNDER_REVIEW)"
+      >
+        <ion-icon name="eye-outline" slot="start"></ion-icon>
+        Marcar como En Revisión
+      </ion-button>
+
+      <!-- Cambiar a Pendiente -->
+      <ion-button
+        *ngIf="application.status === ApplicationStatus.UNDER_REVIEW"
+        expand="block"
+        color="primary"
+        fill="outline"
+        (click)="updateStatus(ApplicationStatus.PENDING)"
+      >
+        <ion-icon name="time-outline" slot="start"></ion-icon>
+        Volver a Pendiente
+      </ion-button>
+
+      <!-- Eliminar -->
+      <ion-button
+        expand="block"
+        color="danger"
+        fill="clear"
+        (click)="deleteApplication()"
+      >
+        <ion-icon name="trash-outline" slot="start"></ion-icon>
+        Eliminar Solicitud
+      </ion-button>
+    </div>
+  </div>
+</ion-content>

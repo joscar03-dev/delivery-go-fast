@@ -1,15 +1,14 @@
-<ion-header [translucent]="true">
-  <ion-toolbar color="primary">
-    <ion-buttons slot="start">
-      <ion-button (click)="goBack()">
-        <ion-icon name="arrow-back" slot="icon-only"></ion-icon>
-      </ion-button>
-    </ion-buttons>
-    <ion-title>Iniciar con Teléfono</ion-title>
-  </ion-toolbar>
-</ion-header>
-
 <ion-content [fullscreen]="true" class="ion-padding">
+  <app-wave-background></app-wave-background>
+
+  <!-- Header personalizado dentro del content -->
+  <div class="custom-header">
+    <ion-buttons>
+      <ion-back-button defaultHref="/tabs/business"></ion-back-button>
+    </ion-buttons>
+    <h1 class="header-title">Iniciar con Teléfono</h1>
+    <div class="header-spacer"></div>
+  </div>
   <!-- Contenedor del reCAPTCHA (invisible) -->
   <div id="recaptcha-container"></div>
 

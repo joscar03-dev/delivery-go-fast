@@ -1,6 +1,11 @@
 import { Component, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
+import {
+  FormBuilder,
+  ReactiveFormsModule,
+  Validators,
+  AbstractControl,
+} from '@angular/forms';
 import {
   IonHeader,
   IonToolbar,
@@ -20,6 +25,7 @@ import { ActivatedRoute, Router } from '@angular/router';
 import { AuthService } from '../../../services/auth.service';
 import { addIcons } from 'ionicons';
 import { call } from 'ionicons/icons';
+import { WaveBackgroundComponent } from '../../../components/wave-background/wave-background.component';
 
 @Component({
   selector: 'app-login',
@@ -39,6 +45,7 @@ import { call } from 'ionicons/icons';
     IonNote,
     IonButton,
     IonIcon,
+    WaveBackgroundComponent,
   ],
   templateUrl: './login.page.html',
   styleUrls: ['./login.page.scss'],
@@ -51,7 +58,25 @@ export class LoginPage {
   private toastCtrl = inject(ToastController);
 
   form = this.fb.nonNullable.group({
-    email: ['', [Validators.required, Validators.email]],
+    identifier: [
+      '',
+      [
+        Validators.required,
+        // Validator personalizado simple inline: email o teléfono E.164
+        (control: AbstractControl) => {
+          const value: string = control.value || '';
+          if (!value) return { required: true };
+          const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+          const e164Regex = /^\+[1-9]\d{1,14}$/;
+          const ninePeru = /^\d{9}$/; // permitir 9 dígitos locales
+          return emailRegex.test(value) ||
+            e164Regex.test(value) ||
+            ninePeru.test(value)
+            ? null
+            : { identifier: 'Formato inválido (email, +E.164 o 9 dígitos PE)' };
+        },
+      ],
+    ],
     password: ['', [Validators.required, Validators.minLength(6)]],
   });
 
@@ -64,8 +89,12 @@ export class LoginPage {
   async submit() {
     if (this.form.invalid || this.loading) return;
     this.loading = true;
-    const { email, password } = this.form.getRawValue();
-    this.auth.login({ email, password }).subscribe({
+    let { identifier, password } = this.form.getRawValue();
+    // Normalizar: si son 9 dígitos, anteponer +51
+    if (/^\d{9}$/.test(identifier)) {
+      identifier = `+51${identifier}`;
+    }
+    this.auth.login({ identifier, password }).subscribe({
       next: async () => {
         this.loading = false;
         const redirectUrl =

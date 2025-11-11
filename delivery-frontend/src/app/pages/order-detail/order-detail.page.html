@@ -94,9 +94,9 @@
             >
           </div>
 
-          <div class="info-row" *ngIf="driverLocation.speed">
+          <div class="info-row" *ngIf="driverLocation.speed != null">
             <ion-icon name="speedometer-outline"></ion-icon>
-            <span>Velocidad: {{ driverLocation.speed.toFixed(1) }} km/h</span>
+            <span>Velocidad: {{ getDriverSpeed() }} km/h</span>
           </div>
 
           <div class="info-row" *ngIf="driverLocation.lastUpdate">

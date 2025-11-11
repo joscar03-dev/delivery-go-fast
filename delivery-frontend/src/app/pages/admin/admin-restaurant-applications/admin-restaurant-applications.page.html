@@ -1,0 +1,98 @@
+<ion-header>
+  <ion-toolbar>
+    <ion-buttons slot="start">
+      <ion-back-button defaultHref="/tabs/admin"></ion-back-button>
+    </ion-buttons>
+    <ion-title>Solicitudes de Restaurantes</ion-title>
+  </ion-toolbar>
+  <ion-toolbar>
+    <ion-segment
+      [value]="selectedStatus"
+      (ionChange)="onFilterChange($event)"
+      scrollable
+    >
+      <ion-segment-button
+        *ngFor="let option of statusOptions"
+        [value]="option.value"
+      >
+        <ion-label>
+          <ion-badge [color]="option.color">{{ option.label }}</ion-badge>
+        </ion-label>
+      </ion-segment-button>
+    </ion-segment>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content [fullscreen]="true">
+  <ion-refresher slot="fixed" (ionRefresh)="doRefresh($event)">
+    <ion-refresher-content></ion-refresher-content>
+  </ion-refresher>
+
+  <!-- Lista de solicitudes -->
+  <div class="applications-container">
+    <div
+      *ngIf="filteredApplications.length === 0 && !isLoading"
+      class="empty-state"
+    >
+      <ion-icon name="document-text-outline" size="large"></ion-icon>
+      <h3>No hay solicitudes</h3>
+      <p>No se encontraron solicitudes con el filtro seleccionado</p>
+    </div>
+
+    <ion-card
+      *ngFor="let application of filteredApplications"
+      button
+      (click)="viewDetail(application)"
+      class="application-card"
+    >
+      <ion-card-header>
+        <div class="card-header-content">
+          <div class="business-info">
+            <div class="business-icon">
+              {{ getCategoryIcon(application.category?.name) }}
+            </div>
+            <div class="business-details">
+              <ion-card-title>{{ application.businessName }}</ion-card-title>
+              <ion-card-subtitle>
+                <ion-icon name="person-outline"></ion-icon>
+                {{ application.ownerName }}
+              </ion-card-subtitle>
+            </div>
+          </div>
+          <ion-badge [color]="getStatusColor(application.status)">
+            {{ getStatusText(application.status) }}
+          </ion-badge>
+        </div>
+      </ion-card-header>
+
+      <ion-card-content>
+        <div class="application-details">
+          <div class="detail-item">
+            <ion-icon name="location-outline"></ion-icon>
+            <span>{{ application.city }}</span>
+          </div>
+
+          <div class="detail-item">
+            <ion-icon name="restaurant-outline"></ion-icon>
+            <span>{{ application.category?.name || 'Sin categoría' }}</span>
+          </div>
+
+          <div class="detail-item">
+            <ion-icon name="call-outline"></ion-icon>
+            <span>{{ application.businessPhone }}</span>
+          </div>
+
+          <div class="detail-item" *ngIf="application.user?.email">
+            <ion-icon name="mail-outline"></ion-icon>
+            <span>{{ application.user?.email }}</span>
+          </div>
+
+          <div class="detail-item">
+            <ion-icon name="time-outline"></ion-icon>
+            <span>{{ application.createdAt | date: 'dd/MM/yyyy HH:mm' }}</span>
+          </div>
+        </div>
+      </ion-card-content>
+    </ion-card>
+  </div>
+</ion-content>

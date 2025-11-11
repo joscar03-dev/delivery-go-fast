@@ -26,13 +26,14 @@ type RawAuthResponse = {
 };
 
 export interface LoginDto {
-  email: string;
+  identifier: string; // email o teléfono E.164
   password: string;
 }
 
 export interface RegisterDto {
   name?: string;
-  email: string;
+  email?: string; // opcional
+  phone?: string; // E.164 opcional
   password: string;
   role?: User['role'];
 }
@@ -92,13 +93,12 @@ export class AuthService {
   register(dto: RegisterDto): Observable<User> {
     // El backend devuelve solo mensaje/rol; no tokens.
     // Encadenamos auto-login para obtener tokens y materializar el usuario.
-    return this.http
-      .post(`${this.base}/auth/register`, dto)
-      .pipe(
-        switchMap(() =>
-          this.login({ email: dto.email, password: dto.password })
-        )
-      );
+    return this.http.post(`${this.base}/auth/register`, dto).pipe(
+      switchMap(() => {
+        const identifier = dto.email ?? dto.phone ?? '';
+        return this.login({ identifier, password: dto.password });
+      })
+    );
   }
 
   /**

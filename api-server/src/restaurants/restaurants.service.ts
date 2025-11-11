@@ -10,6 +10,8 @@ import { MenuItem } from './entities/menu-item.entity';
 import { RestaurantCategory } from './entities/restaurant-category.entity';
 import { MenuCategory } from './entities/menu-category.entity';
 import { RestaurantDeliveryConfig } from '../payments/entities/restaurant-delivery-config.entity';
+import { User } from '../users/entities/user.entity';
+import { RestaurantDriver } from './entities/restaurant-driver.entity';
 import { CreateRestaurantDto } from './dto/create-restaurant.dto';
 import { UpdateRestaurantDto } from './dto/update-restaurant.dto';
 import { CreateMenuItemDto } from './dto/create-menu-item.dto';
@@ -17,6 +19,7 @@ import { UpdateMenuItemDto } from './dto/update-menu-item.dto';
 import { FindRestaurantsDto } from './dto/find-restaurants.dto';
 import { defaultCategories } from '../common/seeds/categories.seed';
 import { GeospatialQueryBuilder } from '../common/utils/geospatial.util';
+import { Role } from '../common/enums/role.enum';
 import { Point } from 'geojson';
 
 @Injectable()
@@ -32,6 +35,10 @@ export class RestaurantsService {
     private readonly menuCategoryRepository: Repository<MenuCategory>,
     @InjectRepository(RestaurantDeliveryConfig)
     private readonly deliveryConfigRepository: Repository<RestaurantDeliveryConfig>,
+    @InjectRepository(User)
+    private readonly userRepository: Repository<User>,
+    @InjectRepository(RestaurantDriver)
+    private readonly restaurantDriverRepository: Repository<RestaurantDriver>,
   ) {}
 
   // CRUD para Restaurantes
@@ -365,5 +372,72 @@ export class RestaurantsService {
     });
 
     return restaurants;
+  }
+
+  // Método para obtener drivers del restaurante (para delivery propio)
+  async getRestaurantDrivers(restaurantId: string): Promise<User[]> {
+    console.log('🚗 Buscando drivers para restaurante ID:', restaurantId);
+
+    // Buscar drivers asignados al restaurante en la tabla pivot
+    const restaurantDrivers = await this.restaurantDriverRepository.find({
+      where: {
+        restaurantId,
+        isActive: true,
+      },
+      relations: ['driver', 'driver.role'],
+    });
+
+    const drivers = restaurantDrivers.map((rd) => rd.driver);
+
+    console.log(
+      '👥 Drivers encontrados para este restaurante:',
+      drivers.length,
+    );
+
+    return drivers;
+  }
+
+  // Método para asignar un driver a un restaurante
+  async assignDriverToRestaurant(
+    restaurantId: string,
+    driverId: string,
+  ): Promise<RestaurantDriver> {
+    // Verificar si ya existe la relación
+    const existing = await this.restaurantDriverRepository.findOne({
+      where: { restaurantId, driverId },
+    });
+
+    if (existing) {
+      // Si existe pero está inactivo, activarlo
+      if (!existing.isActive) {
+        existing.isActive = true;
+        return await this.restaurantDriverRepository.save(existing);
+      }
+      return existing;
+    }
+
+    // Crear nueva relación
+    const restaurantDriver = this.restaurantDriverRepository.create({
+      restaurantId,
+      driverId,
+      isActive: true,
+    });
+
+    return await this.restaurantDriverRepository.save(restaurantDriver);
+  }
+
+  // Método para remover un driver de un restaurante
+  async removeDriverFromRestaurant(
+    restaurantId: string,
+    driverId: string,
+  ): Promise<void> {
+    const restaurantDriver = await this.restaurantDriverRepository.findOne({
+      where: { restaurantId, driverId },
+    });
+
+    if (restaurantDriver) {
+      restaurantDriver.isActive = false;
+      await this.restaurantDriverRepository.save(restaurantDriver);
+    }
   }
 }

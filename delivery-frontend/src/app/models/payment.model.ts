@@ -59,6 +59,7 @@ export interface RestaurantDeliveryConfig {
   maxDeliveryDistance?: number; // km
   estimatedDeliveryTime?: number; // minutos
   isDeliveryEnabled: boolean;
+  deliveryType?: 'none' | 'restaurant' | 'platform'; // Nuevo campo
   createdAt: string;
   updatedAt: string;
 }

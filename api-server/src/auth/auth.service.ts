@@ -26,17 +26,45 @@ export class AuthService {
   ) {}
 
   async register(registerDto: RegisterAuthDto) {
-    const userExists = await this.usersService.findOneByEmail(
-      registerDto.email,
-    );
-    if (userExists) {
-      throw new ConflictException('El correo electrónico ya está en uso');
+    const { email, phone, password } = registerDto;
+
+    // Normalizar teléfono (si viene). Aquí asumimos ya formato E.164 validado por DTO
+    const normalizedPhone = phone ? phone.trim() : undefined;
+
+    // Verificar unicidad de email (si se envía)
+    if (email) {
+      const existingEmail = await this.usersService.findOneByEmail(email);
+      if (existingEmail) {
+        throw new ConflictException('El correo electrónico ya está en uso');
+      }
     }
-    const hashedPassword = await bcrypt.hash(registerDto.password, 10);
+
+    // Verificar unicidad de phone (si se envía)
+    if (normalizedPhone) {
+      const existingPhone =
+        await this.usersService.findOneByPhone(normalizedPhone);
+      if (existingPhone) {
+        throw new ConflictException('El teléfono ya está en uso');
+      }
+    }
+
+    const hashedPassword = await bcrypt.hash(password, 10);
 
     // Usar el rol del DTO o CLIENT por defecto
     const roleToAssign = registerDto.role || Role.CLIENT;
-    await this.usersService.create(registerDto, hashedPassword, roleToAssign);
+
+    // Construir objeto para create (respetando API existente)
+    const payloadForCreate: RegisterAuthDto & { phone?: string } = {
+      ...registerDto,
+      email: email, // puede ser undefined
+      phone: normalizedPhone, // puede ser undefined
+    } as any;
+
+    await this.usersService.create(
+      payloadForCreate,
+      hashedPassword,
+      roleToAssign,
+    );
 
     return {
       message: 'Usuario registrado exitosamente',
@@ -101,21 +129,25 @@ export class AuthService {
   }
 
   async login(loginDto: LoginAuthDto) {
-    const user = await this.usersService.findOneByEmail(loginDto.email);
-    if (!user) {
+    // identifier puede ser email o teléfono E.164
+    const { identifier, password } = loginDto;
+
+    // Buscar primero por email o teléfono usando helper híbrido
+    const user = await this.usersService.findOneByEmailOrPhone(identifier);
+    if (!user || !user.password_hash) {
+      // password_hash nulo para usuarios creados solo por phone OTP
       throw new UnauthorizedException('Credenciales inválidas');
     }
-    const isPasswordValid = await bcrypt.compare(
-      loginDto.password,
-      user.password_hash,
-    );
+
+    const isPasswordValid = await bcrypt.compare(password, user.password_hash);
     if (!isPasswordValid) {
       throw new UnauthorizedException('Credenciales inválidas');
     }
 
     const payload = {
       sub: user.id,
-      email: user.email,
+      email: user.email, // puede ser null
+      phone: user.phone, // incluir phone para clientes híbridos
       role: user.role?.name || 'CLIENT',
     };
     return await this._generateTokens(payload);

@@ -205,12 +205,31 @@
               *ngIf="order.status === 'confirmed' || order.status === 'preparing'"
               class="button-group"
             >
-              <div class="status-chip">
+              <!-- Mostrar estado del driver -->
+              <div *ngIf="!order.driver" class="status-chip">
                 <ion-chip color="warning">
-                  <ion-icon name="restaurant-outline"></ion-icon>
-                  <ion-label>Cocinando...</ion-label>
+                  <ion-icon name="warning-outline"></ion-icon>
+                  <ion-label>Sin repartidor asignado</ion-label>
                 </ion-chip>
               </div>
+
+              <div *ngIf="order.driver" class="status-chip">
+                <ion-chip color="success">
+                  <ion-icon name="person-outline"></ion-icon>
+                  <ion-label>Repartidor: {{ order.driver.name }}</ion-label>
+                </ion-chip>
+              </div>
+
+              <!-- Botón para asignar driver (solo si no tiene driver) -->
+              <ion-button
+                *ngIf="!order.driver"
+                expand="block"
+                color="primary"
+                (click)="assignDriver(order)"
+              >
+                <ion-icon slot="start" name="person-add-outline"></ion-icon>
+                Asignar Repartidor
+              </ion-button>
 
               <ion-button
                 expand="block"

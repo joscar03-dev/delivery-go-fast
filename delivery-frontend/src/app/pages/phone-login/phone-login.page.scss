@@ -172,3 +172,32 @@ ion-input {
 ion-button ion-spinner {
   margin-right: 8px;
 }
+
+.custom-header {
+  position: relative;
+  z-index: 10;
+  display: flex;
+  align-items: center;
+  padding: 16px 20px 8px;
+  gap: 12px;
+
+  ion-buttons {
+    ion-back-button {
+      --color: white;
+      font-size: 24px;
+    }
+  }
+
+  .header-title {
+    flex: 1;
+    font-size: 20px;
+    font-weight: 700;
+    color: white;
+    margin: 0;
+    text-align: center;
+  }
+
+  .header-spacer {
+    width: 40px; // Balance the back button
+  }
+}

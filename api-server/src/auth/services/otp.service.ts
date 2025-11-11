@@ -26,10 +26,10 @@ export class OtpService {
       if (admin.apps.length === 0) {
         this.logger.log('🔥 Inicializando Firebase Admin SDK...');
 
-        // Ruta al archivo de credenciales
+        // Ruta al archivo de credenciales (desde la raíz del proyecto)
         const serviceAccountPath = path.join(
-          __dirname,
-          '../../../firebase-service-account.json',
+          process.cwd(),
+          'firebase-service-account.json',
         );
 
         this.logger.log(`📄 Usando credenciales de: ${serviceAccountPath}`);

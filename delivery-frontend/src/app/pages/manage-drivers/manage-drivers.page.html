@@ -1,0 +1,114 @@
+<ion-header>
+  <ion-toolbar>
+    <ion-buttons slot="start">
+      <ion-back-button defaultHref="/dashboard/restaurant"></ion-back-button>
+    </ion-buttons>
+    <ion-title>Gestionar Repartidores</ion-title>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content>
+  <!-- Loading -->
+  <div *ngIf="loading" class="loading-section">
+    <ion-spinner name="crescent"></ion-spinner>
+    <p>Cargando repartidores...</p>
+  </div>
+
+  <div *ngIf="!loading">
+    <!-- Repartidores Asignados -->
+    <ion-card>
+      <ion-card-header>
+        <ion-card-title>
+          <ion-icon name="checkmark-circle-outline"></ion-icon>
+          Repartidores Asignados
+        </ion-card-title>
+      </ion-card-header>
+      <ion-card-content>
+        <div *ngIf="assignedDrivers.length === 0" class="empty-state">
+          <ion-icon name="person-outline" size="large"></ion-icon>
+          <p>No tienes repartidores asignados aún</p>
+          <p class="subtitle">
+            Asigna repartidores desde la lista de disponibles abajo
+          </p>
+        </div>
+
+        <ion-list *ngIf="assignedDrivers.length > 0">
+          <ion-item *ngFor="let driver of assignedDrivers">
+            <ion-icon name="person-outline" slot="start"></ion-icon>
+            <ion-label>
+              <h2>{{ driver.name }}</h2>
+              <p>{{ driver.email }}</p>
+              <p *ngIf="driver.phone">📱 {{ driver.phone }}</p>
+            </ion-label>
+            <ion-button
+              fill="outline"
+              color="danger"
+              slot="end"
+              (click)="removeDriver(driver)"
+            >
+              <ion-icon
+                slot="icon-only"
+                name="person-remove-outline"
+              ></ion-icon>
+            </ion-button>
+          </ion-item>
+        </ion-list>
+      </ion-card-content>
+    </ion-card>
+
+    <!-- Repartidores Disponibles -->
+    <ion-card>
+      <ion-card-header>
+        <ion-card-title>
+          <ion-icon name="person-add-outline"></ion-icon>
+          Repartidores Disponibles
+        </ion-card-title>
+      </ion-card-header>
+      <ion-card-content>
+        <div *ngIf="unassignedDrivers.length === 0" class="empty-state">
+          <ion-icon
+            name="checkmark-circle-outline"
+            size="large"
+            color="success"
+          ></ion-icon>
+          <p>Todos los repartidores disponibles ya están asignados</p>
+        </div>
+
+        <ion-list *ngIf="unassignedDrivers.length > 0">
+          <ion-item *ngFor="let driver of unassignedDrivers">
+            <ion-icon name="person-outline" slot="start"></ion-icon>
+            <ion-label>
+              <h2>{{ driver.name }}</h2>
+              <p>{{ driver.email }}</p>
+              <p *ngIf="driver.phone">📱 {{ driver.phone }}</p>
+            </ion-label>
+            <ion-button
+              fill="solid"
+              color="primary"
+              slot="end"
+              (click)="assignDriver(driver)"
+            >
+              <ion-icon slot="icon-only" name="person-add-outline"></ion-icon>
+            </ion-button>
+          </ion-item>
+        </ion-list>
+      </ion-card-content>
+    </ion-card>
+
+    <!-- Información adicional -->
+    <ion-card>
+      <ion-card-content>
+        <div class="info-box">
+          <ion-icon name="information-circle-outline"></ion-icon>
+          <div>
+            <strong>¿Cómo funciona?</strong>
+            <p>
+              Los repartidores asignados a tu restaurante podrán ser
+              seleccionados cuando necesites asignar un pedido manualmente.
+            </p>
+          </div>
+        </div>
+      </ion-card-content>
+    </ion-card>
+  </div>
+</ion-content>

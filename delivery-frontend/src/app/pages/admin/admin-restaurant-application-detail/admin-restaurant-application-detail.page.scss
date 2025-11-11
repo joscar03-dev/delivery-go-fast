@@ -1,0 +1,138 @@
+ion-content {
+  --background: #f5f5f5;
+}
+
+.loading-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+  gap: 16px;
+
+  ion-spinner {
+    transform: scale(1.5);
+  }
+
+  p {
+    color: var(--ion-color-medium);
+    font-size: 14px;
+  }
+}
+
+.detail-container {
+  padding: 16px;
+}
+
+.status-badge-container {
+  display: flex;
+  justify-content: center;
+  margin-bottom: 16px;
+}
+
+.status-badge-large {
+  padding: 12px 24px;
+  border-radius: 20px;
+  font-size: 16px;
+  font-weight: 600;
+}
+
+ion-card {
+  margin-bottom: 16px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+
+  &:last-of-type {
+    margin-bottom: 0;
+  }
+}
+
+ion-card-title {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 18px;
+  font-weight: 600;
+
+  ion-icon {
+    font-size: 24px;
+    color: var(--ion-color-primary);
+  }
+}
+
+ion-list {
+  padding: 0;
+}
+
+ion-item {
+  --padding-start: 0;
+  --inner-padding-end: 0;
+  --background: transparent;
+  margin-bottom: 16px;
+
+  &:last-child {
+    margin-bottom: 0;
+  }
+
+  h3 {
+    font-weight: 600;
+    font-size: 14px;
+    color: var(--ion-color-medium);
+    margin-bottom: 4px;
+  }
+
+  p {
+    font-size: 16px;
+    color: var(--ion-color-dark);
+    margin: 0;
+
+    a {
+      color: var(--ion-color-primary);
+      text-decoration: none;
+
+      &:hover {
+        text-decoration: underline;
+      }
+    }
+  }
+}
+
+.additional-comments {
+  font-size: 16px;
+  line-height: 1.6;
+  color: var(--ion-color-dark);
+  white-space: pre-wrap;
+}
+
+.action-buttons {
+  padding: 16px 0;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+
+  ion-button {
+    --border-radius: 12px;
+    height: 48px;
+    font-weight: 600;
+    margin: 0;
+
+    ion-icon {
+      font-size: 20px;
+    }
+  }
+}
+
+// Alert button danger style
+::ng-deep {
+  .alert-button-danger {
+    color: var(--ion-color-danger) !important;
+    font-weight: 600;
+  }
+}
+
+// Responsive
+@media (min-width: 768px) {
+  .detail-container {
+    max-width: 700px;
+    margin: 0 auto;
+  }
+}

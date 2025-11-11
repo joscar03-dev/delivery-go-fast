@@ -1,6 +1,8 @@
 import { Module } from '@nestjs/common';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { TypeOrmModule } from '@nestjs/typeorm';
+import { EventEmitterModule } from '@nestjs/event-emitter';
+import { ScheduleModule } from '@nestjs/schedule';
 import { AuthModule } from './auth/auth.module';
 import { UsersModule } from './users/users.module';
 import { RestaurantsModule } from './restaurants/restaurants.module';
@@ -10,6 +12,7 @@ import { GeolocationModule } from './geolocation/geolocation.module';
 import { NotificationsModule } from './notifications/notifications.module';
 import { PaymentsModule } from './payments/payments.module';
 import { DriverApplicationsModule } from './driver-applications/driver-applications.module';
+import { RestaurantApplicationsModule } from './restaurant-applications/restaurant-applications.module';
 import * as Joi from 'joi';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
@@ -32,6 +35,23 @@ import { AppService } from './app.service';
         BCRYPT_SALT_ROUNDS: Joi.number().default(10),
       }),
     }),
+
+    // Sistema de eventos para notificaciones automáticas
+    EventEmitterModule.forRoot({
+      // Usar wildcards para escuchar patrones de eventos
+      wildcard: false,
+      // Separador para eventos anidados
+      delimiter: '.',
+      // Cantidad máxima de listeners por evento
+      maxListeners: 10,
+      // Log de warnings si se excede maxListeners
+      verboseMemoryLeak: true,
+      // Modo async (no bloquear la ejecución principal)
+      ignoreErrors: false,
+    }),
+
+    // Tareas programadas (cron jobs) para limpieza automática
+    ScheduleModule.forRoot(),
 
     TypeOrmModule.forRootAsync({
       imports: [ConfigModule],
@@ -59,6 +79,7 @@ import { AppService } from './app.service';
     NotificationsModule,
     PaymentsModule,
     DriverApplicationsModule,
+    RestaurantApplicationsModule,
   ],
   controllers: [AppController],
   providers: [AppService],

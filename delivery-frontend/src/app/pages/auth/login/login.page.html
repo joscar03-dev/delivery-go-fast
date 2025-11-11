@@ -1,76 +1,124 @@
-<ion-header>
-  <ion-toolbar>
-    <ion-buttons slot="start">
+<ion-content class="ion-padding">
+  <app-wave-background></app-wave-background>
+
+  <!-- Header personalizado dentro del content -->
+  <div class="custom-header">
+    <ion-buttons>
       <ion-back-button defaultHref="/tabs/business"></ion-back-button>
     </ion-buttons>
-    <ion-title>Iniciar Sesión</ion-title>
-  </ion-toolbar>
-</ion-header>
+    <h1 class="header-title">Iniciar Sesión</h1>
+    <div class="header-spacer"></div>
+  </div>
+  <div class="login-container">
+    <div class="login-wrapper">
+      <!-- App Logo -->
+      <div class="logo-container">
+        <svg
+          fill="none"
+          height="64"
+          viewBox="0 0 64 64"
+          width="64"
+          xmlns="http://www.w3.org/2000/svg"
+        >
+          <rect fill="#f27f0d" height="64" rx="24" width="64"></rect>
+          <path
+            d="M32 16L48 27.0556V49.1667L32 60L16 49.1667V27.0556L32 16Z"
+            fill="#F8F7F5"
+          ></path>
+          <path
+            d="M32 23L44 29.5V42.5L32 49L20 42.5V29.5L32 23Z"
+            fill="#F27F0D"
+          ></path>
+          <path
+            d="M26 36L32 39.5L38 36V29L32 25.5L26 29V36Z"
+            fill="#F8F7F5"
+          ></path>
+        </svg>
+      </div>
 
-<ion-content class="ion-padding">
-  <form [formGroup]="form" (ngSubmit)="submit()" novalidate>
-    <ion-list lines="full">
-      <ion-item>
-        <ion-input
-          type="email"
-          label="Correo"
-          label-placement="floating"
-          formControlName="email"
-          autocomplete="email"
-          required
-        ></ion-input>
-      </ion-item>
-      <ion-note
-        color="danger"
-        *ngIf="form.controls.email.touched && form.controls.email.invalid"
+      <!-- Form -->
+      <form
+        [formGroup]="form"
+        (ngSubmit)="submit()"
+        novalidate
+        class="auth-form"
       >
-        Correo inválido.
-      </ion-note>
+        <!-- Email/Phone Field -->
+        <div class="form-field">
+          <label class="field-label">
+            <p class="label-text">Email o Teléfono</p>
+            <input
+              type="text"
+              formControlName="identifier"
+              autocomplete="username"
+              placeholder="Ingresa tu email o teléfono"
+              class="field-input"
+            />
+            <span
+              *ngIf="form.controls.identifier.touched && form.controls.identifier.invalid"
+              class="field-error"
+            >
+              Formato inválido. Usa un email válido, 9 dígitos locales o
+              teléfono E.164.
+            </span>
+          </label>
+        </div>
 
-      <ion-item>
-        <ion-input
-          type="password"
-          label="Contraseña"
-          label-placement="floating"
-          formControlName="password"
-          autocomplete="current-password"
-          required
-        ></ion-input>
-      </ion-item>
-      <ion-note
-        color="danger"
-        *ngIf="form.controls.password.touched && form.controls.password.invalid"
-      >
-        Mínimo 6 caracteres.
-      </ion-note>
-    </ion-list>
+        <!-- Password Field -->
+        <div class="form-field">
+          <label class="field-label">
+            <p class="label-text">Contraseña</p>
+            <input
+              type="password"
+              formControlName="password"
+              autocomplete="current-password"
+              placeholder="Ingresa tu contraseña"
+              class="field-input"
+            />
+            <span
+              *ngIf="form.controls.password.touched && form.controls.password.invalid"
+              class="field-error"
+            >
+              Mínimo 6 caracteres.
+            </span>
+          </label>
+        </div>
 
-    <ion-button
-      type="submit"
-      expand="block"
-      [disabled]="form.invalid || loading"
-    >
-      {{ loading ? 'Ingresando…' : 'Ingresar' }}
-    </ion-button>
+        <!-- Login Button -->
+        <button
+          type="submit"
+          [disabled]="form.invalid || loading"
+          class="btn-primary"
+        >
+          {{ loading ? 'Ingresando…' : 'Ingresar' }}
+        </button>
 
-    <!-- Separador "O" -->
-    <div class="separator">
-      <span>O</span>
+        <!-- Divider -->
+        <div class="divider">
+          <hr class="divider-line" />
+          <span class="divider-text">o</span>
+          <hr class="divider-line" />
+        </div>
+
+        <!-- Phone Login Button -->
+        <button
+          type="button"
+          (click)="goToPhoneLogin()"
+          class="btn-secondary"
+          backgroundColor="primary"
+        >
+          <ion-icon name="call"></ion-icon>
+          <span>Iniciar con Teléfono</span>
+        </button>
+
+        <!-- Create Account Link -->
+        <div class="auth-links">
+          <p class="link-text">¿No tienes una cuenta?</p>
+          <button type="button" (click)="goToRegister()" class="link-button">
+            Crear Cuenta
+          </button>
+        </div>
+      </form>
     </div>
-
-    <!-- Botón de inicio con teléfono -->
-    <ion-button
-      expand="block"
-      fill="outline"
-      (click)="goToPhoneLogin()"
-      class="phone-login-button"
-    >
-      <ion-icon slot="start" name="call"></ion-icon>
-      Iniciar con Teléfono
-    </ion-button>
-
-    <div class="aux-links">
-      <a (click)="goToRegister()">Crear cuenta</a>
-    </div>
-  </form>
+  </div>
 </ion-content>

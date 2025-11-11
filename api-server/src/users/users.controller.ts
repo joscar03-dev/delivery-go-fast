@@ -49,6 +49,15 @@ export class UsersController {
     return list.map((u) => this.sanitizeUser(u));
   }
 
+  // Listado de drivers disponibles (para restaurantes)
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(RoleEnum.RESTAURANT_OWNER, RoleEnum.SUPER_ADMIN)
+  @Get('drivers/available')
+  async findAllDrivers() {
+    const drivers = await this.usersService.findAllDrivers();
+    return drivers.map((u) => this.sanitizeUser(u));
+  }
+
   // Actualización parcial de usuario (solo super admin)
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles(RoleEnum.SUPER_ADMIN)

@@ -305,8 +305,49 @@ export class RestaurantService {
     );
   }
 
+  // Obtener drivers del restaurante (para delivery propio)
+  getRestaurantDrivers(restaurantId: string): Observable<User[]> {
+    return this.http.get<User[]>(
+      `${this.base}/restaurants/${restaurantId}/drivers`
+    );
+  }
+
+  // Obtener TODOS los drivers disponibles en el sistema
+  getAllAvailableDrivers(): Observable<User[]> {
+    return this.http.get<User[]>(`${this.base}/users/drivers/available`);
+  }
+
+  // Asignar un driver a un restaurante
+  assignDriverToRestaurant(
+    restaurantId: string,
+    driverId: string
+  ): Observable<any> {
+    return this.http.post(
+      `${this.base}/restaurants/${restaurantId}/drivers/${driverId}`,
+      {}
+    );
+  }
+
+  // Remover un driver de un restaurante
+  removeDriverFromRestaurant(
+    restaurantId: string,
+    driverId: string
+  ): Observable<any> {
+    return this.http.delete(
+      `${this.base}/restaurants/${restaurantId}/drivers/${driverId}`
+    );
+  }
+
   // Alias para getById (para compatibilidad)
   getRestaurantById(id: string): Observable<RestaurantModel> {
     return this.getById(id);
   }
+}
+
+// Interfaz User para los drivers
+export interface User {
+  id: string;
+  name: string;
+  email: string;
+  phone?: string;
 }

@@ -22,7 +22,9 @@ import {
   IonButtons,
   AlertController,
   LoadingController,
+  IonBackButton,
 } from '@ionic/angular/standalone';
+import { WaveBackgroundComponent } from 'src/app/components/wave-background/wave-background.component';
 import { Router } from '@angular/router';
 import { PhoneAuthService } from '../../services/phone-auth.service';
 import { AuthService } from '../../services/auth.service';
@@ -49,6 +51,8 @@ import { call, arrowBack, checkmarkCircle } from 'ionicons/icons';
     IonButtons,
     CommonModule,
     FormsModule,
+    WaveBackgroundComponent,
+    IonBackButton,
   ],
 })
 export class PhoneLoginPage implements OnInit, OnDestroy {

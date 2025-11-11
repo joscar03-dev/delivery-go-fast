@@ -200,6 +200,24 @@ export class ProfilePage implements OnInit, OnDestroy {
     this.router.navigate(['/driver-application']);
   }
 
+  navigateToRestaurantApplication() {
+    console.log('🚀 Navigating to restaurant application');
+
+    // Si no está logueado, redirigir a login
+    if (!this.isLoggedIn) {
+      this.router.navigate(['/auth/login'], {
+        queryParams: {
+          returnUrl: '/restaurant-application',
+          message: 'Inicia sesión para registrar tu negocio',
+        },
+      });
+      return;
+    }
+
+    // Si está logueado, ir al formulario
+    this.router.navigate(['/restaurant-application']);
+  }
+
   /**
    * Muestra diálogo para agregar teléfono al perfil
    */

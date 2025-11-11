@@ -1,11 +1,15 @@
 import { Injectable, Logger, OnModuleInit } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { Repository, LessThan } from 'typeorm';
+import { OnEvent } from '@nestjs/event-emitter';
+import { Cron, CronExpression } from '@nestjs/schedule';
 import * as admin from 'firebase-admin';
 import { DeviceToken } from './entities/device-token.entity';
 import * as fs from 'fs';
 import * as path from 'path';
 import { RegisterDeviceTokenDto } from './dto/register-device-token.dto';
+import { OrderCreatedEvent } from '../orders/events/order-created.event';
+import { OrderStatusChangedEvent } from '../orders/events/order-status-changed.event';
 
 /**
  * Tipos de notificaciones que se pueden enviar
@@ -194,7 +198,7 @@ export class NotificationsService implements OnModuleInit {
   }
 
   /**
-   * Envía una notificación push a un usuario específico
+   * Envía una notificación push a un usuario específico con reintentos automáticos
    */
   async sendToUser(
     userId: string,
@@ -212,51 +216,51 @@ export class NotificationsService implements OnModuleInit {
       return { success: 0, failure: 0 };
     }
 
-    try {
-      // Obtener todos los tokens activos del usuario
-      const deviceTokens = await this.getUserTokens(userId);
+    // Obtener todos los tokens activos del usuario
+    const deviceTokens = await this.getUserTokens(userId);
 
-      if (deviceTokens.length === 0) {
-        this.logger.warn(
-          `⚠️ No hay tokens de dispositivo registrados para usuario ${userId}`,
-        );
-        return { success: 0, failure: 0 };
-      }
+    if (deviceTokens.length === 0) {
+      this.logger.warn(
+        `⚠️ No hay tokens de dispositivo registrados para usuario ${userId}`,
+      );
+      return { success: 0, failure: 0 };
+    }
 
-      const tokens = deviceTokens.map((dt) => dt.token);
+    const tokens = deviceTokens.map((dt) => dt.token);
 
-      // Preparar el mensaje
-      const message: admin.messaging.MulticastMessage = {
+    // Preparar el mensaje
+    const message: admin.messaging.MulticastMessage = {
+      notification: {
+        title: notification.title,
+        body: notification.body,
+      },
+      data: {
+        ...notification.data,
+        type: notification.type || NotificationType.NEW_ORDER,
+        timestamp: new Date().toISOString(),
+      },
+      tokens,
+      android: {
+        priority: 'high',
         notification: {
-          title: notification.title,
-          body: notification.body,
-        },
-        data: {
-          ...notification.data,
-          type: notification.type || NotificationType.NEW_ORDER,
-          timestamp: new Date().toISOString(),
-        },
-        tokens,
-        android: {
+          sound: 'default',
+          channelId: 'delivery_notifications',
           priority: 'high',
-          notification: {
+        },
+      },
+      apns: {
+        payload: {
+          aps: {
             sound: 'default',
-            channelId: 'delivery_notifications',
-            priority: 'high',
+            badge: 1,
           },
         },
-        apns: {
-          payload: {
-            aps: {
-              sound: 'default',
-              badge: 1,
-            },
-          },
-        },
-      };
+      },
+    };
 
-      // Enviar notificación
-      const response = await admin.messaging().sendEachForMulticast(message);
+    try {
+      // Enviar con reintentos (máximo 3 intentos)
+      const response = await this.sendWithRetry(message, 3);
 
       this.logger.log(
         `📨 Notificación enviada a usuario ${userId}: ${response.successCount} exitosas, ${response.failureCount} fallidas`,
@@ -447,5 +451,165 @@ export class NotificationsService implements OnModuleInit {
     this.logger.warn(
       `⚠️ ${tokens.length} tokens marcados como inactivos por fallo en envío`,
     );
+  }
+
+  /**
+   * === CRON JOBS (Tareas programadas) ===
+   */
+
+  /**
+   * Limpia tokens inactivos antiguos (mayores a 30 días)
+   * Se ejecuta diariamente a las 3 AM
+   */
+  @Cron(CronExpression.EVERY_DAY_AT_3AM)
+  async cleanupOldTokens(): Promise<void> {
+    try {
+      this.logger.log('🧹 [Cron] Iniciando limpieza de tokens antiguos...');
+
+      // Calcular fecha límite (30 días atrás)
+      const thirtyDaysAgo = new Date();
+      thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
+
+      const result = await this.deviceTokenRepository
+        .createQueryBuilder()
+        .delete()
+        .from(DeviceToken)
+        .where('isActive = :isActive', { isActive: false })
+        .andWhere('updatedAt < :date', { date: thirtyDaysAgo })
+        .execute();
+
+      this.logger.log(
+        `✅ [Cron] Limpiados ${result.affected || 0} tokens inactivos antiguos`,
+      );
+    } catch (error) {
+      this.logger.error(
+        `❌ [Cron] Error al limpiar tokens antiguos:`,
+        error.message,
+      );
+    }
+  }
+
+  /**
+   * === UTILIDADES PRIVADAS ===
+   */
+
+  /**
+   * Envía un mensaje multicast con reintentos exponenciales
+   * @param message Mensaje a enviar
+   * @param maxRetries Número máximo de reintentos (por defecto 3)
+   * @returns Respuesta de Firebase
+   */
+  private async sendWithRetry(
+    message: admin.messaging.MulticastMessage,
+    maxRetries: number = 3,
+  ): Promise<admin.messaging.BatchResponse> {
+    let lastError: Error;
+
+    for (let attempt = 1; attempt <= maxRetries; attempt++) {
+      try {
+        // Intentar enviar notificación
+        const response = await admin.messaging().sendEachForMulticast(message);
+
+        // Si tiene éxito, retornar inmediatamente
+        if (attempt > 1) {
+          this.logger.log(
+            `✅ [Retry] Notificación enviada exitosamente en intento ${attempt}/${maxRetries}`,
+          );
+        }
+        return response;
+      } catch (error) {
+        lastError = error;
+
+        // Si es el último intento, lanzar el error
+        if (attempt >= maxRetries) {
+          this.logger.error(
+            `❌ [Retry] Todos los intentos fallaron (${maxRetries}/${maxRetries})`,
+            error.message,
+          );
+          throw error;
+        }
+
+        // Calcular delay exponencial: 1s, 2s, 4s
+        const delay = Math.pow(2, attempt - 1) * 1000;
+        this.logger.warn(
+          `⚠️ [Retry ${attempt}/${maxRetries}] Error al enviar notificación. Reintentando en ${delay}ms...`,
+          error.message,
+        );
+
+        // Esperar antes del siguiente intento
+        await new Promise((resolve) => setTimeout(resolve, delay));
+      }
+    }
+
+    // Por si acaso (nunca debería llegar aquí)
+    throw lastError;
+  }
+
+  /**
+   * === EVENT LISTENERS (Automáticos) ===
+   * Estos métodos se ejecutan automáticamente cuando se emiten eventos
+   */ /**
+   * === EVENT LISTENERS (Automáticos) ===
+   * Estos métodos se ejecutan automáticamente cuando se emiten eventos
+   */
+
+  /**
+   * Listener: Cuando se crea un nuevo pedido
+   * Envía notificación push al dueño del restaurante
+   */
+  @OnEvent('order.created')
+  async handleOrderCreated(event: OrderCreatedEvent): Promise<void> {
+    this.logger.log(
+      `📨 [Event Listener] Procesando evento order.created para pedido ${event.orderId}`,
+    );
+
+    try {
+      await this.sendNewOrderNotification(event.restaurantOwnerId, {
+        orderId: event.orderId,
+        orderNumber: event.orderNumber,
+        totalAmount: event.totalAmount,
+        customerName: event.customerName,
+      });
+
+      this.logger.log(
+        `✅ [Event Listener] Notificación de nuevo pedido enviada al restaurante ${event.restaurantOwnerId}`,
+      );
+    } catch (error) {
+      this.logger.error(
+        `❌ [Event Listener] Error al enviar notificación de nuevo pedido:`,
+        error.message,
+      );
+    }
+  }
+
+  /**
+   * Listener: Cuando cambia el estado de un pedido
+   * Envía notificación push al cliente
+   */
+  @OnEvent('order.status.changed')
+  async handleOrderStatusChanged(
+    event: OrderStatusChangedEvent,
+  ): Promise<void> {
+    this.logger.log(
+      `📨 [Event Listener] Procesando evento order.status.changed para pedido ${event.orderId}: ${event.oldStatus} → ${event.newStatus}`,
+    );
+
+    try {
+      await this.sendOrderStatusNotification(event.userId, {
+        orderId: event.orderId,
+        orderNumber: event.orderNumber,
+        status: event.newStatus,
+        restaurantName: event.restaurantName,
+      });
+
+      this.logger.log(
+        `✅ [Event Listener] Notificación de cambio de estado enviada al usuario ${event.userId}`,
+      );
+    } catch (error) {
+      this.logger.error(
+        `❌ [Event Listener] Error al enviar notificación de cambio de estado:`,
+        error.message,
+      );
+    }
   }
 }

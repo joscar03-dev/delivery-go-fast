@@ -23,30 +23,131 @@
       Configura los parámetros de delivery de tu restaurante
     </p>
 
-    <!-- Activar/Desactivar Delivery -->
+    <!-- Selector de Tipo de Delivery -->
     <ion-card class="mb-4 shadow-md rounded-xl overflow-hidden">
+      <ion-card-header class="bg-gray-50">
+        <ion-card-title class="text-base flex items-center gap-2">
+          <ion-icon name="location-outline" color="primary"></ion-icon>
+          Tipo de Servicio de Delivery
+        </ion-card-title>
+      </ion-card-header>
       <ion-card-content class="p-4">
-        <ion-item lines="none">
-          <ion-icon
-            name="location-outline"
-            slot="start"
-            color="primary"
-            class="text-2xl"
-          ></ion-icon>
-          <ion-label>
-            <h3 class="font-semibold text-lg">Servicio de Delivery</h3>
-            <p class="text-sm text-gray-500">Activa o desactiva el delivery</p>
-          </ion-label>
-          <ion-toggle
-            [(ngModel)]="deliveryConfig.isDeliveryEnabled"
-            color="success"
-          ></ion-toggle>
-        </ion-item>
+        <ion-segment [(ngModel)]="deliveryConfig.deliveryType" value="platform">
+          <ion-segment-button value="none">
+            <div class="flex flex-col items-center py-2">
+              <ion-icon
+                name="close-circle-outline"
+                class="text-xl mb-1"
+              ></ion-icon>
+              <ion-label class="text-xs">Sin Delivery</ion-label>
+            </div>
+          </ion-segment-button>
+          <ion-segment-button value="restaurant">
+            <div class="flex flex-col items-center py-2">
+              <ion-icon name="bicycle-outline" class="text-xl mb-1"></ion-icon>
+              <ion-label class="text-xs">Delivery Propio</ion-label>
+            </div>
+          </ion-segment-button>
+          <!-- <ion-segment-button value="platform">
+            <div class="flex flex-col items-center py-2">
+              <ion-icon name="rocket-outline" class="text-xl mb-1"></ion-icon>
+              <ion-label class="text-xs">Go Fast</ion-label>
+            </div>
+          </ion-segment-button> -->
+        </ion-segment>
+
+        <!-- Descripción según tipo -->
+        <div class="mt-4 p-3 bg-blue-50 rounded-lg border border-blue-200">
+          <p
+            *ngIf="deliveryConfig.deliveryType === 'none'"
+            class="text-sm text-gray-700"
+          >
+            <ion-icon
+              name="information-circle-outline"
+              class="align-middle mr-1"
+            ></ion-icon>
+            🏪 Solo ventas para recoger en tienda. No se mostrarán opciones de
+            delivery a los clientes.
+          </p>
+          <p
+            *ngIf="deliveryConfig.deliveryType === 'restaurant'"
+            class="text-sm text-gray-700"
+          >
+            <ion-icon
+              name="information-circle-outline"
+              class="align-middle mr-1"
+            ></ion-icon>
+            🚴 Gestionas tus propios repartidores y entregas. Los pedidos NO
+            aparecerán en la app de repartidores de Go Fast.
+          </p>
+          <p
+            *ngIf="deliveryConfig.deliveryType === 'platform'"
+            class="text-sm text-gray-700"
+          >
+            <ion-icon
+              name="information-circle-outline"
+              class="align-middle mr-1"
+            ></ion-icon>
+            🚀 Go Fast asigna y gestiona los repartidores automáticamente. Los
+            pedidos aparecerán en la app de repartidores.
+          </p>
+        </div>
       </ion-card-content>
     </ion-card>
 
-    <!-- Configuración de Precios -->
-    <ion-card class="mb-4 shadow-md rounded-xl overflow-hidden">
+    <!-- Mensaje cuando está desactivado -->
+    <ion-card
+      *ngIf="deliveryConfig.deliveryType === 'none'"
+      class="mb-4 shadow-md rounded-xl overflow-hidden bg-gray-50"
+    >
+      <ion-card-content class="p-4 text-center">
+        <ion-icon
+          name="information-circle-outline"
+          class="text-5xl text-gray-400 mb-2"
+        ></ion-icon>
+        <h3 class="text-lg font-semibold text-gray-700 mb-1">
+          Delivery Desactivado
+        </h3>
+        <p class="text-sm text-gray-500">
+          Tu restaurante solo aceptará pedidos para recoger en tienda.
+        </p>
+      </ion-card-content>
+    </ion-card>
+
+    <!-- Mensaje cuando es Go Fast (platform) -->
+    <ion-card
+      *ngIf="deliveryConfig.deliveryType === 'platform'"
+      class="mb-4 shadow-md rounded-xl overflow-hidden bg-gradient-to-r from-purple-50 to-blue-50"
+    >
+      <ion-card-content class="p-4 text-center">
+        <ion-icon
+          name="rocket-outline"
+          class="text-5xl text-purple-500 mb-2"
+        ></ion-icon>
+        <h3 class="text-lg font-semibold text-gray-700 mb-1">
+          🚀 Delivery Gestionado por Go Fast
+        </h3>
+        <p class="text-sm text-gray-600 mb-3">
+          Nosotros nos encargamos de todo: asignación de repartidores, entregas
+          y seguimiento en tiempo real.
+        </p>
+        <div class="bg-white rounded-lg p-3 text-left">
+          <p class="text-xs text-gray-500 mb-2"><strong>Incluye:</strong></p>
+          <ul class="text-xs text-gray-600 space-y-1 list-disc list-inside">
+            <li>Red de repartidores verificados</li>
+            <li>Seguimiento GPS en tiempo real</li>
+            <li>Gestión automática de pedidos</li>
+            <li>Soporte 24/7</li>
+          </ul>
+        </div>
+      </ion-card-content>
+    </ion-card>
+
+    <!-- Configuración de Precios (solo para delivery propio - 'restaurant') -->
+    <ion-card
+      *ngIf="deliveryConfig.deliveryType === 'restaurant'"
+      class="mb-4 shadow-md rounded-xl overflow-hidden"
+    >
       <ion-card-header class="bg-gray-50">
         <ion-card-title class="text-base flex items-center gap-2">
           <ion-icon name="cash-outline" color="success"></ion-icon>
@@ -102,8 +203,11 @@
       </ion-card-content>
     </ion-card>
 
-    <!-- Configuración de Tiempos y Distancias -->
-    <ion-card class="mb-4 shadow-md rounded-xl overflow-hidden">
+    <!-- Configuración de Tiempos y Distancias (solo para delivery propio - 'restaurant') -->
+    <ion-card
+      *ngIf="deliveryConfig.deliveryType === 'restaurant'"
+      class="mb-4 shadow-md rounded-xl overflow-hidden"
+    >
       <ion-card-header class="bg-gray-50">
         <ion-card-title class="text-base flex items-center gap-2">
           <ion-icon name="time-outline" color="warning"></ion-icon>
@@ -147,8 +251,9 @@
       </ion-card-content>
     </ion-card>
 
-    <!-- Ejemplo Visual -->
+    <!-- Ejemplo Visual (solo para delivery propio - 'restaurant') -->
     <ion-card
+      *ngIf="deliveryConfig.deliveryType === 'restaurant'"
       class="mb-6 shadow-md rounded-xl overflow-hidden bg-gradient-to-r from-blue-50 to-purple-50"
     >
       <ion-card-content class="p-4">
@@ -159,7 +264,7 @@
           <p class="flex justify-between">
             <span class="text-gray-600">Tarifa de delivery:</span>
             <span class="font-semibold"
-              >S/ {{ deliveryConfig.deliveryFee.toFixed(2) }}</span
+              >S/ {{ (deliveryConfig.deliveryFee || 0).toFixed(2) }}</span
             >
           </p>
           <p
@@ -168,7 +273,8 @@
           >
             <span class="text-green-600">🎉 Delivery gratis desde:</span>
             <span class="font-semibold text-green-600"
-              >S/ {{ deliveryConfig.freeDeliveryThreshold.toFixed(2) }}</span
+              >S/ {{ (deliveryConfig.freeDeliveryThreshold || 0).toFixed(2)
+              }}</span
             >
           </p>
           <p
@@ -177,7 +283,7 @@
           >
             <span class="text-gray-600">📦 Pedido mínimo:</span>
             <span class="font-semibold"
-              >S/ {{ deliveryConfig.minOrderAmount.toFixed(2) }}</span
+              >S/ {{ (deliveryConfig.minOrderAmount || 0).toFixed(2) }}</span
             >
           </p>
           <p class="flex justify-between">

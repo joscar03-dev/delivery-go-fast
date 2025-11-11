@@ -86,6 +86,23 @@ export class OrdersController {
     return this.ordersService.assignDriver(orderId, driverId);
   }
 
+  // Endpoint para que restaurantes asignen drivers a sus propios pedidos (delivery propio)
+  @Patch(':id/assign-restaurant-driver')
+  @Roles(Role.RESTAURANT_OWNER, Role.SUPER_ADMIN)
+  assignRestaurantDriver(
+    @Param('id', ParseUUIDPipe) orderId: string,
+    @Body('driverId', ParseUUIDPipe) driverId: string,
+    @Request() req,
+  ) {
+    const currentUser = req.user;
+    return this.ordersService.assignRestaurantDriver(
+      orderId,
+      driverId,
+      currentUser.id,
+      currentUser.role,
+    );
+  }
+
   // Endpoint específico para que los clientes cancelen sus pedidos
   @Patch(':id/cancel')
   @Roles(Role.CLIENT)

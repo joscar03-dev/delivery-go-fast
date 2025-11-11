@@ -117,6 +117,19 @@ export class OrderService {
   }
 
   /**
+   * Asigna un driver a un pedido (para delivery propio del restaurante)
+   */
+  assignDriverToOrder(orderId: string, driverId: string): Observable<Order> {
+    return this.http.patch<Order>(
+      `${this.apiUrl}/${orderId}/assign-restaurant-driver`,
+      { driverId },
+      {
+        headers: this.getHeaders(),
+      }
+    );
+  }
+
+  /**
    * Ajusta el tiempo de preparación agregando minutos adicionales
    */
   adjustPrepTime(

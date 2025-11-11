@@ -33,6 +33,9 @@ import {
   cashOutline,
   cardOutline,
   receiptOutline,
+  closeCircleOutline,
+  bicycleOutline,
+  rocketOutline,
 } from 'ionicons/icons';
 
 import { CartService } from '../../services/cart.service';
@@ -103,6 +106,7 @@ export class CheckoutPage implements OnInit {
   // Configuración de delivery
   deliveryConfig: RestaurantDeliveryConfig | null = null;
   deliveryFee: number = 0;
+  deliveryType: 'none' | 'restaurant' | 'platform' = 'platform'; // Tipo de delivery del restaurante
 
   // Totales
   total: number = 0;
@@ -127,6 +131,9 @@ export class CheckoutPage implements OnInit {
       cashOutline,
       cardOutline,
       receiptOutline,
+      closeCircleOutline,
+      bicycleOutline,
+      rocketOutline,
     });
   }
 
@@ -209,16 +216,23 @@ export class CheckoutPage implements OnInit {
           .getRestaurantDeliveryConfig(this.restaurantId)
           .toPromise()) || null;
 
-      // Calcular tarifa de delivery
+      // Detectar tipo de delivery
       if (this.deliveryConfig) {
-        // Si el subtotal supera el umbral de delivery gratis
-        if (
-          this.deliveryConfig.freeDeliveryThreshold &&
-          this.subtotal >= this.deliveryConfig.freeDeliveryThreshold
-        ) {
+        this.deliveryType = this.deliveryConfig.deliveryType || 'platform';
+
+        // Solo calcular tarifa si NO es tipo 'none'
+        if (this.deliveryType === 'none') {
           this.deliveryFee = 0;
         } else {
-          this.deliveryFee = Number(this.deliveryConfig.deliveryFee) || 0;
+          // Si el subtotal supera el umbral de delivery gratis
+          if (
+            this.deliveryConfig.freeDeliveryThreshold &&
+            this.subtotal >= this.deliveryConfig.freeDeliveryThreshold
+          ) {
+            this.deliveryFee = 0;
+          } else {
+            this.deliveryFee = Number(this.deliveryConfig.deliveryFee) || 0;
+          }
         }
       }
 
@@ -257,6 +271,37 @@ export class CheckoutPage implements OnInit {
     const subtotal = Number(this.subtotal) || 0;
     const deliveryFee = Number(this.deliveryFee) || 0;
     this.total = subtotal + deliveryFee;
+  }
+
+  // Métodos auxiliares para formateo seguro
+  getFormattedSubtotal(): string {
+    return (Number(this.subtotal) || 0).toFixed(2);
+  }
+
+  getFormattedDeliveryFee(): string {
+    return (Number(this.deliveryFee) || 0).toFixed(2);
+  }
+
+  getFormattedTotal(): string {
+    return (Number(this.total) || 0).toFixed(2);
+  }
+
+  getFormattedDeliveryConfigFee(): string {
+    return (Number(this.deliveryConfig?.deliveryFee) || 0).toFixed(2);
+  }
+
+  getFormattedChangeAmount(): string {
+    return (Number(this.changeAmount) || 0).toFixed(2);
+  }
+
+  getFormattedItemTotal(item: CartItem): string {
+    return (Number(item.price) * Number(item.quantity) || 0).toFixed(2);
+  }
+
+  getFormattedRemainingAmount(): string {
+    const remaining =
+      (Number(this.total) || 0) - (Number(this.cashAmount) || 0);
+    return (remaining > 0 ? remaining : 0).toFixed(2);
   }
 
   async confirmOrder() {
@@ -434,6 +479,62 @@ export class CheckoutPage implements OnInit {
       position: 'top',
     });
     await toast.present();
+  }
+
+  // 🆕 Métodos helper para tipos de delivery
+
+  /**
+   * Indica si el restaurante permite seleccionar delivery
+   */
+  canSelectDelivery(): boolean {
+    return this.deliveryType !== 'none';
+  }
+
+  /**
+   * Indica si se debe mostrar la sección de dirección
+   */
+  shouldShowAddressSection(): boolean {
+    // Solo mostrar dirección si el delivery está habilitado
+    return this.deliveryType !== 'none';
+  }
+
+  /**
+   * Obtiene el mensaje informativo según el tipo de delivery
+   */
+  getDeliveryTypeMessage(): string {
+    switch (this.deliveryType) {
+      case 'none':
+        return '🏪 Este restaurante solo acepta pedidos para recoger en tienda.';
+      case 'restaurant':
+        return '🚴 Este restaurante gestiona su propio servicio de delivery.';
+      case 'platform':
+        return '🚀 Delivery gestionado por Go Fast con seguimiento en tiempo real.';
+      default:
+        return '';
+    }
+  }
+
+  /**
+   * Indica si se debe mostrar la tarifa de delivery
+   */
+  shouldShowDeliveryFee(): boolean {
+    return this.deliveryType !== 'none';
+  }
+
+  /**
+   * Obtiene el ícono según el tipo de delivery
+   */
+  getDeliveryTypeIcon(): string {
+    switch (this.deliveryType) {
+      case 'none':
+        return 'close-circle-outline';
+      case 'restaurant':
+        return 'bicycle-outline';
+      case 'platform':
+        return 'rocket-outline';
+      default:
+        return 'location-outline';
+    }
   }
 
   goToAddAddress() {

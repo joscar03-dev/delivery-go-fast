@@ -1,80 +1,150 @@
-<ion-header>
-  <ion-toolbar>
-    <ion-buttons slot="start">
+<ion-content class="ion-padding">
+  <app-wave-background></app-wave-background>
+
+  <!-- Header personalizado dentro del content -->
+  <div class="custom-header">
+    <ion-buttons>
       <ion-back-button defaultHref="/tabs/business"></ion-back-button>
     </ion-buttons>
-    <ion-title>Crear cuenta</ion-title>
-  </ion-toolbar>
-</ion-header>
+    <h1 class="header-title">Crear Cuenta</h1>
+    <div class="header-spacer"></div>
+  </div>
+  <div class="register-container">
+    <div class="register-content">
+      <!-- Logo/Icon -->
+      <div class="logo-container">
+        <div class="logo-icon">
+          <svg
+            fill="none"
+            height="48"
+            viewBox="0 0 48 48"
+            width="48"
+            xmlns="http://www.w3.org/2000/svg"
+          >
+            <path
+              d="M32 16L48 27.0556V49.1667L32 60L16 49.1667V27.0556L32 16Z"
+              fill="currentColor"
+              transform="scale(0.75) translate(8, -8)"
+            ></path>
+          </svg>
+        </div>
+      </div>
 
-<ion-content class="ion-padding">
-  <form [formGroup]="form" (ngSubmit)="submit()" novalidate>
-    <ion-list lines="full">
-      <ion-item>
-        <ion-input
-          label="Nombre"
-          label-placement="floating"
-          formControlName="name"
-          required
-        ></ion-input>
-      </ion-item>
-      <ion-item>
-        <ion-input
-          type="email"
-          label="Correo"
-          label-placement="floating"
-          formControlName="email"
-          required
-        ></ion-input>
-      </ion-item>
-      <ion-item>
-        <ion-input
-          type="tel"
-          label="Teléfono (opcional)"
-          label-placement="floating"
-          formControlName="phone"
-          maxlength="9"
-          placeholder="987654321"
-        >
-        </ion-input>
-      </ion-item>
-      <ion-note
-        *ngIf="form.get('phone')?.invalid && form.get('phone')?.touched"
-        color="danger"
-        class="ion-padding-start"
+      <h2 class="page-title">Bienvenido</h2>
+      <p class="page-subtitle">Crea tu cuenta para empezar a pedir.</p>
+
+      <!-- Form -->
+      <form
+        [formGroup]="form"
+        (ngSubmit)="submit()"
+        novalidate
+        class="register-form"
       >
-        El teléfono debe tener exactamente 9 dígitos
-      </ion-note>
-      <ion-item>
-        <ion-input
-          type="password"
-          label="Contraseña"
-          label-placement="floating"
-          formControlName="password"
-          required
-        ></ion-input>
-      </ion-item>
-      <ion-item>
-        <ion-input
-          type="password"
-          label="Confirmar contraseña"
-          label-placement="floating"
-          formControlName="confirmPassword"
-          required
-        ></ion-input>
-      </ion-item>
-    </ion-list>
+        <!-- Name Field -->
+        <label class="form-field">
+          <p class="field-label">Nombre</p>
+          <input
+            type="text"
+            formControlName="name"
+            placeholder="Ingresa tu nombre completo"
+            class="field-input"
+          />
+          <span
+            *ngIf="form.get('name')?.invalid && form.get('name')?.touched"
+            class="field-error"
+          >
+            El nombre es requerido (mínimo 2 caracteres).
+          </span>
+        </label>
 
-    <ion-button
-      type="submit"
-      expand="block"
-      [disabled]="form.invalid || loading"
-    >
-      {{ loading ? 'Creando…' : 'Crear cuenta' }}
-    </ion-button>
+        <!--
+        Email Field - Comentado pero conservado para futuro uso
+        <label class="form-field">
+          <p class="field-label">Correo (opcional)</p>
+          <input
+            type="email"
+            formControlName="email"
+            autocomplete="email"
+            placeholder="correo@dominio.com"
+            class="field-input"
+          />
+        </label>
+        -->
 
-    <div class="aux-links">
-      <a (click)="goToLogin()">Ya tengo una cuenta</a>
+        <!-- Phone Field -->
+        <label class="form-field">
+          <p class="field-label">Teléfono</p>
+          <input
+            type="tel"
+            formControlName="phone"
+            inputmode="tel"
+            placeholder="987654321"
+            class="field-input"
+          />
+          <span
+            *ngIf="form.get('phone')?.invalid && form.get('phone')?.touched"
+            class="field-error"
+          >
+            Ingresa 9 dígitos. Agregaremos +51 automáticamente.
+          </span>
+        </label>
+
+        <!-- Password Field -->
+        <label class="form-field">
+          <p class="field-label">Contraseña</p>
+          <input
+            type="password"
+            formControlName="password"
+            placeholder="Crea una contraseña segura"
+            class="field-input"
+          />
+          <span
+            *ngIf="form.get('password')?.invalid && form.get('password')?.touched"
+            class="field-error"
+          >
+            Mínimo 6 caracteres.
+          </span>
+        </label>
+
+        <!-- Confirm Password Field -->
+        <label class="form-field">
+          <p class="field-label">Confirmar Contraseña</p>
+          <input
+            type="password"
+            formControlName="confirmPassword"
+            placeholder="Confirma tu contraseña"
+            class="field-input"
+          />
+          <span
+            *ngIf="form.get('confirmPassword')?.invalid && form.get('confirmPassword')?.touched"
+            class="field-error"
+          >
+            Confirma tu contraseña.
+          </span>
+        </label>
+
+        <!-- Bottom Actions -->
+        <div class="form-actions">
+          <button
+            type="submit"
+            [disabled]="loading || form.invalid"
+            class="btn-primary"
+          >
+            {{ loading ? 'Creando…' : 'Crear cuenta' }}
+          </button>
+
+          <p class="auth-link">
+            ¿Ya tienes cuenta?
+            <a (click)="goToLogin()" class="link-button"> Inicia sesión </a>
+          </p>
+
+          <p class="terms-text">
+            Al crear tu cuenta, aceptas nuestros
+            <a class="terms-link" href="#">Términos y Condiciones</a> y nuestra
+            <a class="terms-link" href="#">Política de Privacidad</a>.
+          </p>
+        </div>
+      </form>
     </div>
-  </form>
+  </div>
 </ion-content>

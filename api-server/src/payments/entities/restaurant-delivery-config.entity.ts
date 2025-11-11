@@ -9,6 +9,15 @@ import {
 } from 'typeorm';
 import { Restaurant } from '../../restaurants/entities/restaurant.entity';
 
+/**
+ * Enum para tipos de servicio de delivery
+ */
+export enum DeliveryType {
+  NONE = 'none', // Sin delivery (solo recoger en tienda)
+  RESTAURANT = 'restaurant', // Delivery gestionado por el restaurante
+  PLATFORM = 'platform', // Delivery gestionado por Go Fast
+}
+
 @Entity('restaurant_delivery_config')
 export class RestaurantDeliveryConfig {
   @PrimaryGeneratedColumn('uuid')
@@ -56,6 +65,14 @@ export class RestaurantDeliveryConfig {
 
   @Column({ name: 'is_delivery_enabled', default: true })
   isDeliveryEnabled: boolean;
+
+  @Column({
+    name: 'delivery_type',
+    type: 'enum',
+    enum: DeliveryType,
+    default: DeliveryType.PLATFORM,
+  })
+  deliveryType: DeliveryType;
 
   @CreateDateColumn({ name: 'created_at' })
   createdAt: Date;

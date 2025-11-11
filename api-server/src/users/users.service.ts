@@ -16,6 +16,17 @@ export class UsersService {
     private readonly roleRepository: Repository<Role>,
   ) {}
 
+  /**
+   * Normaliza teléfonos a una forma consistente (E.164 sin espacios/guiones)
+   * Asume que la validación de formato ya ocurrió en el DTO cuando aplica.
+   */
+  private normalizePhone(phone: string | undefined): string | undefined {
+    if (!phone) return undefined;
+    // Remover espacios y guiones, mantener '+' y dígitos
+    const cleaned = phone.replace(/[\s-]/g, '').trim();
+    return cleaned;
+  }
+
   async create(
     registerDto: RegisterAuthDto,
     passwordHashed: string,
@@ -34,6 +45,8 @@ export class UsersService {
 
     const newUser = this.userRepository.create({
       ...registerDto,
+      // Normalizar phone si viene en el DTO
+      phone: this.normalizePhone((registerDto as any).phone),
       password_hash: passwordHashed,
       role: role,
     });
@@ -69,6 +82,14 @@ export class UsersService {
 
   async findAllWithRole(): Promise<User[]> {
     return await this.userRepository.find({ relations: ['role'] });
+  }
+
+  async findAllDrivers(): Promise<User[]> {
+    return await this.userRepository.find({
+      where: { role: { name: RoleEnum.DRIVER } },
+      relations: ['role'],
+      order: { name: 'ASC' },
+    });
   }
 
   async update(id: string, dto: UpdateUserDto): Promise<User> {
@@ -141,8 +162,9 @@ export class UsersService {
    * Buscar usuario por número de teléfono
    */
   async findOneByPhone(phone: string): Promise<User | undefined> {
+    const normalized = this.normalizePhone(phone);
     return await this.userRepository.findOne({
-      where: { phone },
+      where: { phone: normalized },
       relations: ['role'],
     });
   }
@@ -169,7 +191,7 @@ export class UsersService {
 
     const newUser = this.userRepository.create({
       name: data.name,
-      phone: data.phone,
+      phone: this.normalizePhone(data.phone),
       phoneVerified: data.phoneVerified,
       authMethod: data.authMethod,
       role: role,
@@ -195,7 +217,7 @@ export class UsersService {
     phoneVerified: boolean,
   ): Promise<void> {
     await this.userRepository.update(userId, {
-      phone,
+      phone: this.normalizePhone(phone),
       phoneVerified,
     });
   }

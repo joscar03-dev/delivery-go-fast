@@ -12,6 +12,7 @@ import { FindAvailableDeliveriesDto } from './dto/find-available-deliveries.dto'
 import { UpdateOrderStatusDto } from './dto/update-order-status.dto';
 import { OrderStatus } from '../common/enums/order-status.enum';
 import { Role } from '../common/enums/role.enum';
+import { DeliveryType } from '../payments/entities/restaurant-delivery-config.entity';
 
 @Injectable()
 export class DeliveriesService {
@@ -53,6 +54,12 @@ export class DeliveriesService {
       .leftJoinAndSelect('order.restaurant', 'restaurant')
       .leftJoinAndSelect('order.items', 'items')
       .leftJoinAndSelect('items.menuItem', 'menuItem')
+      // 🔗 JOIN con restaurant_delivery_config para filtrar por tipo
+      .leftJoin(
+        'restaurant_delivery_config',
+        'config',
+        'config.restaurant_id = restaurant.id',
+      )
       .where('order.status IN (:...statuses)', {
         statuses: [
           OrderStatus.CONFIRMED,
@@ -60,7 +67,9 @@ export class DeliveriesService {
           OrderStatus.READY_FOR_PICKUP,
         ],
       })
-      .andWhere('order.driver IS NULL'); // Solo pedidos sin repartidor asignado
+      .andWhere('order.driver IS NULL') // Solo pedidos sin repartidor asignado
+      // 🎯 FILTRO CRÍTICO: Solo mostrar pedidos con delivery tipo 'platform'
+      .andWhere("config.delivery_type = 'platform'");
 
     // Si se proporcionan coordenadas, filtrar por proximidad
     if (latitude && longitude && radius) {
@@ -123,8 +132,16 @@ export class DeliveriesService {
       .leftJoinAndSelect('order.restaurant', 'restaurant')
       .leftJoinAndSelect('order.items', 'items')
       .leftJoinAndSelect('items.menuItem', 'menuItem')
+      // 🔗 JOIN con restaurant_delivery_config para filtrar por tipo
+      .leftJoin(
+        'restaurant_delivery_config',
+        'config',
+        'config.restaurant_id = restaurant.id',
+      )
       .where('order.status = :status', { status: OrderStatus.PENDING })
-      .andWhere('order.driver IS NULL'); // Solo pedidos sin repartidor
+      .andWhere('order.driver IS NULL') // Solo pedidos sin repartidor
+      // 🎯 FILTRO: Solo mostrar pedidos con delivery tipo 'platform'
+      .andWhere("config.delivery_type = 'platform'");
 
     // Si se proporcionan coordenadas, filtrar por proximidad
     if (latitude && longitude && radius) {

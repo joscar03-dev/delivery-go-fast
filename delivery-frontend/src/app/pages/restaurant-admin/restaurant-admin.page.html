@@ -128,6 +128,26 @@
               <ion-icon name="chevron-forward-outline" slot="end"></ion-icon>
             </ion-item>
 
+            <!-- Gestión de Repartidores -->
+            <ion-item
+              button
+              (click)="goToManageDrivers(restaurant.id)"
+              lines="full"
+            >
+              <ion-icon
+                name="people-outline"
+                slot="start"
+                color="warning"
+              ></ion-icon>
+              <ion-label>
+                <h3 class="font-semibold">Gestión de Repartidores</h3>
+                <p class="text-sm text-gray-500">
+                  Asignar repartidores al restaurante
+                </p>
+              </ion-label>
+              <ion-icon name="chevron-forward-outline" slot="end"></ion-icon>
+            </ion-item>
+
             <!-- Pedidos Recibidos -->
             <ion-item button (click)="goToOrders(restaurant.id)" lines="none">
               <ion-icon

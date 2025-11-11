@@ -18,6 +18,7 @@ import { UpdateRestaurantDto } from './dto/update-restaurant.dto';
 import { CreateMenuItemDto } from './dto/create-menu-item.dto';
 import { UpdateMenuItemDto } from './dto/update-menu-item.dto';
 import { FindRestaurantsDto } from './dto/find-restaurants.dto';
+import { UpdateDeliveryConfigDto } from './dto/update-delivery-config.dto';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { RolesGuard } from '../auth/guards/roles.guard';
 import { Roles } from '../auth/decorators/roles.decorator';
@@ -52,6 +53,31 @@ export class RestaurantsController {
   @Get()
   findNearby(@Query() query: FindRestaurantsDto) {
     return this.restaurantsService.findNearby(query);
+  }
+
+  // Endpoint para obtener drivers del restaurante (para delivery propio)
+  // DEBE IR ANTES de @Get(':id') para evitar que 'drivers' sea capturado como ID
+  @Get(':id/drivers')
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(Role.RESTAURANT_OWNER, Role.SUPER_ADMIN)
+  async getRestaurantDrivers(
+    @Param('id') restaurantId: string,
+    @Request() req,
+  ) {
+    const currentUser = req.user;
+
+    if (currentUser.role === Role.RESTAURANT_OWNER) {
+      // Verificar que el restaurante pertenezca al usuario actual
+      const restaurant = await this.restaurantsService.findOne(restaurantId);
+
+      if (restaurant.owner.id !== currentUser.sub) {
+        throw new ForbiddenException(
+          'No tienes permisos para ver los drivers de este restaurante',
+        );
+      }
+    }
+
+    return this.restaurantsService.getRestaurantDrivers(restaurantId);
   }
 
   @Get(':id')
@@ -225,7 +251,7 @@ export class RestaurantsController {
   @Roles(Role.RESTAURANT_OWNER, Role.SUPER_ADMIN)
   async updateDeliveryConfig(
     @Param('id') restaurantId: string,
-    @Body() updateDto: any,
+    @Body() updateDto: UpdateDeliveryConfigDto,
     @Request() req,
   ) {
     const currentUser = req.user;
@@ -244,6 +270,58 @@ export class RestaurantsController {
     return this.restaurantsService.updateDeliveryConfig(
       restaurantId,
       updateDto,
+    );
+  }
+
+  // Endpoint para asignar un driver a un restaurante
+  @Post(':id/drivers/:driverId')
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(Role.RESTAURANT_OWNER, Role.SUPER_ADMIN)
+  async assignDriverToRestaurant(
+    @Param('id') restaurantId: string,
+    @Param('driverId') driverId: string,
+    @Request() req,
+  ) {
+    const currentUser = req.user;
+
+    if (currentUser.role === Role.RESTAURANT_OWNER) {
+      const restaurant = await this.restaurantsService.findOne(restaurantId);
+      if (restaurant.owner.id !== currentUser.sub) {
+        throw new ForbiddenException(
+          'No tienes permisos para gestionar drivers de este restaurante',
+        );
+      }
+    }
+
+    return this.restaurantsService.assignDriverToRestaurant(
+      restaurantId,
+      driverId,
+    );
+  }
+
+  // Endpoint para remover un driver de un restaurante
+  @Delete(':id/drivers/:driverId')
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(Role.RESTAURANT_OWNER, Role.SUPER_ADMIN)
+  async removeDriverFromRestaurant(
+    @Param('id') restaurantId: string,
+    @Param('driverId') driverId: string,
+    @Request() req,
+  ) {
+    const currentUser = req.user;
+
+    if (currentUser.role === Role.RESTAURANT_OWNER) {
+      const restaurant = await this.restaurantsService.findOne(restaurantId);
+      if (restaurant.owner.id !== currentUser.sub) {
+        throw new ForbiddenException(
+          'No tienes permisos para gestionar drivers de este restaurante',
+        );
+      }
+    }
+
+    return this.restaurantsService.removeDriverFromRestaurant(
+      restaurantId,
+      driverId,
     );
   }
 }

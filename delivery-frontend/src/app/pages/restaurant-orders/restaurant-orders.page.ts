@@ -30,6 +30,7 @@ import {
 import { OrderService } from '../../services/order.service';
 import { SocketService } from '../../services/socket.service';
 import { AuthService } from '../../services/auth.service';
+import { RestaurantService, User } from '../../services/restaurant.service';
 import { Order, OrderStatus } from '../../models/order.model';
 import { addIcons } from 'ionicons';
 import {
@@ -39,12 +40,14 @@ import {
   closeCircleOutline,
   refreshOutline,
   personOutline,
+  personAddOutline,
   locationOutline,
   cashOutline,
   chatboxOutline,
   documentTextOutline,
   bicycleOutline,
   checkmarkDoneOutline,
+  warningOutline,
   wifi,
   wifiOutline,
 } from 'ionicons/icons';
@@ -57,12 +60,14 @@ addIcons({
   'close-circle-outline': closeCircleOutline,
   'refresh-outline': refreshOutline,
   'person-outline': personOutline,
+  'person-add-outline': personAddOutline,
   'location-outline': locationOutline,
   'cash-outline': cashOutline,
   'chatbox-outline': chatboxOutline,
   'document-text-outline': documentTextOutline,
   'bicycle-outline': bicycleOutline,
   'checkmark-done-outline': checkmarkDoneOutline,
+  'warning-outline': warningOutline,
   wifi: wifi,
   'wifi-outline': wifiOutline,
 });
@@ -101,6 +106,7 @@ addIcons({
 })
 export class RestaurantOrdersPage implements OnInit, OnDestroy {
   private orderService = inject(OrderService);
+  private restaurantService = inject(RestaurantService);
   private socketService = inject(SocketService);
   private auth = inject(AuthService);
   private toastCtrl = inject(ToastController);
@@ -111,6 +117,7 @@ export class RestaurantOrdersPage implements OnInit, OnDestroy {
   loading = false;
   isSocketConnected = false;
   backHref = '/tabs/restaurant-admin'; // Valor por defecto
+  currentRestaurantId: string | null = null;
   private subscriptions: Subscription[] = [];
 
   ngOnInit() {
@@ -417,6 +424,110 @@ export class RestaurantOrdersPage implements OnInit, OnDestroy {
     });
 
     await alert.present();
+  }
+
+  /**
+   * Asigna un repartidor al pedido (para delivery propio)
+   */
+  async assignDriver(order: Order) {
+    try {
+      // Obtener el ID del restaurante del pedido
+      const restaurantId = order.restaurant?.id;
+
+      if (!restaurantId) {
+        await this.showToast(
+          'No se pudo obtener el restaurante del pedido',
+          'warning'
+        );
+        return;
+      }
+
+      this.loading = true;
+
+      // Obtener lista de drivers del restaurante
+      const drivers = await this.restaurantService
+        .getRestaurantDrivers(restaurantId)
+        .toPromise();
+
+      this.loading = false;
+
+      if (!drivers || drivers.length === 0) {
+        const alert = await this.alertCtrl.create({
+          header: 'Sin Repartidores',
+          message:
+            'No hay repartidores disponibles. Por favor, contacta al administrador para registrar repartidores.',
+          buttons: ['OK'],
+        });
+        await alert.present();
+        return;
+      }
+
+      // Crear inputs para el alert (radio buttons con drivers)
+      const inputs = drivers.map((driver: User) => ({
+        type: 'radio' as const,
+        label: `${driver.name}${driver.phone ? ` (${driver.phone})` : ''}`,
+        value: driver.id,
+      }));
+
+      const alert = await this.alertCtrl.create({
+        header: 'Asignar Repartidor',
+        message: `Selecciona un repartidor para el pedido #${order.id.substring(
+          0,
+          8
+        )}`,
+        inputs: inputs,
+        buttons: [
+          {
+            text: 'Cancelar',
+            role: 'cancel',
+          },
+          {
+            text: 'Asignar',
+            handler: async (driverId) => {
+              if (!driverId) {
+                await this.showToast(
+                  'Debes seleccionar un repartidor',
+                  'warning'
+                );
+                return false;
+              }
+
+              try {
+                this.loading = true;
+                await this.orderService
+                  .assignDriverToOrder(order.id, driverId)
+                  .toPromise();
+
+                await this.showToast(
+                  'Repartidor asignado correctamente',
+                  'success'
+                );
+                await this.loadOrders();
+                return true;
+              } catch (error: any) {
+                console.error('Error assigning driver:', error);
+                await this.showToast(
+                  error?.error?.message || 'Error al asignar repartidor',
+                  'danger'
+                );
+                return false;
+              } finally {
+                this.loading = false;
+              }
+            },
+          },
+        ],
+      });
+
+      await alert.present();
+    } catch (error: any) {
+      this.loading = false;
+      console.error('Error loading drivers:', error);
+      await this.showToast(
+        error?.error?.message || 'Error al cargar repartidores',
+        'danger'
+      );
+    }
   }
 
   /**

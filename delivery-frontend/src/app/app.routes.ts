@@ -218,4 +218,37 @@ export const routes: Routes = [
         (m) => m.PhoneLoginPage
       ),
   },
+  {
+    path: 'manage-drivers',
+    loadComponent: () =>
+      import('./pages/manage-drivers/manage-drivers.page').then(
+        (m) => m.ManageDriversPage
+      ),
+  },
+  {
+    path: 'restaurant-application',
+    canMatch: [authGuard],
+    loadComponent: () =>
+      import('./pages/restaurant-application/restaurant-application.page').then(
+        (m) => m.RestaurantApplicationPage
+      ),
+  },
+  {
+    path: 'admin/restaurant-applications',
+    canMatch: [authGuard, rolesGuard],
+    data: { roles: ['super_admin'] },
+    loadComponent: () =>
+      import(
+        './pages/admin/admin-restaurant-applications/admin-restaurant-applications.page'
+      ).then((m) => m.AdminRestaurantApplicationsPage),
+  },
+  {
+    path: 'admin/restaurant-applications/:id',
+    canMatch: [authGuard, rolesGuard],
+    data: { roles: ['super_admin'] },
+    loadComponent: () =>
+      import(
+        './pages/admin/admin-restaurant-application-detail/admin-restaurant-application-detail.page'
+      ).then((m) => m.AdminRestaurantApplicationDetailPage),
+  },
 ];

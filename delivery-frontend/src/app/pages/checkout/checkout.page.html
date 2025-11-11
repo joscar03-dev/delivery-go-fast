@@ -46,45 +46,107 @@
               </p>
             </div>
             <p class="font-semibold text-gray-700 ml-2">
-              S/ {{ (item.price * item.quantity).toFixed(2) }}
+              S/ {{ getFormattedItemTotal(item) }}
             </p>
           </div>
         </div>
         <div class="mt-4 pt-3 border-t border-gray-200">
           <div class="flex justify-between text-sm mb-2">
             <span class="text-gray-600">Subtotal</span>
-            <span class="font-medium">S/ {{ (subtotal || 0).toFixed(2) }}</span>
+            <span class="font-medium">S/ {{ getFormattedSubtotal() }}</span>
           </div>
+
+          <!-- 🆕 Mensaje cuando NO hay delivery (tipo 'none') -->
           <div
             class="flex justify-between text-sm mb-2"
-            *ngIf="deliveryFee === 0 && deliveryConfig?.freeDeliveryThreshold && subtotal >= (deliveryConfig?.freeDeliveryThreshold || 0)"
+            *ngIf="deliveryType === 'none'"
+          >
+            <span class="text-blue-600">🏪 Recoger en tienda</span>
+            <span class="font-medium text-blue-600">Sin costo</span>
+          </div>
+
+          <!-- Delivery gratis (por umbral alcanzado) -->
+          <div
+            class="flex justify-between text-sm mb-2"
+            *ngIf="shouldShowDeliveryFee() && deliveryFee === 0 && deliveryConfig?.freeDeliveryThreshold && deliveryConfig?.deliveryFee && (deliveryConfig?.deliveryFee || 0) > 0 && subtotal >= (deliveryConfig?.freeDeliveryThreshold || 0)"
+          >
+            <span class="text-green-600"
+              >🎉 Delivery gratis (mínimo alcanzado)</span
+            >
+            <span class="font-medium text-green-600 line-through"
+              >S/ {{ getFormattedDeliveryConfigFee() }}</span
+            >
+          </div>
+
+          <!-- Delivery gratis (siempre gratis) -->
+          <div
+            class="flex justify-between text-sm mb-2"
+            *ngIf="shouldShowDeliveryFee() && deliveryFee === 0 && (!deliveryConfig?.freeDeliveryThreshold || !deliveryConfig?.deliveryFee || (deliveryConfig?.deliveryFee || 0) === 0)"
           >
             <span class="text-green-600">🎉 Delivery gratis</span>
-            <span class="font-medium text-green-600 line-through"
-              >S/ {{ (deliveryConfig?.deliveryFee || 0).toFixed(2) }}</span
-            >
+            <span class="font-medium text-green-600">S/ 0.00</span>
           </div>
+
+          <!-- Delivery con costo -->
           <div
             class="flex justify-between text-sm mb-2"
-            *ngIf="deliveryFee > 0"
+            *ngIf="shouldShowDeliveryFee() && deliveryFee > 0"
           >
             <span class="text-gray-600">Delivery</span>
-            <span class="font-medium"
-              >S/ {{ (deliveryFee || 0).toFixed(2) }}</span
-            >
+            <span class="font-medium">S/ {{ getFormattedDeliveryFee() }}</span>
           </div>
+
           <div
             class="flex justify-between text-lg font-bold text-primary mt-3 pt-3 border-t border-gray-200"
           >
             <span>Total</span>
-            <span>S/ {{ (total || 0).toFixed(2) }}</span>
+            <span>S/ {{ getFormattedTotal() }}</span>
           </div>
         </div>
       </ion-card-content>
     </ion-card>
 
-    <!-- Dirección de entrega -->
-    <ion-card class="mb-4 shadow-md rounded-xl overflow-hidden">
+    <!-- 🆕 Información del tipo de delivery -->
+    <ion-card
+      class="mb-4 shadow-md rounded-xl overflow-hidden"
+      [ngClass]="{
+        'bg-gray-50': deliveryType === 'none',
+        'bg-blue-50': deliveryType === 'restaurant',
+        'bg-green-50': deliveryType === 'platform'
+      }"
+    >
+      <ion-card-content class="p-4">
+        <div class="flex items-start gap-3">
+          <ion-icon
+            [name]="getDeliveryTypeIcon()"
+            class="text-3xl flex-shrink-0"
+            [ngClass]="{
+              'text-gray-500': deliveryType === 'none',
+              'text-blue-600': deliveryType === 'restaurant',
+              'text-green-600': deliveryType === 'platform'
+            }"
+          ></ion-icon>
+          <div class="flex-1">
+            <h3 class="font-semibold text-gray-800 mb-1">
+              <span *ngIf="deliveryType === 'none'"
+                >Solo Recoger en Tienda</span
+              >
+              <span *ngIf="deliveryType === 'restaurant'"
+                >Delivery Propio del Restaurante</span
+              >
+              <span *ngIf="deliveryType === 'platform'">Delivery Go Fast</span>
+            </h3>
+            <p class="text-sm text-gray-600">{{ getDeliveryTypeMessage() }}</p>
+          </div>
+        </div>
+      </ion-card-content>
+    </ion-card>
+
+    <!-- Dirección de entrega (solo si NO es 'none') -->
+    <ion-card
+      *ngIf="shouldShowAddressSection()"
+      class="mb-4 shadow-md rounded-xl overflow-hidden"
+    >
       <ion-card-header
         class="bg-gradient-to-r from-primary to-secondary text-white"
       >
@@ -203,7 +265,7 @@
           <div *ngIf="changeAmount > 0" class="bg-white p-3 rounded-lg">
             <p class="text-sm text-gray-600">Tu vuelto será:</p>
             <p class="text-2xl font-bold text-green-600">
-              S/ {{ changeAmount.toFixed(2) }}
+              S/ {{ getFormattedChangeAmount() }}
             </p>
           </div>
 
@@ -212,8 +274,8 @@
             class="mt-3 p-3 bg-red-50 rounded-lg border border-red-200"
           >
             <p class="text-sm text-red-600">
-              ⚠️ El monto es insuficiente. Faltan S/ {{ (total -
-              cashAmount).toFixed(2) }}
+              ⚠️ El monto es insuficiente. Faltan S/ {{
+              getFormattedRemainingAmount() }}
             </p>
           </div>
         </div>
@@ -234,7 +296,7 @@
             </p>
             <p class="text-lg font-bold text-purple-600">933 044 973</p>
             <p class="text-sm text-gray-500 mt-1">
-              Monto: S/ {{ (total || 0).toFixed(2) }}
+              Monto: S/ {{ getFormattedTotal() }}
             </p>
           </div>
 
@@ -307,7 +369,7 @@
       class="font-semibold"
     >
       <ion-icon slot="start" name="checkmark-circle-outline"></ion-icon>
-      Confirmar pedido - S/ {{ (total || 0).toFixed(2) }}
+      Confirmar pedido - S/ {{ getFormattedTotal() }}
       <ion-spinner *ngIf="isLoading" slot="end" name="crescent"></ion-spinner>
     </ion-button>
   </div>

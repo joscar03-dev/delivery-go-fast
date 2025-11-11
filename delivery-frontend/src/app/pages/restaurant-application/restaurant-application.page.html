@@ -1,0 +1,270 @@
+<ion-header>
+  <ion-toolbar>
+    <ion-buttons slot="start">
+      <ion-back-button defaultHref="/tabs/profile"></ion-back-button>
+    </ion-buttons>
+    <ion-title>Registrar Mi Negocio</ion-title>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content [fullscreen]="true">
+  <!-- Loading State -->
+  <div *ngIf="isLoading" class="loading-container">
+    <ion-spinner name="crescent"></ion-spinner>
+    <p>Cargando...</p>
+  </div>
+
+  <!-- Existing Application State -->
+  <div
+    *ngIf="!isLoading && hasExistingApplication && existingApplication"
+    class="existing-application"
+  >
+    <ion-card>
+      <ion-card-header>
+        <ion-card-title>
+          <ion-icon name="checkmark-circle-outline"></ion-icon>
+          Ya tienes una solicitud
+        </ion-card-title>
+      </ion-card-header>
+      <ion-card-content>
+        <div class="application-status">
+          <ion-item lines="none">
+            <ion-label>
+              <h3>Negocio</h3>
+              <p>{{ existingApplication.businessName }}</p>
+            </ion-label>
+          </ion-item>
+
+          <ion-item lines="none">
+            <ion-label>
+              <h3>Estado</h3>
+              <ion-text [color]="getStatusColor(existingApplication.status)">
+                <p>
+                  <strong
+                    >{{ getStatusText(existingApplication.status) }}</strong
+                  >
+                </p>
+              </ion-text>
+            </ion-label>
+          </ion-item>
+
+          <ion-item lines="none">
+            <ion-label>
+              <h3>Fecha de envío</h3>
+              <p>
+                {{ existingApplication.createdAt | date: 'dd/MM/yyyy HH:mm' }}
+              </p>
+            </ion-label>
+          </ion-item>
+
+          <ion-item *ngIf="existingApplication.adminNotes" lines="none">
+            <ion-label class="ion-text-wrap">
+              <h3>Notas del administrador</h3>
+              <p>{{ existingApplication.adminNotes }}</p>
+            </ion-label>
+          </ion-item>
+        </div>
+
+        <ion-text color="medium">
+          <p class="info-text">
+            <ng-container [ngSwitch]="existingApplication.status">
+              <ng-container *ngSwitchCase="ApplicationStatus.PENDING">
+                Tu solicitud está siendo revisada. Te contactaremos pronto.
+              </ng-container>
+              <ng-container *ngSwitchCase="ApplicationStatus.UNDER_REVIEW">
+                Tu solicitud está en proceso de revisión. Te contactaremos
+                pronto.
+              </ng-container>
+              <ng-container *ngSwitchCase="ApplicationStatus.APPROVED">
+                ¡Felicidades! Tu solicitud ha sido aprobada. Ya puedes gestionar
+                tu restaurante.
+              </ng-container>
+              <ng-container *ngSwitchCase="ApplicationStatus.REJECTED">
+                Lo sentimos, tu solicitud fue rechazada. Puedes enviar una nueva
+                solicitud.
+              </ng-container>
+            </ng-container>
+          </p>
+        </ion-text>
+
+        <ion-button
+          *ngIf="existingApplication.status === ApplicationStatus.APPROVED"
+          expand="block"
+          routerLink="/tabs/restaurant-admin"
+        >
+          Ir a Mi Restaurante
+        </ion-button>
+      </ion-card-content>
+    </ion-card>
+  </div>
+
+  <!-- Form State -->
+  <div *ngIf="!isLoading && !hasExistingApplication" class="form-container">
+    <ion-card>
+      <ion-card-header>
+        <ion-card-title>
+          <ion-icon name="storefront-outline"></ion-icon>
+          Información del Negocio
+        </ion-card-title>
+      </ion-card-header>
+      <ion-card-content>
+        <form #applicationForm="ngForm" (ngSubmit)="onSubmit()">
+          <!-- Nombre del Negocio -->
+          <ion-item>
+            <ion-label position="stacked">Nombre del Negocio *</ion-label>
+            <ion-input
+              [(ngModel)]="formData.businessName"
+              name="businessName"
+              type="text"
+              placeholder="Ej: Pizzería Don Carlos"
+              required
+            ></ion-input>
+          </ion-item>
+
+          <!-- Teléfono -->
+          <ion-item>
+            <ion-label position="stacked">Teléfono del Negocio *</ion-label>
+            <ion-input
+              [(ngModel)]="formData.businessPhone"
+              name="businessPhone"
+              type="tel"
+              placeholder="987654321"
+              required
+            ></ion-input>
+          </ion-item>
+
+          <!-- Email (opcional) -->
+          <ion-item>
+            <ion-label position="stacked"
+              >Email del Negocio (opcional)</ion-label
+            >
+            <ion-input
+              [(ngModel)]="formData.businessEmail"
+              name="businessEmail"
+              type="email"
+              placeholder="contacto@negocio.com"
+            ></ion-input>
+          </ion-item>
+
+          <!-- Categoría -->
+          <ion-item>
+            <ion-label position="stacked">Categoría *</ion-label>
+            <ion-select
+              [(ngModel)]="formData.categoryId"
+              name="categoryId"
+              placeholder="Selecciona una categoría"
+              required
+            >
+              <ion-select-option
+                *ngFor="let category of categories"
+                [value]="category.id"
+              >
+                {{ category.name }}
+              </ion-select-option>
+            </ion-select>
+          </ion-item>
+
+          <!-- Ciudad -->
+          <ion-item>
+            <ion-label position="stacked">Ciudad *</ion-label>
+            <ion-select
+              [(ngModel)]="formData.city"
+              name="city"
+              placeholder="Selecciona una ciudad"
+              required
+            >
+              <ion-select-option *ngFor="let city of cities" [value]="city">
+                {{ city }}
+              </ion-select-option>
+            </ion-select>
+          </ion-item>
+
+          <!-- Dirección -->
+          <ion-item>
+            <ion-label position="stacked">Dirección *</ion-label>
+            <ion-textarea
+              [(ngModel)]="formData.address"
+              name="address"
+              rows="2"
+              placeholder="Calle, número, referencia..."
+              required
+            ></ion-textarea>
+          </ion-item>
+        </form>
+      </ion-card-content>
+    </ion-card>
+
+    <ion-card>
+      <ion-card-header>
+        <ion-card-title>
+          <ion-icon name="person-outline"></ion-icon>
+          Datos del Representante
+        </ion-card-title>
+      </ion-card-header>
+      <ion-card-content>
+        <!-- Nombre del Representante -->
+        <ion-item>
+          <ion-label position="stacked">Nombre Completo *</ion-label>
+          <ion-input
+            [(ngModel)]="formData.ownerName"
+            name="ownerName"
+            type="text"
+            placeholder="Nombre completo del dueño/representante"
+            required
+          ></ion-input>
+        </ion-item>
+
+        <!-- DNI -->
+        <ion-item>
+          <ion-label position="stacked">DNI *</ion-label>
+          <ion-input
+            [(ngModel)]="formData.ownerDni"
+            name="ownerDni"
+            type="text"
+            placeholder="12345678"
+            maxlength="20"
+            required
+          ></ion-input>
+        </ion-item>
+      </ion-card-content>
+    </ion-card>
+
+    <ion-card>
+      <ion-card-header>
+        <ion-card-title>
+          <ion-icon name="chatbox-outline"></ion-icon>
+          Comentarios Adicionales (Opcional)
+        </ion-card-title>
+      </ion-card-header>
+      <ion-card-content>
+        <ion-item>
+          <ion-label position="stacked"
+            >Cuéntanos más sobre tu negocio</ion-label
+          >
+          <ion-textarea
+            [(ngModel)]="formData.additionalComments"
+            name="additionalComments"
+            rows="4"
+            placeholder="Horarios, especialidad, años de experiencia, etc..."
+          ></ion-textarea>
+        </ion-item>
+      </ion-card-content>
+    </ion-card>
+
+    <!-- Submit Button -->
+    <div class="button-container">
+      <ion-button expand="block" (click)="onSubmit()" [disabled]="isSubmitting">
+        <ion-icon name="checkmark-circle-outline" slot="start"></ion-icon>
+        <span *ngIf="!isSubmitting">Enviar Solicitud</span>
+        <ion-spinner *ngIf="isSubmitting" name="crescent"></ion-spinner>
+      </ion-button>
+
+      <ion-text color="medium">
+        <p class="disclaimer">
+          * Campos obligatorios. Al enviar esta solicitud, un administrador
+          revisará tu información y se pondrá en contacto contigo.
+        </p>
+      </ion-text>
+    </div>
+  </div>
+</ion-content>
