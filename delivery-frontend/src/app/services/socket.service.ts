@@ -2,6 +2,7 @@ import { Injectable, inject } from '@angular/core';
 import { BehaviorSubject, Observable } from 'rxjs';
 import { io, Socket } from 'socket.io-client';
 import { environment } from '../../environments/environment';
+import { AuthService } from './auth.service';
 
 export interface SocketEvent {
   event: string;
@@ -22,6 +23,12 @@ export interface OrderStatusUpdate {
   previousStatus?: string;
 }
 
+export interface AuthError {
+  code: string;
+  message: string;
+  timestamp: string;
+}
+
 @Injectable({
   providedIn: 'root',
 })
@@ -33,6 +40,8 @@ export class SocketService {
   );
   private orderStatusUpdatedSubject$ =
     new BehaviorSubject<OrderStatusUpdate | null>(null);
+
+  private authService = inject(AuthService);
 
   /**
    * Observable que emite true cuando está conectado y false cuando está desconectado
@@ -93,6 +102,44 @@ export class SocketService {
 
     this.socket.on('connect_error', (error: any) => {
       console.error('❌ Error de conexión Socket.IO:', error);
+      this.connected$.next(false);
+    });
+
+    // Manejar errores de autenticación (token expirado, inválido, etc.)
+    this.socket.on('auth_error', async (error: AuthError) => {
+      console.error('🔐 Error de autenticación:', error);
+
+      if (error.code === 'TOKEN_EXPIRED') {
+        console.log('⏰ Token expirado - Intentando refrescar...');
+
+        try {
+          // Intentar refrescar el token automáticamente usando el método refresh() que retorna Observable
+          this.authService.refresh().subscribe({
+            next: (newToken) => {
+              console.log('✅ Token refrescado - Reconectando...');
+
+              // Desconectar y reconectar con nuevo token
+              this.disconnect();
+              setTimeout(() => {
+                this.connect(newToken);
+              }, 500);
+            },
+            error: (err) => {
+              console.error('❌ Error al refrescar token:', err);
+              console.warn(
+                '⚠️ No se pudo refrescar el token - Usuario debe reloguearse'
+              );
+              // El AuthService ya maneja el logout automático
+            },
+          });
+        } catch (err) {
+          console.error('❌ Error al refrescar token:', err);
+        }
+      } else if (error.code === 'INVALID_TOKEN') {
+        console.error('❌ Token inválido - Usuario debe reloguearse');
+        await this.authService.logout();
+      }
+
       this.connected$.next(false);
     });
 

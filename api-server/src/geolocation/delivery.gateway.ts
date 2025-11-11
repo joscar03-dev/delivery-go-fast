@@ -49,8 +49,12 @@ export class DeliveryGateway
 
       if (!token) {
         this.logger.warn(
-          `Client ${client.id} attempted to connect without token`,
+          `❌ Client ${client.id} attempted to connect without token`,
         );
+        client.emit('auth_error', {
+          code: 'NO_TOKEN',
+          message: 'No authentication token provided',
+        });
         client.disconnect();
         return;
       }
@@ -67,14 +71,39 @@ export class DeliveryGateway
       await this.joinRoleBasedRooms(client);
 
       this.logger.log(
-        `Client connected: ${client.id} (User: ${client.userEmail}, Role: ${client.userRole})`,
+        `✅ Client connected: ${client.id} (User: ${client.userEmail}, Role: ${client.userRole})`,
       );
     } catch (error) {
-      this.logger.error(
-        `Authentication failed for client ${client.id}:`,
-        error.message,
-      );
-      client.emit('error', { message: 'Authentication failed' });
+      // Manejar diferentes tipos de errores JWT
+      let errorCode = 'AUTH_FAILED';
+      let errorMessage = 'Authentication failed';
+
+      if (error.name === 'TokenExpiredError') {
+        errorCode = 'TOKEN_EXPIRED';
+        errorMessage = 'Your session has expired. Please login again.';
+        this.logger.warn(
+          `⚠️ Token expired for client ${client.id} - Exp: ${error.expiredAt}`,
+        );
+      } else if (error.name === 'JsonWebTokenError') {
+        errorCode = 'INVALID_TOKEN';
+        errorMessage = 'Invalid authentication token';
+        this.logger.error(
+          `❌ Invalid token for client ${client.id}: ${error.message}`,
+        );
+      } else {
+        this.logger.error(
+          `❌ Authentication failed for client ${client.id}:`,
+          error.message,
+        );
+      }
+
+      // Emitir error específico al cliente
+      client.emit('auth_error', {
+        code: errorCode,
+        message: errorMessage,
+        timestamp: new Date().toISOString(),
+      });
+
       client.disconnect();
     }
   }
