@@ -1,4 +1,4 @@
-import dataSource from './src/database/data-source';
+import dataSource from '../src/database/data-source';
 
 async function migrateDeliveryType() {
   try {
