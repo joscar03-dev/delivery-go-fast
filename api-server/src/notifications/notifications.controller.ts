@@ -28,7 +28,19 @@ export class NotificationsController {
     @Req() req: any,
     @Body() registerDto: RegisterDeviceTokenDto,
   ) {
+    // Validar que el usuario esté autenticado
+    if (!req.user || !req.user.userId) {
+      return {
+        statusCode: 401,
+        message: 'Usuario no autenticado. Por favor, inicia sesión nuevamente.',
+        error: 'Unauthorized',
+      };
+    }
+
     const userId = req.user.userId;
+
+    console.log(`📱 Registrando token para usuario ${userId}`);
+
     const deviceToken = await this.notificationsService.registerDeviceToken(
       userId,
       registerDto,

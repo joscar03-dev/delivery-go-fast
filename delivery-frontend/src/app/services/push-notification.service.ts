@@ -260,8 +260,23 @@ export class PushNotificationService {
         console.warn(
           '⚠️ No hay token de acceso, no se puede registrar el dispositivo'
         );
+        console.warn(
+          '💡 El token se registrará automáticamente cuando el usuario haga login'
+        );
         return;
       }
+
+      // Verificar que el token sea válido (no esté vacío o sea "null")
+      if (
+        accessToken === 'null' ||
+        accessToken === 'undefined' ||
+        accessToken.trim() === ''
+      ) {
+        console.warn('⚠️ Token de acceso inválido, esperando login...');
+        return;
+      }
+
+      console.log('📤 Enviando token FCM al backend...');
 
       const headers = new HttpHeaders({
         Authorization: `Bearer ${accessToken}`,
@@ -293,8 +308,23 @@ export class PushNotificationService {
       );
 
       console.log('✅ Token enviado al backend:', response);
-    } catch (error) {
-      console.error('Error enviando token al backend:', error);
+    } catch (error: any) {
+      console.error('❌ Error enviando token al backend:', error);
+
+      // Si el error es 401 (no autorizado), el token expiró o es inválido
+      if (error?.status === 401) {
+        console.warn(
+          '⚠️ Token de acceso expirado o inválido. El usuario debe hacer login nuevamente.'
+        );
+      }
+
+      // Si el error es 500, hay un problema en el backend
+      if (error?.status === 500) {
+        console.error(
+          '❌ Error en el servidor al registrar token:',
+          error?.error
+        );
+      }
     }
   }
 

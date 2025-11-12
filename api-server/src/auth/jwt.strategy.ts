@@ -36,6 +36,7 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
     return {
       sub: payload.sub,
       id: user.id,
+      userId: user.id, // ⬅️ AGREGAR userId para compatibilidad
       email: user.email,
       phone: user.phone,
       role: payload.role,
