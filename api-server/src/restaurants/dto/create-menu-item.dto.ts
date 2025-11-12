@@ -3,7 +3,8 @@ import {
   IsNotEmpty,
   IsOptional,
   IsUUID,
-  IsDecimal,
+  IsNumber,
+  Min,
 } from 'class-validator';
 
 export class CreateMenuItemDto {
@@ -15,7 +16,8 @@ export class CreateMenuItemDto {
   @IsOptional()
   description?: string;
 
-  @IsDecimal()
+  @IsNumber()
+  @Min(0)
   price: number;
 
   @IsString()
@@ -23,10 +25,9 @@ export class CreateMenuItemDto {
   imageUrl?: string;
 
   @IsUUID()
-  @IsNotEmpty()
-  restaurantId: string;
-
-  @IsUUID()
   @IsOptional()
   menuCategoryId?: string;
+
+  // Este campo no se envía en el body, se agrega en el controller desde los params
+  restaurantId?: string;
 }

@@ -12,6 +12,27 @@ import {
   ApplicationStatus,
 } from '../../../models/restaurant-application.model';
 import { firstValueFrom } from 'rxjs';
+import { addIcons } from 'ionicons';
+import {
+  documentTextOutline,
+  personOutline,
+  locationOutline,
+  restaurantOutline,
+  callOutline,
+  mailOutline,
+  timeOutline,
+} from 'ionicons/icons';
+
+// Register icons
+addIcons({
+  'document-text-outline': documentTextOutline,
+  'person-outline': personOutline,
+  'location-outline': locationOutline,
+  'restaurant-outline': restaurantOutline,
+  'call-outline': callOutline,
+  'mail-outline': mailOutline,
+  'time-outline': timeOutline,
+});
 
 @Component({
   selector: 'app-admin-restaurant-applications',

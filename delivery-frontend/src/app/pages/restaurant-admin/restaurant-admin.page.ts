@@ -34,6 +34,7 @@ import {
   addCircleOutline,
   chevronForwardOutline,
   peopleOutline,
+  chevronDownCircleOutline,
 } from 'ionicons/icons';
 import { RestaurantService } from '../../services/restaurant.service';
 
@@ -83,6 +84,7 @@ export class RestaurantAdminPage implements OnInit, ViewWillEnter {
       addCircleOutline,
       chevronForwardOutline,
       peopleOutline,
+      chevronDownCircleOutline,
     });
   }
 

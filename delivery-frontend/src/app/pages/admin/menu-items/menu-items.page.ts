@@ -22,6 +22,8 @@ import {
   pricetagOutline,
   optionsOutline,
   ellipsisVertical,
+  addCircleOutline,
+  removeCircleOutline,
 } from 'ionicons/icons';
 
 // Register icons
@@ -31,6 +33,8 @@ addIcons({
   'pricetag-outline': pricetagOutline,
   'options-outline': optionsOutline,
   'ellipsis-vertical': ellipsisVertical,
+  'add-circle-outline': addCircleOutline,
+  'remove-circle-outline': removeCircleOutline,
 });
 
 @Component({
@@ -276,7 +280,7 @@ export class AdminMenuItemsPage implements OnInit {
   templateUrl: './item-options-modal.component.html',
 })
 export class ItemOptionsModalComponent implements OnInit {
-  private modal = inject(ModalController);
+  private modalCtrl = inject(ModalController);
   private restaurants = inject(RestaurantService);
   private toast = inject(ToastController);
   private alert = inject(AlertController);
@@ -331,7 +335,7 @@ export class ItemOptionsModalComponent implements OnInit {
   }
 
   dismiss() {
-    this.modal.dismiss(null, 'cancel');
+    this.modalCtrl.dismiss(null, 'cancel');
   }
 
   isAttached(g: any): boolean {
@@ -880,7 +884,7 @@ export class ItemOptionsModalComponent implements OnInit {
 })
 export class CreateMenuItemModalComponent {
   private fb = inject(FormBuilder);
-  private modal = inject(ModalController);
+  private modalCtrl = inject(ModalController);
   private toast = inject(ToastController);
 
   categories: Array<{ id: string; name: string }> = [];
@@ -901,7 +905,7 @@ export class CreateMenuItemModalComponent {
   });
 
   dismiss() {
-    this.modal.dismiss(null, 'cancel');
+    this.modalCtrl.dismiss(null, 'cancel');
   }
 
   onImageSelected(event: Event) {
@@ -967,7 +971,7 @@ export class CreateMenuItemModalComponent {
       };
       delete payload.menuCategoryId;
     }
-    this.modal.dismiss(payload, 'ok');
+    this.modalCtrl.dismiss(payload, 'ok');
   }
 }
 

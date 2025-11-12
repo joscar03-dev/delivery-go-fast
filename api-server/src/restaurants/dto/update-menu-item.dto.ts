@@ -1,4 +1,4 @@
-import { IsString, IsOptional, IsUUID, IsDecimal } from 'class-validator';
+import { IsString, IsOptional, IsUUID, IsNumber, Min } from 'class-validator';
 
 export class UpdateMenuItemDto {
   @IsString()
@@ -9,7 +9,8 @@ export class UpdateMenuItemDto {
   @IsOptional()
   description?: string;
 
-  @IsDecimal()
+  @IsNumber()
+  @Min(0)
   @IsOptional()
   price?: number;
 
