@@ -7,11 +7,12 @@ import {
   Channel,
 } from '@capacitor/push-notifications';
 import { Router } from '@angular/router';
-import { Platform } from '@ionic/angular/standalone';
+import { Platform, ToastController } from '@ionic/angular/standalone';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { environment } from '../../environments/environment';
 import { firstValueFrom } from 'rxjs';
 import { Capacitor } from '@capacitor/core';
+import { Haptics, ImpactStyle } from '@capacitor/haptics';
 
 /**
  * Servicio para manejar notificaciones push usando Capacitor
@@ -27,7 +28,8 @@ export class PushNotificationService {
   constructor(
     private router: Router,
     private platform: Platform,
-    private http: HttpClient
+    private http: HttpClient,
+    private toastController: ToastController
   ) {}
 
   /**
@@ -117,7 +119,7 @@ export class PushNotificationService {
         name: 'Nuevos Pedidos',
         description: 'Notificaciones de alta prioridad para nuevos pedidos',
         importance: 5, // Nivel 5 = URGENTE (sonido + vibración + popup)
-        sound: 'default',
+        // sound: NO especificamos, usa el sonido del sistema por defecto
         vibration: true,
         visibility: 1, // VISIBILITY_PUBLIC (visible en pantalla de bloqueo)
         lights: true,
@@ -133,7 +135,7 @@ export class PushNotificationService {
         name: 'Estado de Pedidos',
         description: 'Notificaciones sobre cambios en el estado de tus pedidos',
         importance: 4, // Nivel 4 = ALTA (sonido + vibración)
-        sound: 'default',
+        // sound: NO especificamos, usa el sonido del sistema por defecto
         vibration: true,
         visibility: 1,
         lights: true,
@@ -149,7 +151,7 @@ export class PushNotificationService {
         name: 'Asignación de Entregas',
         description: 'Notificaciones de alta prioridad para repartidores',
         importance: 5,
-        sound: 'default',
+        // sound: NO especificamos, usa el sonido del sistema por defecto
         vibration: true,
         visibility: 1,
         lights: true,
@@ -188,12 +190,52 @@ export class PushNotificationService {
       // Cuando llega una notificación con la app en primer plano
       await PushNotifications.addListener(
         'pushNotificationReceived',
-        (notification: PushNotificationSchema) => {
+        async (notification: PushNotificationSchema) => {
           console.log('📬 Notificación recibida (app abierta):', notification);
 
-          // Aquí podrías mostrar un toast o actualizar la UI
-          // El Socket.IO ya manejará la actualización en tiempo real
-          console.log('💡 La actualización en tiempo real la maneja Socket.IO');
+          // 🔔 SOLUCIÓN: Mostrar Toast y vibrar cuando la app está abierta
+          // Android NO muestra automáticamente notificaciones cuando la app está en foreground
+          try {
+            // Vibración para llamar la atención
+            await Haptics.impact({ style: ImpactStyle.Heavy });
+
+            // Mostrar Toast con el contenido de la notificación
+            const toast = await this.toastController.create({
+              header: notification.title || 'Nueva notificación',
+              message: notification.body || '',
+              duration: 5000, // 5 segundos
+              position: 'top',
+              color: 'primary',
+              cssClass: 'notification-toast',
+              buttons: [
+                {
+                  text: 'Ver',
+                  role: 'info',
+                  handler: () => {
+                    // Navegar si hay datos
+                    if (notification.data?.orderId) {
+                      this.router.navigate([
+                        '/order-detail',
+                        notification.data.orderId,
+                      ]);
+                    }
+                  },
+                },
+                {
+                  text: 'Cerrar',
+                  role: 'cancel',
+                },
+              ],
+            });
+
+            await toast.present();
+            console.log('✅ Toast mostrado para notificación en foreground');
+          } catch (error) {
+            console.error('❌ Error mostrando toast:', error);
+          }
+
+          // Socket.IO maneja la actualización de datos en tiempo real
+          console.log('💡 La actualización de datos la maneja Socket.IO');
         }
       );
 
