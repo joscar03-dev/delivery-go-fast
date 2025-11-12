@@ -398,6 +398,7 @@ export class OrdersService {
         relations: [
           'client',
           'restaurant',
+          'restaurant.owner', // ⬅️ AGREGADO: Necesario para el evento order.created
           'driver',
           'items',
           'items.menuItem',

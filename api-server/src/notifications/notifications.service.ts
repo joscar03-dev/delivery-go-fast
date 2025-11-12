@@ -274,6 +274,17 @@ export class NotificationsService implements OnModuleInit {
         `📨 Notificación enviada a usuario ${userId}: ${response.successCount} exitosas, ${response.failureCount} fallidas`,
       );
 
+      // Log detallado de errores
+      if (response.failureCount > 0) {
+        response.responses.forEach((resp, index) => {
+          if (!resp.success) {
+            this.logger.error(
+              `❌ Token ${index + 1} falló: ${resp.error?.code} - ${resp.error?.message}`,
+            );
+          }
+        });
+      }
+
       // Actualizar lastUsedAt para tokens exitosos
       const successfulTokens = tokens.filter(
         (_, index) => response.responses[index].success,
