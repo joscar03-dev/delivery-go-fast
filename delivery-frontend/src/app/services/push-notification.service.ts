@@ -4,12 +4,14 @@ import {
   Token,
   PushNotificationSchema,
   ActionPerformed,
+  Channel,
 } from '@capacitor/push-notifications';
 import { Router } from '@angular/router';
 import { Platform } from '@ionic/angular/standalone';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { environment } from '../../environments/environment';
 import { firstValueFrom } from 'rxjs';
+import { Capacitor } from '@capacitor/core';
 
 /**
  * Servicio para manejar notificaciones push usando Capacitor
@@ -20,6 +22,7 @@ import { firstValueFrom } from 'rxjs';
 })
 export class PushNotificationService {
   private currentToken: string | null = null;
+  private listenersInitialized: boolean = false;
 
   constructor(
     private router: Router,
@@ -28,8 +31,45 @@ export class PushNotificationService {
   ) {}
 
   /**
-   * Inicializa las notificaciones push
-   * Se debe llamar después del login
+   * Inicializa SOLO los listeners de notificaciones
+   * DEBE llamarse al inicio de la app (app.component.ts)
+   * Esto permite responder a notificaciones que abren la app desde estado cerrado
+   */
+  async initializeListeners(): Promise<void> {
+    try {
+      // Solo funciona en dispositivos nativos (iOS/Android)
+      if (!this.platform.is('capacitor')) {
+        console.log(
+          '📱 Push Notifications: Solo disponible en apps nativas (iOS/Android)'
+        );
+        return;
+      }
+
+      // Evitar inicializar múltiples veces
+      if (this.listenersInitialized) {
+        console.log('📱 Listeners ya inicializados, omitiendo...');
+        return;
+      }
+
+      console.log('📱 Inicializando listeners de notificaciones...');
+
+      // 🔔 CRÍTICO: Crear canal de notificaciones de alta prioridad en Android
+      await this.createNotificationChannels();
+
+      // Registrar los listeners de eventos
+      await this.registerListeners();
+
+      this.listenersInitialized = true;
+      console.log('✅ Listeners de notificaciones inicializados');
+    } catch (error) {
+      console.error('❌ Error inicializando listeners:', error);
+      // ✅ No propagar el error, las notificaciones son opcionales
+    }
+  }
+
+  /**
+   * Registra el dispositivo para recibir notificaciones
+   * Se debe llamar DESPUÉS del login (cuando ya hay usuario autenticado)
    */
   async initializePushNotifications(): Promise<void> {
     try {
@@ -41,14 +81,88 @@ export class PushNotificationService {
         return;
       }
 
-      console.log('📱 Inicializando Push Notifications...');
+      console.log('📱 Registrando dispositivo para push notifications...');
 
-      await this.registerListeners();
+      // Asegurarse de que los listeners estén inicializados
+      if (!this.listenersInitialized) {
+        await this.initializeListeners();
+      }
+
+      // Registrar el dispositivo con FCM/APNs
       await this.registerDevice();
     } catch (error) {
-      console.error('❌ Error inicializando push notifications:', error);
+      console.error('❌ Error registrando dispositivo:', error);
       // ✅ No propagar el error, las notificaciones son opcionales
       return;
+    }
+  }
+
+  /**
+   * Crea los canales de notificación requeridos por Android 8.0+
+   * Sin esto, las notificaciones no sonarán ni vibrarán cuando la app esté cerrada
+   */
+  private async createNotificationChannels(): Promise<void> {
+    try {
+      // Solo en Android
+      if (Capacitor.getPlatform() !== 'android') {
+        console.log('📱 Canales de notificación: Solo requeridos en Android');
+        return;
+      }
+
+      console.log('🔔 Creando canales de notificación de alta prioridad...');
+
+      // Canal para nuevos pedidos (PRIORIDAD MÁXIMA)
+      const pedidosChannel: Channel = {
+        id: 'pedidos_criticos',
+        name: 'Nuevos Pedidos',
+        description: 'Notificaciones de alta prioridad para nuevos pedidos',
+        importance: 5, // Nivel 5 = URGENTE (sonido + vibración + popup)
+        sound: 'default',
+        vibration: true,
+        visibility: 1, // VISIBILITY_PUBLIC (visible en pantalla de bloqueo)
+        lights: true,
+        lightColor: '#FF0000', // Rojo
+      };
+
+      await PushNotifications.createChannel(pedidosChannel);
+      console.log('✅ Canal "pedidos_criticos" creado');
+
+      // Canal para cambios de estado (PRIORIDAD ALTA)
+      const estadoChannel: Channel = {
+        id: 'estado_pedidos',
+        name: 'Estado de Pedidos',
+        description: 'Notificaciones sobre cambios en el estado de tus pedidos',
+        importance: 4, // Nivel 4 = ALTA (sonido + vibración)
+        sound: 'default',
+        vibration: true,
+        visibility: 1,
+        lights: true,
+        lightColor: '#0000FF', // Azul
+      };
+
+      await PushNotifications.createChannel(estadoChannel);
+      console.log('✅ Canal "estado_pedidos" creado');
+
+      // Canal para repartidores (PRIORIDAD MÁXIMA)
+      const repartidoresChannel: Channel = {
+        id: 'delivery_driver',
+        name: 'Asignación de Entregas',
+        description: 'Notificaciones de alta prioridad para repartidores',
+        importance: 5,
+        sound: 'default',
+        vibration: true,
+        visibility: 1,
+        lights: true,
+        lightColor: '#00FF00', // Verde
+      };
+
+      await PushNotifications.createChannel(repartidoresChannel);
+      console.log('✅ Canal "delivery_driver" creado');
+
+      console.log('✅ Todos los canales de notificación creados exitosamente');
+    } catch (error) {
+      console.error('❌ Error creando canales de notificación:', error);
+      // No propagar el error, continuar con el registro
     }
   }
 

@@ -228,6 +228,9 @@ export class NotificationsService implements OnModuleInit {
 
     const tokens = deviceTokens.map((dt) => dt.token);
 
+    // Determinar el canal de Android según el tipo de notificación
+    const androidChannelId = this.getAndroidChannelId(notification.type);
+
     // Preparar el mensaje
     const message: admin.messaging.MulticastMessage = {
       notification: {
@@ -244,8 +247,12 @@ export class NotificationsService implements OnModuleInit {
         priority: 'high',
         notification: {
           sound: 'default',
-          channelId: 'delivery_notifications',
+          channelId: androidChannelId, // 🔔 Canal específico según tipo
           priority: 'high',
+          defaultSound: true,
+          defaultVibrateTimings: true,
+          visibility: 'public', // Visible en pantalla de bloqueo
+          clickAction: 'FCM_PLUGIN_ACTIVITY', // 🔥 CRÍTICO: Asegura que el listener captura el clic
         },
       },
       apns: {
@@ -253,6 +260,7 @@ export class NotificationsService implements OnModuleInit {
           aps: {
             sound: 'default',
             badge: 1,
+            contentAvailable: true, // Permite que la notificación llegue en background
           },
         },
       },
@@ -285,6 +293,29 @@ export class NotificationsService implements OnModuleInit {
     } catch (error) {
       this.logger.error(`❌ Error al enviar notificación push:`, error.message);
       return { success: 0, failure: 1 };
+    }
+  }
+
+  /**
+   * Determina el canal de Android correcto según el tipo de notificación
+   */
+  private getAndroidChannelId(type?: NotificationType): string {
+    switch (type) {
+      case NotificationType.NEW_ORDER:
+        return 'pedidos_criticos'; // Prioridad máxima para nuevos pedidos
+      case NotificationType.DRIVER_ASSIGNED:
+      case NotificationType.DELIVERY_NEAR:
+        return 'delivery_driver'; // Prioridad máxima para repartidores
+      case NotificationType.ORDER_CONFIRMED:
+      case NotificationType.ORDER_PREPARING:
+      case NotificationType.ORDER_READY:
+      case NotificationType.ORDER_PICKED_UP:
+      case NotificationType.ORDER_ON_THE_WAY:
+      case NotificationType.ORDER_DELIVERED:
+      case NotificationType.ORDER_CANCELLED:
+        return 'estado_pedidos'; // Prioridad alta para cambios de estado
+      default:
+        return 'estado_pedidos'; // Por defecto
     }
   }
 

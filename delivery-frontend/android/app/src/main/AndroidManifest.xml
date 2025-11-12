@@ -24,6 +24,13 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
 
+            <!-- 🔥 CRÍTICO: Intent-filter para capturar clics de notificaciones push -->
+            <!-- Asegura que pushNotificationActionPerformed se dispare cuando la app está cerrada -->
+            <intent-filter>
+                <action android:name="FCM_PLUGIN_ACTIVITY" />
+                <category android:name="android.intent.category.DEFAULT" />
+            </intent-filter>
+
         </activity>
 
         <provider

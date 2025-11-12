@@ -8,7 +8,7 @@ export const environment = {
   // Para Android Emulator: usa 10.0.2.2 (mapea a localhost de tu PC)
   // Para dispositivo físico: usa la IP de tu PC en la red local (ej: 192.168.1.X)
   // Para web/navegador: usa localhost
-  apiUrl: 'http://localhost:3000',
+  apiUrl: 'https://api.gofastdelivery.site',
 
   // Firebase configuration
   // IMPORTANTE: Estos valores son de la configuración WEB de Firebase, NO del service account

@@ -20,6 +20,8 @@ pm2 restart delivery-api --update-env
 
 # 5. Esperar 10 segundos (para que cree las tablas)
 
+# Borrar los logs antiguos de pm2
+
 # Verifica los logs
 
 pm2 logs delivery-api --lines 50
