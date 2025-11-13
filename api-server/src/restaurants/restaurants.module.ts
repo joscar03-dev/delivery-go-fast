@@ -12,11 +12,14 @@ import { MenuCategoriesService } from './services/menu-categories.service';
 import { MenuCategoriesController } from './controllers/menu-categories.controller';
 import { MenuOptionGroupsService } from './services/menu-option-groups.service';
 import { MenuOptionGroupsController } from './controllers/menu-option-groups.controller';
+import { RestaurantDashboardService } from './services/restaurant-dashboard.service';
 import { MenuOptionGroup } from './entities/menu-option-group.entity';
 import { MenuOption } from './entities/menu-option.entity';
+import { ActiveRestaurantGuard } from './guards/active-restaurant.guard';
 import { RestaurantDeliveryConfig } from '../payments/entities/restaurant-delivery-config.entity';
 import { User } from '../users/entities/user.entity';
 import { RestaurantDriver } from './entities/restaurant-driver.entity';
+import { Order } from '../orders/entities/order.entity';
 
 @Module({
   imports: [
@@ -30,6 +33,7 @@ import { RestaurantDriver } from './entities/restaurant-driver.entity';
       RestaurantDeliveryConfig,
       User,
       RestaurantDriver,
+      Order,
     ]),
   ],
   controllers: [
@@ -43,12 +47,15 @@ import { RestaurantDriver } from './entities/restaurant-driver.entity';
     RestaurantCategoriesService,
     MenuCategoriesService,
     MenuOptionGroupsService,
+    RestaurantDashboardService,
+    ActiveRestaurantGuard,
   ],
   exports: [
     RestaurantsService,
     RestaurantCategoriesService,
     MenuCategoriesService,
     MenuOptionGroupsService,
+    ActiveRestaurantGuard,
   ],
 })
 export class RestaurantsModule {}

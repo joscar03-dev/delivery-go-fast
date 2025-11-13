@@ -14,9 +14,24 @@
   <ion-list>
     <ion-item *ngFor="let u of pagedUsers">
       <ion-label>
-        <h2>{{ u.name || u.email }}</h2>
+        <h2>
+          {{ u.name || u.email }}
+          <ion-badge
+            [color]="u.isActive !== false ? 'success' : 'danger'"
+            style="margin-left: 8px"
+          >
+            {{ u.isActive !== false ? 'Activo' : 'Inactivo' }}
+          </ion-badge>
+        </h2>
         <p>{{ u.email }} — Rol: {{ u.role || 'client' }}</p>
       </ion-label>
+      <ion-button
+        [color]="u.isActive !== false ? 'warning' : 'success'"
+        fill="clear"
+        (click)="toggleActive(u)"
+      >
+        {{ u.isActive !== false ? 'Desactivar' : 'Activar' }}
+      </ion-button>
       <ion-button fill="clear" (click)="edit(u)">Editar</ion-button>
       <ion-button color="danger" fill="clear" (click)="remove(u)">
         Eliminar

@@ -1,109 +1,361 @@
-ion-item {
-  margin-bottom: 1rem;
+// Header styles
+ion-header {
+  ion-toolbar {
+    --background: var(--ion-background-color);
+    --border-color: rgba(var(--ion-text-color-rgb, 0, 0, 0), 0.08);
+    --border-width: 0 0 1px 0;
 
-  &.ion-invalid {
-    --border-color: var(--ion-color-danger);
+    ion-title {
+      font-size: 1.125rem;
+      font-weight: 700;
+      letter-spacing: -0.015em;
+    }
+
+    ion-button {
+      --color: var(--ion-text-color);
+
+      ion-icon {
+        font-size: 1.5rem;
+      }
+    }
   }
 }
 
+// Content padding
+ion-content {
+  --padding-top: 1rem;
+  --padding-bottom: 2rem;
+}
+
+// Form styles
+form {
+  max-width: 480px;
+  margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+// Item styles - diseño moderno inspirado en el modelo
+ion-item {
+  --background: var(--ion-item-background, #fff);
+  --border-color: rgba(var(--ion-text-color-rgb, 0, 0, 0), 0.12);
+  --border-radius: 0.75rem;
+  --border-width: 1px;
+  --padding-start: 1rem;
+  --padding-end: 1rem;
+  --min-height: 3.5rem;
+  margin-bottom: 0.75rem;
+  border: var(--border-width) solid var(--border-color);
+  border-radius: var(--border-radius);
+
+  &.ion-invalid {
+    --border-color: var(--ion-color-danger);
+    --border-width: 1px;
+  }
+
+  &.ion-focused {
+    --border-color: var(--ion-color-primary);
+    --border-width: 2px;
+    box-shadow: 0 0 0 3px rgba(var(--ion-color-primary-rgb), 0.1);
+  }
+
+  ion-label {
+    --color: var(--ion-text-color);
+    font-size: 1rem;
+    font-weight: 500;
+    margin-bottom: 0.5rem;
+
+    &[position="stacked"] {
+      font-size: 1rem;
+      font-weight: 500;
+      margin-bottom: 0.5rem;
+    }
+  }
+
+  ion-input,
+  ion-textarea,
+  ion-select {
+    --placeholder-color: rgba(var(--ion-text-color-rgb, 0, 0, 0), 0.4);
+    --placeholder-opacity: 1;
+    font-size: 1rem;
+    font-weight: 400;
+  }
+}
+
+// Corrección: asegurar fondos y colores de campos para que no se tiñan de negro.
+// Usamos el tema dark de Ionic basado en clase en lugar de prefers-color-scheme.
+
+// Campos de entrada: forzar fondos y color de texto coherentes
+ion-item {
+  ion-input,
+  ion-textarea,
+  ion-select {
+    --background: transparent;
+    --color: var(--ion-text-color);
+    --placeholder-color: rgba(var(--ion-text-color-rgb, 0, 0, 0), 0.4);
+  }
+}
+
+// Alinear con clase dark del proyecto
+:host-context(.ion-palette-dark) {
+  ion-item {
+    --background: #1c1c1d; // match variables.scss
+    --border-color: rgba(255, 255, 255, 0.12);
+
+    ion-label {
+      --color: var(--ion-text-color, #fff);
+    }
+
+    ion-input,
+    ion-textarea,
+    ion-select {
+      --background: transparent;
+      --color: #fff;
+      --placeholder-color: rgba(255, 255, 255, 0.5);
+    }
+  }
+
+  .location-section .map-container {
+    border-color: rgba(255, 255, 255, 0.12);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+  }
+
+  .error-alert {
+    background: rgba(var(--ion-color-danger-rgb), 0.12);
+    color: var(--ion-color-danger);
+    border-color: rgba(var(--ion-color-danger-rgb), 0.3);
+  }
+}
+
+// Error message styling
 .error-message {
   color: var(--ion-color-danger);
   font-size: 0.75rem;
-  padding: 0.25rem 0 0 0;
+  padding: 0.25rem 0 0 1rem;
+  display: block;
 }
 
+// Location section - diseño mejorado
 .location-section {
-  margin-top: 2rem;
+  margin-top: 1.5rem;
   padding: 1rem;
-  background: var(--ion-color-light);
-  border-radius: 8px;
+  background: transparent;
+  border-radius: 1rem;
 
   h3 {
     display: flex;
     align-items: center;
     gap: 0.5rem;
     margin: 0 0 0.5rem 0;
-    color: var(--ion-color-primary);
+    color: var(--ion-text-color);
     font-size: 1rem;
+    font-weight: 700;
 
     ion-icon {
-      font-size: 1.25rem;
+      font-size: 1.5rem;
+      color: var(--ion-color-primary);
     }
   }
 
   .description {
+    display: flex;
+    align-items: flex-start;
+    gap: 0.5rem;
     font-size: 0.875rem;
     color: var(--ion-color-medium);
     margin-bottom: 1rem;
+    padding: 0.75rem;
+    background: rgba(var(--ion-color-primary-rgb), 0.1);
+    border-radius: 0.75rem;
+    line-height: 1.5;
+
+    ion-icon {
+      flex-shrink: 0;
+      margin-top: 2px;
+      color: var(--ion-color-primary);
+      font-size: 1.25rem;
+    }
   }
 
+  // Map container - diseño moderno con sombras
+  .map-container {
+    width: 100%;
+    height: 12rem;
+    min-height: 12rem;
+    border-radius: 0.75rem;
+    overflow: hidden;
+    margin-bottom: 1rem;
+    border: 1px solid rgba(var(--ion-text-color-rgb, 0, 0, 0), 0.12);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+    position: relative;
+    z-index: 0;
+
+    .leaflet-container {
+      width: 100%;
+      height: 100%;
+      background: #f0f0f0;
+    }
+  }
+
+  // Botón de ubicación actual - estilo llamativo
+  ion-button {
+    --background: rgba(var(--ion-color-primary-rgb), 0.15);
+    --color: var(--ion-color-primary);
+    --border-radius: 0.75rem;
+    --padding-top: 1rem;
+    --padding-bottom: 1rem;
+    font-weight: 700;
+    font-size: 1rem;
+    margin: 0 0 1rem 0;
+    height: 3.5rem;
+
+    ion-icon {
+      font-size: 1.5rem;
+    }
+
+    ion-spinner {
+      width: 1.5rem;
+      height: 1.5rem;
+    }
+  }
+
+  // Coordinates row - grid moderno
   .coordinates-row {
     display: grid;
     grid-template-columns: 1fr 1fr;
     gap: 1rem;
     margin-top: 1rem;
+
+    ion-item {
+      margin-bottom: 0;
+    }
+  }
+
+  // Location info - indicador de éxito
+  .location-info {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    margin-top: 1rem;
+    padding: 0.75rem 1rem;
+    background: rgba(var(--ion-color-success-rgb), 0.1);
+    border-radius: 0.75rem;
+    font-size: 0.875rem;
+    color: var(--ion-color-success);
+    font-weight: 500;
+
+    ion-icon {
+      font-size: 1.5rem;
+      flex-shrink: 0;
+    }
+
+    span {
+      word-break: break-all;
+      line-height: 1.4;
+    }
   }
 }
 
+// Default address section - toggle mejorado
+.default-address-section {
+  margin-top: 1.5rem;
+  padding-top: 0;
+  border-top: none;
+
+  ion-item {
+    --background: var(--ion-item-background, #fff);
+    --border-color: rgba(var(--ion-text-color-rgb, 0, 0, 0), 0.12);
+    --border-radius: 0.75rem;
+    --padding-start: 1rem;
+    --padding-end: 1rem;
+    --min-height: 3.5rem;
+    margin-bottom: 0;
+    border: 1px solid var(--border-color);
+    border-radius: var(--border-radius);
+    cursor: pointer;
+
+    ion-label {
+      h3 {
+        font-weight: 600;
+        font-size: 1rem;
+        margin-bottom: 0;
+        color: var(--ion-text-color);
+      }
+    }
+
+    ion-toggle {
+      --background: rgba(var(--ion-text-color-rgb, 0, 0, 0), 0.2);
+      --background-checked: var(--ion-color-primary);
+      --handle-background: #ffffff;
+      --handle-background-checked: #ffffff;
+      --handle-width: 1.25rem;
+      --handle-height: 1.25rem;
+      width: 2.75rem;
+      height: 1.5rem;
+    }
+  }
+}
+
+// Error alert - notificación de error
 .error-alert {
   display: flex;
   align-items: center;
-  gap: 0.5rem;
+  gap: 0.75rem;
   padding: 1rem;
   margin-top: 1rem;
-  background: var(--ion-color-danger-tint);
-  color: var(--ion-color-danger-contrast);
-  border-radius: 8px;
+  background: rgba(var(--ion-color-danger-rgb), 0.1);
+  color: var(--ion-color-danger);
+  border-radius: 0.75rem;
+  border: 1px solid rgba(var(--ion-color-danger-rgb), 0.2);
+  font-size: 0.875rem;
+  line-height: 1.5;
 
   ion-icon {
     font-size: 1.5rem;
+    flex-shrink: 0;
   }
 }
 
+// Loading section - indicador de carga
 .loading-section {
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
   padding: 2rem;
+  margin-top: 1rem;
+
+  ion-spinner {
+    width: 2.5rem;
+    height: 2.5rem;
+  }
 
   p {
     margin-top: 1rem;
     color: var(--ion-color-medium);
+    font-size: 0.875rem;
+    font-weight: 500;
   }
 }
 
-.default-address-section {
-  margin-top: 1.5rem;
-  padding-top: 1.5rem;
-  border-top: 1px solid var(--ion-color-light);
+// Dark mode adjustments
+@media (prefers-color-scheme: dark) {
+  // No cambiamos los fondos de inputs aquí para no interferir con el tema por clase
+}
 
-  ion-label {
-    h3 {
-      font-weight: 600;
-      margin-bottom: 0.25rem;
-    }
+// Responsive adjustments
+@media (max-width: 480px) {
+  form {
+    max-width: 100%;
+  }
 
-    p {
-      font-size: 0.875rem;
-      color: var(--ion-color-medium);
-      margin-bottom: 0.25rem;
-    }
+  .location-section {
+    padding: 0.75rem;
 
-    p.note {
-      display: flex;
-      align-items: center;
-      gap: 0.5rem;
-      font-size: 0.8rem;
-      background: var(--ion-color-primary-tint);
-      padding: 0.5rem;
-      border-radius: 6px;
-      margin-top: 0.75rem;
-
-      ion-icon {
-        font-size: 1rem;
-        flex-shrink: 0;
-      }
+    .map-container {
+      height: 10rem;
+      min-height: 10rem;
     }
   }
 }

@@ -90,6 +90,7 @@ export class RestaurantsService {
   async findAll(): Promise<Restaurant[]> {
     return await this.restaurantRepository.find({
       relations: ['category', 'owner'],
+      where: { isActive: true }, // Solo restaurantes activos
     });
   }
 
@@ -105,13 +106,15 @@ export class RestaurantsService {
       throw new Error('Coordenadas inválidas');
     }
 
-    // Usar el query builder optimizado
+    // Usar el query builder optimizado con filtro de isActive
     const restaurants = await GeospatialQueryBuilder.findNearbyRestaurants(
       this.restaurantRepository,
       latitude,
       longitude,
       radius,
-    ).getMany();
+    )
+      .andWhere('restaurant.is_active = :isActive', { isActive: true })
+      .getMany();
 
     return restaurants;
   }
@@ -190,6 +193,25 @@ export class RestaurantsService {
   async remove(id: string): Promise<void> {
     const restaurant = await this.findOne(id);
     await this.restaurantRepository.remove(restaurant);
+  }
+
+  /**
+   * Activar o desactivar un restaurante
+   */
+  async toggleActive(id: string, isActive: boolean): Promise<Restaurant> {
+    const restaurant = await this.findOne(id);
+    restaurant.isActive = isActive;
+    return this.restaurantRepository.save(restaurant);
+  }
+
+  /**
+   * Obtener todos los restaurantes (incluyendo inactivos) - Solo para admin
+   */
+  async findAllForAdmin(): Promise<Restaurant[]> {
+    return await this.restaurantRepository.find({
+      relations: ['category', 'owner'],
+      order: { createdAt: 'DESC' },
+    });
   }
 
   // CRUD para Menú Items

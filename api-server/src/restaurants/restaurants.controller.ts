@@ -13,6 +13,7 @@ import {
   UnauthorizedException,
 } from '@nestjs/common';
 import { RestaurantsService } from './restaurants.service';
+import { RestaurantDashboardService } from './services/restaurant-dashboard.service';
 import { CreateRestaurantDto } from './dto/create-restaurant.dto';
 import { UpdateRestaurantDto } from './dto/update-restaurant.dto';
 import { CreateMenuItemDto } from './dto/create-menu-item.dto';
@@ -23,10 +24,14 @@ import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { RolesGuard } from '../auth/guards/roles.guard';
 import { Roles } from '../auth/decorators/roles.decorator';
 import { Role } from '../common/enums/role.enum';
+import { ActiveRestaurantGuard } from './guards/active-restaurant.guard';
 
 @Controller('restaurants')
 export class RestaurantsController {
-  constructor(private readonly restaurantsService: RestaurantsService) {}
+  constructor(
+    private readonly restaurantsService: RestaurantsService,
+    private readonly dashboardService: RestaurantDashboardService,
+  ) {}
 
   // Endpoint para obtener los restaurantes del usuario autenticado
   // DEBE IR ANTES de @Get(':id') para evitar que 'my' sea capturado como ID
@@ -47,6 +52,15 @@ export class RestaurantsController {
     }
 
     return this.restaurantsService.findByOwner(req.user.sub);
+  }
+
+  // Endpoint para obtener todos los restaurantes (incluyendo inactivos) - Solo SUPER_ADMIN
+  // DEBE IR ANTES de @Get(':id') para evitar que 'admin' sea capturado como ID
+  @Get('admin/all')
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(Role.SUPER_ADMIN)
+  findAllForAdmin() {
+    return this.restaurantsService.findAllForAdmin();
   }
 
   // Endpoints públicos
@@ -80,12 +94,41 @@ export class RestaurantsController {
     return this.restaurantsService.getRestaurantDrivers(restaurantId);
   }
 
+  // Endpoint para obtener estadísticas del dashboard
+  // DEBE IR ANTES de @Get(':id') para evitar que 'dashboard' sea capturado como ID
+  @Get(':id/dashboard')
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(Role.RESTAURANT_OWNER, Role.SUPER_ADMIN)
+  async getRestaurantDashboard(
+    @Param('id') restaurantId: string,
+    @Query('period') period: 'today' | 'week' | 'month' | 'all' = 'all',
+    @Request() req,
+  ) {
+    const currentUser = req.user;
+
+    if (currentUser.role === Role.RESTAURANT_OWNER) {
+      // Verificar que el restaurante pertenezca al usuario actual
+      const restaurant = await this.restaurantsService.findOne(restaurantId);
+
+      if (restaurant.owner.id !== currentUser.sub) {
+        throw new ForbiddenException(
+          'No tienes permisos para ver el dashboard de este restaurante',
+        );
+      }
+    }
+
+    return this.dashboardService.getDashboardData(restaurantId, period);
+  }
+
+  // Endpoints públicos que requieren restaurante activo
   @Get(':id')
+  @UseGuards(ActiveRestaurantGuard)
   findOne(@Param('id') id: string) {
     return this.restaurantsService.findOne(id);
   }
 
   @Get(':id/menu')
+  @UseGuards(ActiveRestaurantGuard)
   findMenu(@Param('id') restaurantId: string) {
     return this.restaurantsService.findMenuItems(restaurantId);
   }
@@ -149,6 +192,17 @@ export class RestaurantsController {
   @Roles(Role.SUPER_ADMIN)
   remove(@Param('id') id: string) {
     return this.restaurantsService.remove(id);
+  }
+
+  // Endpoint para activar/desactivar restaurante - Solo SUPER_ADMIN
+  @Patch(':id/toggle-active')
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(Role.SUPER_ADMIN)
+  async toggleActive(
+    @Param('id') id: string,
+    @Body('isActive') isActive: boolean,
+  ) {
+    return this.restaurantsService.toggleActive(id, isActive);
   }
 
   // Endpoints para gestión de menú

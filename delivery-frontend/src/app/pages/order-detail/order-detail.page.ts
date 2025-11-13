@@ -26,8 +26,10 @@ import { ActivatedRoute } from '@angular/router';
 import { OrderService } from '../../services/order.service';
 import { SocketService } from '../../services/socket.service';
 import { Order, OrderStatus } from '../../models/order.model';
+import { PenCurrencyPipe } from '../../pipes/pen-currency.pipe';
 import { Subscription } from 'rxjs';
 import { addIcons } from 'ionicons';
+import { WaveBackgroundComponent } from '../../components/wave-background/wave-background.component';
 import {
   timeOutline,
   locationOutline,
@@ -81,6 +83,8 @@ addIcons({
     IonBadge,
     CommonModule,
     FormsModule,
+    PenCurrencyPipe,
+    WaveBackgroundComponent,
   ],
 })
 export class OrderDetailPage implements OnInit, OnDestroy {

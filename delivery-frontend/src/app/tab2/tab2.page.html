@@ -17,6 +17,21 @@
   <div class="ion-padding">
     <ion-grid>
       <ion-row>
+        <!-- Dashboard Administrativo -->
+        <ion-col size="12" size-md="6">
+          <ion-card button [routerLink]="['/admin/admin-dashboard']">
+            <ion-card-header>
+              <ion-card-title>
+                <ion-icon name="stats-chart-outline"></ion-icon>
+                Dashboard Estadísticas
+              </ion-card-title>
+            </ion-card-header>
+            <ion-card-content>
+              Visualiza métricas y estadísticas de restaurantes
+            </ion-card-content>
+          </ion-card>
+        </ion-col>
+
         <ion-col size="12" size-md="6">
           <ion-card button [routerLink]="['/admin/restaurants']">
             <ion-card-header>

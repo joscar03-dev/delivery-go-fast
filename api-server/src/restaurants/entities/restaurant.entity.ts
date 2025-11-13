@@ -40,6 +40,10 @@ export class Restaurant {
   @Column({ name: 'average_prep_time', type: 'int', default: 15 })
   averagePrepTime: number;
 
+  // Estado del restaurante - para activar/desactivar
+  @Column({ name: 'is_active', type: 'boolean', default: true })
+  isActive: boolean;
+
   // 💡 ¡AQUÍ USAMOS POSTGIS!
   // Guardamos la ubicación geográfica como un punto (longitud, latitud).
   @Column({

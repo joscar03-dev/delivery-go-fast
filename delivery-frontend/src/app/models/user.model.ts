@@ -5,6 +5,7 @@ export interface User {
   phone?: string;
   role?: 'client' | 'driver' | 'restaurant_owner' | 'super_admin';
   avatarUrl?: string;
+  isActive?: boolean; // Estado activo/inactivo
   // Tokens opcionales si se guardan en memoria temporal
   accessToken?: string;
   refreshToken?: string;

@@ -2,6 +2,7 @@ import { OrderStatus } from '../../common/enums/order-status.enum';
 import { Restaurant } from '../../restaurants/entities/restaurant.entity';
 import { User } from '../../users/entities/user.entity';
 import { OrderItem } from './order-item.entity';
+import { Review } from './review.entity';
 import {
   Column,
   CreateDateColumn,
@@ -9,6 +10,7 @@ import {
   JoinColumn,
   ManyToOne,
   OneToMany,
+  OneToOne,
   PrimaryGeneratedColumn,
   UpdateDateColumn,
 } from 'typeorm';
@@ -66,6 +68,10 @@ export class Order {
     cascade: true,
   })
   items: OrderItem[];
+
+  // Relación: Un pedido puede tener una review (encuesta POST)
+  @OneToOne(() => Review, (review) => review.order, { nullable: true })
+  review?: Review;
 
   @CreateDateColumn({ name: 'created_at', type: 'timestamptz' })
   createdAt: Date;

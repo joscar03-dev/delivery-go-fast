@@ -31,6 +31,7 @@ import {
   star,
   cartOutline,
 } from 'ionicons/icons';
+import { PenCurrencyPipe } from '../../pipes/pen-currency.pipe';
 
 // Register Swiper custom elements
 register();
@@ -57,6 +58,7 @@ addIcons({
     IonBackButton,
     IonSpinner,
     IonToast,
+    PenCurrencyPipe,
   ],
   schemas: [CUSTOM_ELEMENTS_SCHEMA],
   templateUrl: './restaurant-detail.page.html',

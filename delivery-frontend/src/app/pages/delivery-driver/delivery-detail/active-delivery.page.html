@@ -137,17 +137,40 @@
         </ion-card-title>
       </ion-card-header>
       <ion-card-content>
+        <!-- Información del cliente -->
+        <div class="client-info" *ngIf="activeOrder.client">
+          <h4>
+            <ion-icon name="person-outline"></ion-icon>
+            {{ activeOrder.client.name }}
+          </h4>
+          <a
+            *ngIf="activeOrder.client.phone"
+            [href]="'tel:' + activeOrder.client.phone"
+            class="phone-link"
+          >
+            <ion-icon name="call-outline"></ion-icon>
+            {{ activeOrder.client.phone }}
+          </a>
+        </div>
+
         <p class="address">{{ activeOrder.deliveryAddress }}</p>
-        <!-- TODO: Agregar deliveryLocation al backend para habilitar navegación -->
-        <!-- <ion-button
+
+        <!-- Mapa de ubicación de entrega -->
+        <div
+          class="delivery-map-container"
+          #deliveryMapContainer
+          *ngIf="hasDeliveryLocation()"
+        ></div>
+
+        <ion-button
           expand="block"
           fill="outline"
           (click)="navigateToDeliveryAddress()"
-          *ngIf="activeOrder.deliveryLocation"
+          *ngIf="hasDeliveryLocation()"
         >
           <ion-icon slot="start" name="navigate-outline"></ion-icon>
           Abrir en Maps
-        </ion-button> -->
+        </ion-button>
       </ion-card-content>
     </ion-card>
 
@@ -169,14 +192,14 @@
               </p>
             </ion-label>
             <ion-note slot="end">
-              {{ item.price | currency : "USD" : "symbol" : "1.2-2" }}
+              {{ item.price | penCurrency }}
             </ion-note>
           </ion-item>
         </ion-list>
         <div class="total-section">
           <strong>Total:</strong>
           <strong class="total-amount">
-            {{ activeOrder.total | currency : "USD" : "symbol" : "1.2-2" }}
+            {{ activeOrder.total | penCurrency }}
           </strong>
         </div>
       </ion-card-content>

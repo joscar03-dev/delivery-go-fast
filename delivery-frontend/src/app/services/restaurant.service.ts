@@ -37,6 +37,15 @@ export class RestaurantService {
     });
   }
 
+  /**
+   * Obtener todos los restaurantes incluyendo inactivos (Solo admin)
+   */
+  listAll(): Observable<RestaurantModel[]> {
+    return this.http.get<RestaurantModel[]>(
+      `${this.base}/restaurants/admin/all`
+    );
+  }
+
   getById(id: string): Observable<RestaurantModel> {
     return this.http.get<RestaurantModel>(`${this.base}/restaurants/${id}`);
   }
@@ -54,6 +63,15 @@ export class RestaurantService {
 
   remove(id: string): Observable<void> {
     return this.http.delete<void>(`${this.base}/restaurants/${id}`);
+  }
+
+  /**
+   * Activar o desactivar un restaurante
+   */
+  toggleActive(id: string, isActive: boolean): Observable<any> {
+    return this.http.patch(`${this.base}/restaurants/${id}/toggle-active`, {
+      isActive,
+    });
   }
 
   // Menú

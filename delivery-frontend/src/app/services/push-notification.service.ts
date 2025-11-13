@@ -399,6 +399,13 @@ export class PushNotificationService {
         this.router.navigate(['/tabs/order-history']);
         break;
 
+      case 'survey':
+        if (orderId) {
+          console.log('📋 Navegando a encuesta POST para pedido:', orderId);
+          this.router.navigate(['/survey', orderId]);
+        }
+        break;
+
       default:
         console.warn('Pantalla desconocida:', screen);
     }

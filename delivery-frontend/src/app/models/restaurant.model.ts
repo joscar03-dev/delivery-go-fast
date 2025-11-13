@@ -44,6 +44,7 @@ export interface RestaurantModel {
   city?: string | null; // Ciudad del restaurante
   imageUrl?: string | null; // URL de la imagen del restaurante
   location?: GeoPoint | null; // PostGIS Point
+  isActive?: boolean; // Estado activo/inactivo
   createdAt: string | Date;
   updatedAt: string | Date;
   category?: RestaurantCategoryModel | null;

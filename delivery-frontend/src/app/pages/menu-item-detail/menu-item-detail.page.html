@@ -115,7 +115,7 @@
                   <span class="option-name">{{ o.name }}</span>
                 </div>
                 <span class="option-price" *ngIf="o.extraPrice">
-                  + {{ o.extraPrice | currency:'USD':'symbol':'1.2-2' }}
+                  + {{ o.extraPrice | penCurrency }}
                 </span>
               </label>
             </div>

@@ -102,7 +102,7 @@
                     color="medium"
                     *ngIf="o.extraPrice && o.extraPrice !== 0"
                   >
-                    +{{ o.extraPrice | currency : "USD" : "symbol" : "1.2-2" }}
+                    +{{ o.extraPrice | penCurrency }}
                   </ion-badge>
                   <ion-badge
                     [color]="o.isActive === false ? 'warning' : 'success'"

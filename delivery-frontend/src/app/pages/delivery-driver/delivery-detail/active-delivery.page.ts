@@ -1,4 +1,12 @@
-import { Component, OnInit, OnDestroy, inject } from '@angular/core';
+import {
+  Component,
+  OnInit,
+  OnDestroy,
+  inject,
+  ViewChild,
+  ElementRef,
+  AfterViewInit,
+} from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { IonicModule, Platform } from '@ionic/angular';
 import { Router, ActivatedRoute } from '@angular/router';
@@ -15,15 +23,17 @@ import {
 import { SocketService } from '../../../services/socket.service';
 import { Subscription, interval } from 'rxjs';
 import { Geolocation } from '@capacitor/geolocation';
+import * as L from 'leaflet';
+import { PenCurrencyPipe } from '../../../pipes/pen-currency.pipe';
 
 @Component({
   selector: 'app-delivery-detail',
   standalone: true,
-  imports: [CommonModule, IonicModule],
+  imports: [CommonModule, IonicModule, PenCurrencyPipe],
   templateUrl: './active-delivery.page.html',
   styleUrls: ['./active-delivery.page.scss'],
 })
-export class DeliveryDetailPage implements OnInit, OnDestroy {
+export class DeliveryDetailPage implements OnInit, OnDestroy, AfterViewInit {
   private deliveryService = inject(DeliveryService);
   private socketService = inject(SocketService);
   private toast = inject(ToastController);
@@ -32,6 +42,13 @@ export class DeliveryDetailPage implements OnInit, OnDestroy {
   private router = inject(Router);
   private route = inject(ActivatedRoute);
   private platform = inject(Platform);
+
+  @ViewChild('deliveryMapContainer', { read: ElementRef })
+  mapContainer!: ElementRef;
+
+  // Mapa Leaflet
+  private map: L.Map | null = null;
+  private deliveryMarker: L.Marker | null = null;
 
   // Exponer el enum para usarlo en el template
   readonly OrderStatus = OrderStatus;
@@ -80,6 +97,17 @@ export class DeliveryDetailPage implements OnInit, OnDestroy {
     },
   ];
 
+  /**
+   * Verifica si el pedido tiene una dirección de entrega con coordenadas GPS
+   */
+  hasDeliveryLocation(): boolean {
+    return !!(
+      this.activeOrder?.client?.addresses &&
+      this.activeOrder.client.addresses.length > 0 &&
+      this.activeOrder.client.addresses[0]?.location?.coordinates
+    );
+  }
+
   ngOnInit(): void {
     // Obtener el ID del pedido de los parámetros de ruta
     const orderId = this.route.snapshot.paramMap.get('id');
@@ -96,10 +124,23 @@ export class DeliveryDetailPage implements OnInit, OnDestroy {
     this.subscriptions.forEach((sub) => sub.unsubscribe());
     this.stopLocationTracking();
 
+    // Destruir el mapa
+    if (this.map) {
+      this.map.remove();
+      this.map = null;
+    }
+
     // Salir de la sala del pedido si existe
     if (this.activeOrder) {
       this.socketService.leaveOrderRoom(this.activeOrder.id);
     }
+  }
+
+  ngAfterViewInit(): void {
+    // Inicializar el mapa después de que la vista esté lista
+    setTimeout(() => {
+      this.initializeMap();
+    }, 300);
   }
 
   /**
@@ -479,14 +520,83 @@ export class DeliveryDetailPage implements OnInit, OnDestroy {
 
   /**
    * Navegar a la dirección de entrega
-   * TODO: El backend necesita agregar deliveryLocation para navegar
    */
   navigateToDeliveryAddress() {
-    // Temporalmente deshabilitado hasta que backend tenga deliveryLocation
-    /* if (this.activeOrder?.deliveryLocation?.coordinates) {
-      const [lon, lat] = this.activeOrder.deliveryLocation.coordinates;
-      this.openMap(lat, lon);
-    } */
+    if (
+      this.activeOrder?.client?.addresses &&
+      this.activeOrder.client.addresses.length > 0
+    ) {
+      const address = this.activeOrder.client.addresses[0];
+      if (address.location?.coordinates) {
+        const [lon, lat] = address.location.coordinates;
+        this.openMap(lat, lon);
+      }
+    }
+  }
+
+  /**
+   * Inicializa el mapa Leaflet con la ubicación de entrega
+   */
+  private initializeMap(): void {
+    if (!this.mapContainer || !this.activeOrder) {
+      console.log('⚠️ Contenedor del mapa o pedido no disponible');
+      return;
+    }
+
+    // Obtener la dirección del cliente
+    const address = this.activeOrder.client?.addresses?.[0];
+    if (!address?.location?.coordinates) {
+      console.log('⚠️ No hay coordenadas de entrega disponibles');
+      return;
+    }
+
+    const [lng, lat] = address.location.coordinates;
+
+    // Crear el mapa centrado en la dirección de entrega
+    this.map = L.map(this.mapContainer.nativeElement, {
+      center: [lat, lng],
+      zoom: 16,
+      zoomControl: true,
+      attributionControl: true,
+    });
+
+    // Agregar capa de OpenStreetMap
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+      maxZoom: 19,
+      attribution: '© OpenStreetMap contributors',
+    }).addTo(this.map);
+
+    // Crear ícono personalizado para el marcador de entrega (usar iconos de Leaflet ya existentes)
+    const deliveryIcon = L.icon({
+      iconUrl: 'assets/marker-icon-2x.png',
+      iconSize: [25, 41],
+      iconAnchor: [12, 41],
+      popupAnchor: [1, -34],
+      shadowUrl: 'assets/marker-shadow.png',
+      shadowSize: [41, 41],
+    });
+
+    // Agregar marcador en la ubicación de entrega
+    this.deliveryMarker = L.marker([lat, lng], { icon: deliveryIcon })
+      .addTo(this.map)
+      .bindPopup(
+        `
+        <div style="text-align: center;">
+          <h4>📍 Dirección de Entrega</h4>
+          <p><strong>${address.street}</strong></p>
+          <p>${address.city}, ${address.postalCode}</p>
+          ${address.reference ? `<p><em>${address.reference}</em></p>` : ''}
+        </div>
+      `
+      )
+      .openPopup();
+
+    // Forzar que el mapa recalcule su tamaño
+    setTimeout(() => {
+      this.map?.invalidateSize();
+    }, 100);
+
+    console.log('✅ Mapa de entrega inicializado:', lat, lng);
   }
 
   /**

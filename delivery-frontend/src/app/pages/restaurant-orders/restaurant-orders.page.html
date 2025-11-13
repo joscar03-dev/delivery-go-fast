@@ -97,6 +97,17 @@
             </div>
           </div>
 
+          <!-- Teléfono del cliente -->
+          <div class="info-section" *ngIf="order.client?.phone">
+            <ion-icon name="call-outline"></ion-icon>
+            <div>
+              <strong>Teléfono:</strong>
+              <a [href]="'tel:' + order.client?.phone" class="phone-link">
+                {{ order.client?.phone }}
+              </a>
+            </div>
+          </div>
+
           <!-- Dirección de entrega -->
           <div class="info-section" *ngIf="order.deliveryAddress">
             <ion-icon name="location-outline"></ion-icon>

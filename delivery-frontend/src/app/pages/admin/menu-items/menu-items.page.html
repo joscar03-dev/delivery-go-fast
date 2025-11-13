@@ -19,6 +19,16 @@
 </ion-header>
 
 <ion-content>
+  <ion-refresher slot="fixed" (ionRefresh)="handleRefresh($event)">
+    <ion-refresher-content
+      pullingIcon="chevron-down-circle-outline"
+      pullingText="Desliza para recargar"
+      refreshingSpinner="circles"
+      refreshingText="Recargando..."
+    >
+    </ion-refresher-content>
+  </ion-refresher>
+
   <ion-item lines="none">
     <ion-label>
       <h2>Restaurante: {{ restaurant?.name || '...' }}</h2>
@@ -33,9 +43,7 @@
       </ion-thumbnail>
 
       <ion-label>
-        <h2>
-          {{ it.name }} - {{ it.price | currency:'USD':'symbol':'1.2-2' }}
-        </h2>
+        <h2>{{ it.name }} - {{ it.price | penCurrency }}</h2>
         <p *ngIf="it.description">{{ it.description }}</p>
         <p *ngIf="it.menuCategoryId">
           <ion-chip color="primary" outline>

@@ -93,7 +93,7 @@
                   {{ item.description }}
                 </p>
                 <p class="item-price">
-                  {{ item.price | currency:'USD':'symbol':'1.2-2' }}
+                  {{ item.price | penCurrency }}
                 </p>
               </div>
               <div class="item-image-container">
@@ -137,7 +137,7 @@
                   {{ item.description }}
                 </p>
                 <p class="item-price">
-                  {{ item.price | currency:'USD':'symbol':'1.2-2' }}
+                  {{ item.price | penCurrency }}
                 </p>
               </div>
               <div class="item-image-container">
@@ -189,7 +189,7 @@
         <span>{{ cartItemCount }} items</span>
       </div>
       <span class="fab-total"
-        >Ver Carrito • {{ cartTotal | currency:'USD':'symbol':'1.2-2' }}</span
+        >Ver Carrito • {{ cartTotal | penCurrency }}</span
       >
     </div>
   </button>

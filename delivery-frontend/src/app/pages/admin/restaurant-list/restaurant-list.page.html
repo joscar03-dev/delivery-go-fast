@@ -33,10 +33,29 @@
   </ion-header>
 
   <ion-content class="ion-padding">
+    <!-- Pull to refresh -->
+    <ion-refresher slot="fixed" (ionRefresh)="handleRefresh($event)">
+      <ion-refresher-content
+        pullingIcon="chevron-down-circle-outline"
+        pullingText="Desliza para recargar"
+        refreshingSpinner="circles"
+        refreshingText="Recargando..."
+      >
+      </ion-refresher-content>
+    </ion-refresher>
+
     <ion-list>
       <ion-item *ngFor="let r of list">
         <ion-label>
-          <h2>{{ r.name }}</h2>
+          <h2>
+            {{ r.name }}
+            <ion-badge
+              [color]="r.isActive ? 'success' : 'danger'"
+              style="margin-left: 8px"
+            >
+              {{ r.isActive ? 'Activo' : 'Inactivo' }}
+            </ion-badge>
+          </h2>
           <p>{{ r.address }} — {{ r.phone }}</p>
           <p *ngIf="r.city">
             <ion-badge color="primary">{{ r.city }}</ion-badge>

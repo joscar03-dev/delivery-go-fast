@@ -3,6 +3,7 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { JwtModule } from '@nestjs/jwt';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { GeolocationService } from './geolocation.service';
+import { GeolocationController } from './geolocation.controller';
 import { DeliveryGateway } from './delivery.gateway';
 import { DriverLocation } from './entities/driver-location.entity';
 import { User } from '../users/entities/user.entity';
@@ -24,6 +25,7 @@ import { Order } from '../orders/entities/order.entity';
       inject: [ConfigService],
     }),
   ],
+  controllers: [GeolocationController],
   providers: [GeolocationService, DeliveryGateway],
   exports: [GeolocationService, DeliveryGateway],
 })

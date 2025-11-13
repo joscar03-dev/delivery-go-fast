@@ -1,0 +1,227 @@
+<ion-header>
+  <ion-toolbar color="primary">
+    <ion-buttons slot="start">
+      <ion-back-button defaultHref="/tabs/order-history"></ion-back-button>
+    </ion-buttons>
+    <ion-title>Encuesta de Satisfacción</ion-title>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content class="ion-padding">
+  <ion-card>
+    <ion-card-header>
+      <ion-card-title>¡Tu opinión es importante!</ion-card-title>
+      <ion-card-subtitle>Ayúdanos a mejorar tu experiencia</ion-card-subtitle>
+    </ion-card-header>
+
+    <ion-card-content>
+      <form>
+        <!-- ============================================ -->
+        <!-- DIMENSIÓN 1: USABILIDAD/INTERFAZ -->
+        <!-- ============================================ -->
+        <ion-item lines="none">
+          <ion-label class="ion-text-wrap">
+            <h2><strong>1. Facilidad de uso</strong></h2>
+            <p class="question-text">
+              ¿Qué tan fácil fue hacer tu pedido en nuestra app?
+            </p>
+          </ion-label>
+        </ion-item>
+
+        <ion-item>
+          <ion-range
+            [(ngModel)]="usabilityRating"
+            name="usabilityRating"
+            [min]="1"
+            [max]="5"
+            [pin]="true"
+            [pinFormatter]="getUsabilityLabel.bind(this)"
+            [ticks]="true"
+            [snaps]="true"
+            color="primary"
+          >
+            <ion-label slot="start">1</ion-label>
+            <ion-label slot="end">5</ion-label>
+          </ion-range>
+        </ion-item>
+
+        <ion-item lines="none">
+          <ion-note color="medium">
+            <small>{{ getUsabilityLabel(usabilityRating) }}</small>
+          </ion-note>
+        </ion-item>
+
+        <!-- ============================================ -->
+        <!-- DIMENSIÓN 2: PRECISIÓN -->
+        <!-- ============================================ -->
+        <ion-item lines="none" class="ion-margin-top">
+          <ion-label class="ion-text-wrap">
+            <h2><strong>2. Precisión del pedido</strong></h2>
+            <p class="question-text">¿Tu pedido llegó completo y correcto?</p>
+          </ion-label>
+        </ion-item>
+
+        <ion-radio-group [(ngModel)]="precisionAnswer" name="precisionAnswer">
+          <ion-item>
+            <ion-radio value="yes" slot="start"></ion-radio>
+            <ion-label>
+              <ion-icon name="checkmark-circle" color="success"></ion-icon>
+              Sí, todo correcto
+            </ion-label>
+          </ion-item>
+          <ion-item>
+            <ion-radio value="no" slot="start"></ion-radio>
+            <ion-label>
+              <ion-icon name="close-circle" color="danger"></ion-icon>
+              No, faltaron productos
+            </ion-label>
+          </ion-item>
+          <ion-item>
+            <ion-radio value="errors" slot="start"></ion-radio>
+            <ion-label>
+              <ion-icon name="close-circle" color="warning"></ion-icon>
+              Hubo errores en el pedido
+            </ion-label>
+          </ion-item>
+        </ion-radio-group>
+
+        <!-- ============================================ -->
+        <!-- DIMENSIÓN 3: MONITOREO -->
+        <!-- ============================================ -->
+        <ion-item lines="none" class="ion-margin-top">
+          <ion-label class="ion-text-wrap">
+            <h2><strong>3. Seguimiento en tiempo real</strong></h2>
+            <p class="question-text">
+              ¿Te fue útil el seguimiento en tiempo real de tu pedido?
+            </p>
+          </ion-label>
+        </ion-item>
+
+        <ion-radio-group [(ngModel)]="monitoringAnswer" name="monitoringAnswer">
+          <ion-item>
+            <ion-radio value="very_useful" slot="start"></ion-radio>
+            <ion-label>Muy útil</ion-label>
+          </ion-item>
+          <ion-item>
+            <ion-radio value="useful" slot="start"></ion-radio>
+            <ion-label>Útil</ion-label>
+          </ion-item>
+          <ion-item>
+            <ion-radio value="not_used" slot="start"></ion-radio>
+            <ion-label>No lo usé</ion-label>
+          </ion-item>
+        </ion-radio-group>
+
+        <!-- ============================================ -->
+        <!-- DIMENSIÓN 4: PUNTUALIDAD -->
+        <!-- ============================================ -->
+        <ion-item lines="none" class="ion-margin-top">
+          <ion-label class="ion-text-wrap">
+            <h2><strong>4. Puntualidad en la entrega</strong></h2>
+            <p class="question-text">¿Tu pedido llegó en el tiempo estimado?</p>
+          </ion-label>
+        </ion-item>
+
+        <ion-radio-group
+          [(ngModel)]="punctualityAnswer"
+          name="punctualityAnswer"
+        >
+          <ion-item>
+            <ion-radio value="on_time" slot="start"></ion-radio>
+            <ion-label>
+              <ion-icon name="checkmark-circle" color="success"></ion-icon>
+              Sí, llegó a tiempo
+            </ion-label>
+          </ion-item>
+          <ion-item>
+            <ion-radio value="delayed" slot="start"></ion-radio>
+            <ion-label>
+              <ion-icon name="close-circle" color="warning"></ion-icon>
+              No, se retrasó
+            </ion-label>
+          </ion-item>
+        </ion-radio-group>
+
+        <!-- ============================================ -->
+        <!-- VARIABLE DEPENDIENTE: SATISFACCIÓN GENERAL -->
+        <!-- ============================================ -->
+        <ion-item lines="none" class="ion-margin-top">
+          <ion-label class="ion-text-wrap">
+            <h2><strong>5. Satisfacción general</strong></h2>
+            <p class="question-text">
+              ¿Cuál es tu satisfacción general con esta experiencia en la app?
+            </p>
+          </ion-label>
+        </ion-item>
+
+        <ion-item>
+          <ion-range
+            [(ngModel)]="generalSatisfaction"
+            name="generalSatisfaction"
+            [min]="1"
+            [max]="5"
+            [pin]="true"
+            [pinFormatter]="getSatisfactionLabel.bind(this)"
+            [ticks]="true"
+            [snaps]="true"
+            color="secondary"
+          >
+            <ion-label slot="start">1</ion-label>
+            <ion-label slot="end">5</ion-label>
+          </ion-range>
+        </ion-item>
+
+        <ion-item lines="none">
+          <ion-note color="medium">
+            <small>{{ getSatisfactionLabel(generalSatisfaction) }}</small>
+          </ion-note>
+        </ion-item>
+
+        <!-- ============================================ -->
+        <!-- COMENTARIOS OPCIONALES -->
+        <!-- ============================================ -->
+        <ion-item lines="none" class="ion-margin-top">
+          <ion-label class="ion-text-wrap">
+            <h2><strong>Comentarios adicionales (opcional)</strong></h2>
+          </ion-label>
+        </ion-item>
+
+        <ion-item>
+          <ion-textarea
+            [(ngModel)]="comment"
+            name="comment"
+            placeholder="¿Algo más que quieras compartir con nosotros?"
+            [rows]="4"
+            [maxlength]="500"
+          ></ion-textarea>
+        </ion-item>
+
+        <!-- ============================================ -->
+        <!-- BOTÓN DE ENVÍO -->
+        <!-- ============================================ -->
+        <div class="ion-padding-top">
+          <ion-button
+            expand="block"
+            color="primary"
+            (click)="submitSurvey()"
+            [disabled]="submitting"
+          >
+            <ion-icon name="send-outline" slot="start"></ion-icon>
+            <span *ngIf="!submitting">Enviar encuesta</span>
+            <ion-spinner *ngIf="submitting" name="crescent"></ion-spinner>
+          </ion-button>
+        </div>
+
+        <ion-note color="medium" class="ion-text-center ion-padding">
+          <p>
+            <small>
+              📊 Tus respuestas nos ayudarán a mejorar nuestro servicio.
+              <br />
+              Gracias por tu tiempo. 🙏
+            </small>
+          </p>
+        </ion-note>
+      </form>
+    </ion-card-content>
+  </ion-card>
+</ion-content>

@@ -42,6 +42,7 @@ import { CartService } from '../../services/cart.service';
 import { OrderService } from '../../services/order.service';
 import { PaymentService } from '../../services/payment.service';
 import { AddressService } from '../../services/address.service';
+import { GeolocationService } from '../../services/geolocation.service';
 import {
   PaymentMethodCode,
   PaymentMethod,
@@ -121,6 +122,7 @@ export class CheckoutPage implements OnInit {
     private orderService: OrderService,
     private paymentService: PaymentService,
     private addressService: AddressService,
+    private geolocationService: GeolocationService,
     private router: Router,
     private alertController: AlertController,
     private toastController: ToastController
@@ -312,6 +314,48 @@ export class CheckoutPage implements OnInit {
         'warning'
       );
       return;
+    }
+
+    // VALIDACIÓN DE COBERTURA GEOGRÁFICA
+    const selectedAddress = this.getSelectedAddress();
+    if (selectedAddress && selectedAddress.location?.coordinates) {
+      this.isLoading = true;
+      try {
+        // PostGIS almacena como [longitude, latitude]
+        const longitude = selectedAddress.location.coordinates[0];
+        const latitude = selectedAddress.location.coordinates[1];
+
+        const coverageCheck = await this.geolocationService
+          .checkCoverage(latitude, longitude)
+          .toPromise();
+
+        if (!coverageCheck?.isInCoverage) {
+          this.isLoading = false;
+          const alert = await this.alertController.create({
+            header: '⚠️ Fuera de zona de cobertura',
+            message:
+              coverageCheck?.message ||
+              'Lo sentimos, aún no tenemos cobertura en tu zona.',
+            buttons: [
+              {
+                text: 'Cambiar dirección',
+                role: 'cancel',
+              },
+              {
+                text: 'OK',
+                role: 'confirm',
+              },
+            ],
+          });
+          await alert.present();
+          return;
+        }
+      } catch (error) {
+        console.error('Error al verificar cobertura:', error);
+        // Continuar sin validación si hay error (no bloquear el servicio)
+      } finally {
+        this.isLoading = false;
+      }
     }
 
     if (!this.selectedPaymentMethod) {

@@ -18,6 +18,7 @@ import { AddressService } from '../../services/address.service';
 import { CartItem, CreateOrderDto } from '../../models/order.model';
 import { Address } from '../../models/address.model';
 import { AddressSelectorComponent } from '../../components/address-selector/address-selector.component';
+import { PenCurrencyPipe } from '../../pipes/pen-currency.pipe';
 import { addIcons } from 'ionicons';
 import {
   removeOutline,
@@ -54,6 +55,7 @@ addIcons({
     CommonModule,
     FormsModule,
     AddressSelectorComponent,
+    PenCurrencyPipe,
   ],
 })
 export class CartPage implements OnInit {

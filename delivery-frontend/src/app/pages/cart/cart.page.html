@@ -77,7 +77,7 @@
               <span *ngFor="let g of optionGroups(item); let isLast = last">
                 <span *ngFor="let o of g.options; let isLastOption = last">
                   + {{ o.name }}<span *ngIf="o.extraPrice">
-                    (${{ o.extraPrice }})</span
+                    ({{ o.extraPrice | penCurrency }})</span
                   ><span *ngIf="!isLastOption">, </span>
                 </span>
                 <span *ngIf="!isLast">; </span>
@@ -89,7 +89,7 @@
               Nota: {{ item.comment }}
             </p>
 
-            <p class="product-price">${{ lineTotal(item) | number:'1.2-2' }}</p>
+            <p class="product-price">{{ lineTotal(item) | penCurrency }}</p>
           </div>
 
           <!-- Controles de cantidad -->
@@ -136,7 +136,7 @@
     <div class="footer-content">
       <div class="total-section">
         <span class="total-label">Total</span>
-        <span class="total-price">${{ totalPrice | number:'1.2-2' }}</span>
+        <span class="total-price">{{ totalPrice | penCurrency }}</span>
       </div>
       <button
         class="checkout-button"

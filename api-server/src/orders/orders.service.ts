@@ -11,6 +11,7 @@ import { Repository, DataSource, In } from 'typeorm';
 import { EventEmitter2 } from '@nestjs/event-emitter';
 import { Order } from './entities/order.entity';
 import { OrderItem } from './entities/order-item.entity';
+import { Review } from './entities/review.entity';
 import { MenuItem } from '../restaurants/entities/menu-item.entity';
 import { Restaurant } from '../restaurants/entities/restaurant.entity';
 import { MenuOption } from '../restaurants/entities/menu-option.entity';
@@ -20,12 +21,14 @@ import { FindOrdersDto } from './dto/find-orders.dto';
 import { OrderStatus } from '../common/enums/order-status.enum';
 import { Role } from '../common/enums/role.enum';
 import { DeliveryGateway } from '../geolocation/delivery.gateway';
+import { GeolocationService } from '../geolocation/geolocation.service';
 import { NotificationsService } from '../notifications/notifications.service';
 import { PaymentsService } from '../payments/payments.service';
 import { CheckoutDto } from '../payments/dto/checkout.dto';
 import { Address } from '../users/entities/address.entity';
 import { OrderPayment } from '../payments/entities/order-payment.entity';
 import { User } from '../users/entities/user.entity';
+import { CreateReviewDto } from './dto/create-review.dto';
 import { OrderCreatedEvent } from './events/order-created.event';
 import { OrderStatusChangedEvent } from './events/order-status-changed.event';
 
@@ -36,6 +39,8 @@ export class OrdersService {
     private readonly orderRepository: Repository<Order>,
     @InjectRepository(OrderItem)
     private readonly orderItemRepository: Repository<OrderItem>,
+    @InjectRepository(Review)
+    private readonly reviewRepository: Repository<Review>,
     @InjectRepository(MenuItem)
     private readonly menuItemRepository: Repository<MenuItem>,
     @InjectRepository(Restaurant)
@@ -44,9 +49,12 @@ export class OrdersService {
     private readonly menuOptionRepository: Repository<MenuOption>,
     @InjectRepository(Address)
     private readonly addressRepository: Repository<Address>,
+    @InjectRepository(User)
+    private readonly userRepository: Repository<User>,
     private readonly dataSource: DataSource,
     @Inject(forwardRef(() => DeliveryGateway))
     private readonly deliveryGateway: DeliveryGateway,
+    private readonly geolocationService: GeolocationService,
     private readonly notificationsService: NotificationsService,
     private readonly paymentsService: PaymentsService,
     private readonly eventEmitter: EventEmitter2,
@@ -66,6 +74,13 @@ export class OrdersService {
     if (!restaurant) {
       throw new NotFoundException(
         `Restaurant with ID ${restaurantId} not found`,
+      );
+    }
+
+    // 🚫 Validar que el restaurante esté activo
+    if (!restaurant.isActive) {
+      throw new BadRequestException(
+        'El restaurante no está disponible en este momento',
       );
     }
 
@@ -219,6 +234,32 @@ export class OrdersService {
       throw new NotFoundException(
         `Address with ID ${deliveryAddressId} not found or does not belong to the user`,
       );
+    }
+
+    // 2.1. VALIDACIÓN DE COBERTURA GEOGRÁFICA (Geofencing)
+    // Extraer coordenadas de la dirección (formato PostGIS Point)
+    let deliveryLatitude: number | null = null;
+    let deliveryLongitude: number | null = null;
+
+    if (address.location) {
+      // PostGIS almacena como Point con coordinates [longitude, latitude]
+      const coordinates = (address.location as any).coordinates;
+      if (coordinates && coordinates.length === 2) {
+        deliveryLongitude = coordinates[0];
+        deliveryLatitude = coordinates[1];
+
+        // Validar que la ubicación está dentro de la zona de cobertura
+        const coverageCheck = this.geolocationService.checkCoverage(
+          deliveryLatitude,
+          deliveryLongitude,
+        );
+
+        if (!coverageCheck.isInCoverage) {
+          throw new ForbiddenException(
+            'Lo sentimos, aún no tenemos cobertura en tu zona. Por favor selecciona otra dirección dentro del área de servicio.',
+          );
+        }
+      }
     }
 
     // 3. Verificar que todos los items del menú existen
@@ -467,6 +508,7 @@ export class OrdersService {
     const queryBuilder = this.orderRepository
       .createQueryBuilder('order')
       .leftJoinAndSelect('order.client', 'client')
+      .leftJoinAndSelect('client.addresses', 'addresses') // 🗺️ Cargar direcciones del cliente
       .leftJoinAndSelect('order.restaurant', 'restaurant')
       .leftJoinAndSelect('restaurant.owner', 'restaurantOwner')
       .leftJoinAndSelect('order.driver', 'driver')
@@ -660,6 +702,22 @@ export class OrdersService {
       );
     }
 
+    // 🚫 Validar que el repartidor esté activo
+    const driver = await this.userRepository.findOne({
+      where: { id: driverId },
+      relations: ['role'],
+    });
+
+    if (!driver) {
+      throw new NotFoundException(`Driver with ID ${driverId} not found`);
+    }
+
+    if (!driver.isActive) {
+      throw new BadRequestException(
+        'El repartidor no está disponible en este momento',
+      );
+    }
+
     const previousStatus = order.status;
     order.driver = { id: driverId } as any;
     order.status = OrderStatus.OUT_FOR_DELIVERY;
@@ -733,6 +791,13 @@ export class OrdersService {
     if (!driver || driver.role.name !== Role.DRIVER) {
       throw new BadRequestException(
         'Invalid driver ID or user is not a driver',
+      );
+    }
+
+    // 🚫 Validar que el repartidor esté activo
+    if (!driver.isActive) {
+      throw new BadRequestException(
+        'El repartidor no está disponible en este momento',
       );
     }
 
@@ -826,6 +891,28 @@ export class OrdersService {
           `✅ [Event] Evento 'order.status.changed' emitido para pedido ${orderId}`,
         );
       }
+
+      // 3. 📋 Si el pedido fue entregado, enviar notificación push para la encuesta
+      if (newStatus === OrderStatus.DELIVERED && order && order.client) {
+        console.log(
+          `📋 Enviando notificación push para encuesta POST del pedido ${orderId}`,
+        );
+
+        await this.notificationsService.sendToUser(order.client.id, {
+          title: '🎉 ¡Pedido entregado!',
+          body: '¿Cómo fue tu experiencia? Ayúdanos con una breve encuesta',
+          data: {
+            screen: 'survey',
+            orderId: order.id,
+            orderNumber: order.id.substring(0, 8),
+          },
+          type: 'ORDER_DELIVERED' as any, // Tipo para la encuesta POST
+        });
+
+        console.log(
+          `✅ Notificación push de encuesta enviada al cliente ${order.client.id}`,
+        );
+      }
     } catch (error) {
       console.error('Error en emitOrderStatusUpdate:', error);
     }
@@ -879,5 +966,58 @@ export class OrdersService {
     } catch (error) {
       console.error('Error en emitNewOrderEvent:', error);
     }
+  }
+
+  /**
+   * Crea una encuesta POST de satisfacción para un pedido entregado
+   * Solo el cliente que hizo el pedido puede crear la review
+   */
+  async createReview(
+    orderId: string,
+    createReviewDto: CreateReviewDto,
+    clientId: string,
+  ): Promise<Review> {
+    // 1. Verificar que el pedido existe
+    const order = await this.orderRepository.findOne({
+      where: { id: orderId },
+      relations: ['client', 'review'],
+    });
+
+    if (!order) {
+      throw new NotFoundException(`Pedido con ID ${orderId} no encontrado`);
+    }
+
+    // 2. Verificar que el pedido pertenece al cliente
+    if (order.client.id !== clientId) {
+      throw new ForbiddenException(
+        'No tienes permiso para calificar este pedido',
+      );
+    }
+
+    // 3. Verificar que el pedido está entregado
+    if (order.status !== OrderStatus.DELIVERED) {
+      throw new BadRequestException(
+        'Solo puedes calificar pedidos que han sido entregados',
+      );
+    }
+
+    // 4. Verificar que no exista ya una review para este pedido
+    if (order.review) {
+      throw new BadRequestException('Este pedido ya ha sido calificado');
+    }
+
+    // 5. Crear la review
+    const review = this.reviewRepository.create({
+      ...createReviewDto,
+      order,
+    });
+
+    const savedReview = await this.reviewRepository.save(review);
+
+    console.log(
+      `✅ Encuesta POST guardada para pedido ${orderId} - Satisfacción: ${createReviewDto.generalSatisfaction}/5`,
+    );
+
+    return savedReview;
   }
 }

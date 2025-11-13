@@ -32,6 +32,19 @@ export interface DeliveryOrder {
     id: string;
     name: string;
     email: string;
+    phone?: string;
+    addresses?: Array<{
+      id: string;
+      type: string;
+      street: string;
+      city: string;
+      postalCode: string;
+      reference?: string;
+      location?: {
+        type: string;
+        coordinates: [number, number]; // [lng, lat] en formato GeoJSON
+      };
+    }>;
   };
   driver?: {
     id: string;

@@ -4,6 +4,9 @@ import { AppModule } from './app.module';
 import * as bodyParser from 'body-parser';
 
 async function bootstrap() {
+  // Configurar zona horaria para Lima, Perú (UTC-5)
+  process.env.TZ = 'America/Lima';
+
   const app = await NestFactory.create(AppModule);
 
   // Habilitar validación global con transformación

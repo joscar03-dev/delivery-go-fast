@@ -1,4 +1,13 @@
-import { Component, OnInit, inject, Input } from '@angular/core';
+import {
+  Component,
+  OnInit,
+  OnDestroy,
+  inject,
+  Input,
+  AfterViewInit,
+  ViewChild,
+  ElementRef,
+} from '@angular/core';
 import { CommonModule } from '@angular/common';
 import {
   FormBuilder,
@@ -23,7 +32,9 @@ import {
   IonToggle,
   ModalController,
   IonSpinner,
+  ToastController,
 } from '@ionic/angular/standalone';
+import { Geolocation } from '@capacitor/geolocation';
 import { AddressService } from '../../services/address.service';
 import {
   Address,
@@ -38,7 +49,9 @@ import {
   locateOutline,
   alertCircleOutline,
   informationCircleOutline,
+  checkmarkCircleOutline,
 } from 'ionicons/icons';
+import * as L from 'leaflet';
 
 addIcons({
   'close-outline': closeOutline,
@@ -47,6 +60,7 @@ addIcons({
   'locate-outline': locateOutline,
   'alert-circle-outline': alertCircleOutline,
   'information-circle-outline': informationCircleOutline,
+  'checkmark-circle-outline': checkmarkCircleOutline,
 });
 
 @Component({
@@ -74,17 +88,24 @@ addIcons({
   templateUrl: './address-form.component.html',
   styleUrls: ['./address-form.component.scss'],
 })
-export class AddressFormComponent implements OnInit {
-  @Input() address?: Address; // Para modo edición
+export class AddressFormComponent implements OnInit, AfterViewInit, OnDestroy {
+  @Input() address?: Address;
+  @ViewChild('mapContainer', { static: false }) mapContainer!: ElementRef;
+
+  private map?: L.Map;
+  private marker?: L.Marker; // Para modo edición
+  private resizeObserver?: ResizeObserver; // Para detectar cambios de tamaño
   @Input() isEdit = false;
 
   private fb = inject(FormBuilder);
   private addressService = inject(AddressService);
   private modalCtrl = inject(ModalController);
+  private toastCtrl = inject(ToastController);
 
   addressForm!: FormGroup;
   loading = false;
   errorMessage = '';
+  locationLoading = false;
 
   // Opciones de tipo de dirección
   addressTypes = [
@@ -95,6 +116,140 @@ export class AddressFormComponent implements OnInit {
 
   ngOnInit() {
     this.initForm();
+  }
+
+  ngAfterViewInit() {
+    // Inicializar mapa después de que la vista esté lista
+    // Usar un timeout más largo para asegurar que el contenedor esté renderizado
+    setTimeout(() => {
+      this.initMap();
+      this.setupResizeObserver();
+    }, 500);
+  }
+
+  ngOnDestroy() {
+    // Limpiar recursos del mapa
+    if (this.map) {
+      this.map.remove();
+      this.map = undefined;
+    }
+
+    // Limpiar el ResizeObserver
+    if (this.resizeObserver) {
+      this.resizeObserver.disconnect();
+    }
+  }
+
+  private setupResizeObserver() {
+    // Observar cambios de tamaño en el contenedor del mapa
+    if (this.mapContainer?.nativeElement) {
+      this.resizeObserver = new ResizeObserver(() => {
+        if (this.map) {
+          this.map.invalidateSize();
+        }
+      });
+
+      this.resizeObserver.observe(this.mapContainer.nativeElement);
+    }
+  }
+
+  private initMap() {
+    try {
+      // Coordenadas iniciales (Jaén, Perú o dirección existente)
+      const lat = this.address?.location?.coordinates[1] || -5.636;
+      const lng = this.address?.location?.coordinates[0] || -78.532;
+
+      // Crear el mapa
+      this.map = L.map(this.mapContainer.nativeElement, {
+        center: [lat, lng],
+        zoom: 15,
+        zoomControl: true,
+        scrollWheelZoom: true,
+        doubleClickZoom: true,
+        touchZoom: true,
+        preferCanvas: false,
+      });
+
+      // Agregar capa de tiles (OpenStreetMap) con configuración mejorada
+      const tileLayer = L.tileLayer(
+        'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',
+        {
+          attribution: '© OpenStreetMap contributors',
+          maxZoom: 19,
+          minZoom: 10,
+          subdomains: ['a', 'b', 'c'],
+          errorTileUrl: '', // Manejar tiles que fallan
+          keepBuffer: 2, // Mantener tiles extra en memoria
+        }
+      );
+
+      // Agregar eventos para depuración
+      tileLayer.on('tileerror', (error: any) => {
+        console.warn('⚠️ Error cargando tile:', error);
+      });
+
+      tileLayer.on('tileload', () => {
+        console.log('✅ Tile cargado');
+      });
+
+      tileLayer.addTo(this.map);
+
+      // Forzar que el mapa recalcule su tamaño múltiples veces
+      setTimeout(() => {
+        this.map?.invalidateSize();
+      }, 100);
+
+      setTimeout(() => {
+        this.map?.invalidateSize();
+      }, 500);
+
+      setTimeout(() => {
+        this.map?.invalidateSize();
+      }, 1000);
+
+      // Configurar ícono personalizado del marcador
+      const customIcon = L.icon({
+        iconUrl: 'assets/marker-icon.png',
+        iconRetinaUrl: 'assets/marker-icon-2x.png',
+        shadowUrl: 'assets/marker-shadow.png',
+        iconSize: [25, 41],
+        iconAnchor: [12, 41],
+        popupAnchor: [1, -34],
+        shadowSize: [41, 41],
+      });
+
+      // Agregar marcador inicial
+      this.marker = L.marker([lat, lng], {
+        icon: customIcon,
+        draggable: true,
+      }).addTo(this.map);
+
+      // Actualizar coordenadas cuando se arrastra el marcador
+      this.marker.on('dragend', (event: L.DragEndEvent) => {
+        const position = event.target.getLatLng();
+        this.updateCoordinates(position.lat, position.lng);
+      });
+
+      // Permitir hacer clic en el mapa para mover el marcador
+      this.map.on('click', (event: L.LeafletMouseEvent) => {
+        const { lat, lng } = event.latlng;
+        if (this.marker) {
+          this.marker.setLatLng([lat, lng]);
+        }
+        this.updateCoordinates(lat, lng);
+      });
+
+      console.log('🗺️ Mapa inicializado correctamente');
+    } catch (error) {
+      console.error('❌ Error al inicializar el mapa:', error);
+    }
+  }
+
+  private updateCoordinates(lat: number, lng: number) {
+    this.addressForm.patchValue({
+      latitude: lat,
+      longitude: lng,
+    });
   }
 
   private initForm() {
@@ -117,39 +272,91 @@ export class AddressFormComponent implements OnInit {
   }
 
   /**
-   * Obtiene la ubicación actual del usuario
+   * Obtiene la ubicación actual del usuario usando Capacitor Geolocation
    */
   async getCurrentLocation() {
-    this.loading = true;
+    this.locationLoading = true;
     this.errorMessage = '';
 
     try {
-      // Intentar obtener ubicación del navegador
-      if (navigator.geolocation) {
-        navigator.geolocation.getCurrentPosition(
-          (position) => {
-            this.addressForm.patchValue({
-              latitude: position.coords.latitude,
-              longitude: position.coords.longitude,
-            });
-            this.loading = false;
-          },
-          (error) => {
-            console.error('Error getting location:', error);
-            this.errorMessage =
-              'No se pudo obtener la ubicación. Por favor ingresa las coordenadas manualmente.';
-            this.loading = false;
-          }
-        );
-      } else {
-        this.errorMessage = 'Tu navegador no soporta geolocalización';
-        this.loading = false;
+      // Primero verificar permisos
+      const permissionStatus = await Geolocation.checkPermissions();
+      console.log('📍 Permisos de ubicación:', permissionStatus);
+
+      if (permissionStatus.location !== 'granted') {
+        // Solicitar permisos
+        const requestPermission = await Geolocation.requestPermissions();
+        console.log('📍 Permisos solicitados:', requestPermission);
+
+        if (requestPermission.location !== 'granted') {
+          await this.showToast(
+            'Se necesitan permisos de ubicación para usar esta función',
+            'warning'
+          );
+          this.locationLoading = false;
+          return;
+        }
       }
-    } catch (error) {
-      console.error('Error:', error);
-      this.errorMessage = 'Error al obtener ubicación';
-      this.loading = false;
+
+      // Obtener ubicación
+      const position = await Geolocation.getCurrentPosition({
+        enableHighAccuracy: true,
+        timeout: 10000,
+      });
+
+      console.log('📍 Ubicación obtenida:', position);
+
+      // Actualizar formulario
+      this.addressForm.patchValue({
+        latitude: position.coords.latitude,
+        longitude: position.coords.longitude,
+      });
+
+      // Actualizar mapa y marcador
+      if (this.map && this.marker) {
+        const newLatLng = L.latLng(
+          position.coords.latitude,
+          position.coords.longitude
+        );
+        this.marker.setLatLng(newLatLng);
+        this.map.setView(newLatLng, 16);
+      }
+
+      await this.showToast(
+        `✅ Ubicación detectada: ${position.coords.latitude.toFixed(
+          6
+        )}, ${position.coords.longitude.toFixed(6)}`,
+        'success'
+      );
+
+      this.locationLoading = false;
+    } catch (error: any) {
+      console.error('❌ Error al obtener ubicación:', error);
+
+      let errorMsg = 'No se pudo obtener la ubicación';
+      if (error.message) {
+        errorMsg += `: ${error.message}`;
+      }
+
+      await this.showToast(errorMsg, 'danger');
+      this.locationLoading = false;
     }
+  }
+
+  /**
+   * Muestra un toast con un mensaje
+   */
+  private async showToast(
+    message: string,
+    color: 'success' | 'warning' | 'danger' = 'success'
+  ) {
+    const toast = await this.toastCtrl.create({
+      message,
+      duration: 3000,
+      color,
+      position: 'bottom',
+    });
+    await toast.present();
   }
 
   /**

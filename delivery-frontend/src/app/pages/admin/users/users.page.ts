@@ -52,7 +52,7 @@ export class AdminUsersPage implements OnInit {
 
   load() {
     this.loading = true;
-    this.userService.getAllUsers().subscribe({
+    this.userService.getAllUsersForAdmin().subscribe({
       next: (list) => {
         this.users = list;
         this.loading = false;
@@ -208,6 +208,51 @@ export class AdminUsersPage implements OnInit {
       error: async () => {
         const t = await this.toastCtrl.create({
           message: 'Error al eliminar',
+          duration: 2000,
+          color: 'danger',
+        });
+        t.present();
+      },
+    });
+  }
+
+  /**
+   * Activar o desactivar usuario
+   */
+  async toggleActive(user: User) {
+    const newStatus = user.isActive !== false ? false : true;
+    const action = newStatus ? 'activar' : 'desactivar';
+
+    const alert = await this.alertCtrl.create({
+      header: `${action.charAt(0).toUpperCase() + action.slice(1)} usuario`,
+      message: `¿Estás seguro de ${action} a "${user.name || user.email}"?`,
+      buttons: [
+        { text: 'Cancelar', role: 'cancel' },
+        {
+          text: action.charAt(0).toUpperCase() + action.slice(1),
+          handler: () => this.confirmToggleActive(user.id, newStatus),
+        },
+      ],
+    });
+    await alert.present();
+  }
+
+  private async confirmToggleActive(id: string, isActive: boolean) {
+    this.userService.toggleActive(id, isActive).subscribe({
+      next: async () => {
+        const t = await this.toastCtrl.create({
+          message: `Usuario ${
+            isActive ? 'activado' : 'desactivado'
+          } correctamente`,
+          duration: 1500,
+          color: 'success',
+        });
+        t.present();
+        this.load(); // Recargar lista
+      },
+      error: async (err) => {
+        const t = await this.toastCtrl.create({
+          message: err?.error?.message || 'Error al cambiar estado',
           duration: 2000,
           color: 'danger',
         });

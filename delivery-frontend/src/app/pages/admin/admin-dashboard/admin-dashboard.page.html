@@ -1,0 +1,299 @@
+<ion-header>
+  <ion-toolbar>
+    <ion-buttons slot="start">
+      <ion-back-button defaultHref="/tabs/admin"></ion-back-button>
+    </ion-buttons>
+    <ion-title>📊 Dashboard Administrativo</ion-title>
+    <ion-buttons slot="end">
+      <ion-chip
+        [color]="isSocketConnected ? 'success' : 'medium'"
+        style="margin-right: 8px"
+      >
+        <ion-icon
+          [name]="isSocketConnected ? 'stats-chart-outline' : 'stats-chart-outline'"
+        ></ion-icon>
+        <ion-label>{{ isSocketConnected ? 'En línea' : 'Cargando' }}</ion-label>
+      </ion-chip>
+    </ion-buttons>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content>
+  <ion-refresher slot="fixed" (ionRefresh)="handleRefresh($event)">
+    <ion-refresher-content
+      pullingIcon="refresh-outline"
+      refreshingSpinner="crescent"
+    ></ion-refresher-content>
+  </ion-refresher>
+
+  <!-- Loading Restaurants -->
+  <div *ngIf="loadingRestaurants" class="loading-section">
+    <ion-spinner name="crescent"></ion-spinner>
+    <p>Cargando restaurantes...</p>
+  </div>
+
+  <!-- Restaurant Selector -->
+  <div *ngIf="!loadingRestaurants" class="restaurant-selector">
+    <ion-card>
+      <ion-card-content>
+        <ion-item lines="none">
+          <ion-icon
+            name="restaurant-outline"
+            slot="start"
+            color="primary"
+          ></ion-icon>
+          <ion-select
+            [(ngModel)]="selectedRestaurantId"
+            (ionChange)="onRestaurantChange($event)"
+            label="Seleccionar Restaurante"
+            labelPlacement="stacked"
+            interface="popover"
+            placeholder="Elige un restaurante"
+          >
+            <ion-select-option
+              *ngFor="let restaurant of restaurants"
+              [value]="restaurant.id"
+            >
+              {{ restaurant.name }}
+            </ion-select-option>
+          </ion-select>
+        </ion-item>
+      </ion-card-content>
+    </ion-card>
+  </div>
+
+  <!-- Loading Dashboard -->
+  <div *ngIf="loading && !loadingRestaurants" class="loading-section">
+    <ion-spinner name="crescent"></ion-spinner>
+    <p>Cargando estadísticas...</p>
+  </div>
+
+  <!-- Dashboard Content -->
+  <div *ngIf="!loading && dashboardData" class="dashboard-content">
+    <!-- 📊 Tarjetas de Resumen -->
+    <ion-grid class="summary-grid">
+      <ion-row>
+        <!-- Pedidos -->
+        <ion-col size="6" sizeMd="3">
+          <ion-card class="stat-card orders-card">
+            <ion-card-content>
+              <div class="stat-icon">
+                <ion-icon name="cart-outline"></ion-icon>
+              </div>
+              <div class="stat-value">
+                {{ dashboardData.summary.ordersToday }}
+              </div>
+              <div class="stat-label">Pedidos {{ getPeriodLabel() }}</div>
+            </ion-card-content>
+          </ion-card>
+        </ion-col>
+
+        <!-- Ingresos Totales -->
+        <ion-col size="6" sizeMd="3">
+          <ion-card class="stat-card revenue-card">
+            <ion-card-content>
+              <div class="stat-icon">
+                <ion-icon name="cash-outline"></ion-icon>
+              </div>
+              <div class="stat-value">
+                S/ {{ dashboardData.summary.revenueToday | number: '1.2-2' }}
+              </div>
+              <div class="stat-label">
+                Ingresos Totales {{ getPeriodLabel() }}
+              </div>
+            </ion-card-content>
+          </ion-card>
+        </ion-col>
+
+        <!-- Ingresos por Delivery -->
+        <ion-col size="6" sizeMd="3">
+          <ion-card class="stat-card delivery-card">
+            <ion-card-content>
+              <div class="stat-icon">
+                <ion-icon name="bicycle-outline"></ion-icon>
+              </div>
+              <div class="stat-value">
+                S/ {{ dashboardData.summary.deliveryRevenue | number: '1.2-2' }}
+              </div>
+              <div class="stat-label">Delivery {{ getPeriodLabel() }}</div>
+            </ion-card-content>
+          </ion-card>
+        </ion-col>
+
+        <!-- Repartidores Activos -->
+        <ion-col size="6" sizeMd="3">
+          <ion-card class="stat-card drivers-card">
+            <ion-card-content>
+              <div class="stat-icon">
+                <ion-icon name="people-outline"></ion-icon>
+              </div>
+              <div class="stat-value">
+                {{ dashboardData.summary.activeDrivers }}
+              </div>
+              <div class="stat-label">Drivers Activos</div>
+            </ion-card-content>
+          </ion-card>
+        </ion-col>
+      </ion-row>
+
+      <!-- Segunda fila de cards -->
+      <ion-row>
+        <!-- Tiempo Promedio -->
+        <ion-col size="6" sizeMd="3">
+          <ion-card class="stat-card time-card">
+            <ion-card-content>
+              <div class="stat-icon">
+                <ion-icon name="time-outline"></ion-icon>
+              </div>
+              <div class="stat-value">
+                {{ dashboardData.summary.avgPrepTime }} min
+              </div>
+              <div class="stat-label">Tiempo Prep.</div>
+            </ion-card-content>
+          </ion-card>
+        </ion-col>
+      </ion-row>
+    </ion-grid>
+
+    <!-- 🔍 Filtro de Período -->
+    <div class="period-filter">
+      <ion-segment
+        [(ngModel)]="selectedPeriod"
+        (ionChange)="onPeriodChange($event)"
+        mode="ios"
+      >
+        <ion-segment-button value="today">
+          <ion-label>Hoy</ion-label>
+        </ion-segment-button>
+        <ion-segment-button value="week">
+          <ion-label>7 Días</ion-label>
+        </ion-segment-button>
+        <ion-segment-button value="month">
+          <ion-label>30 Días</ion-label>
+        </ion-segment-button>
+        <ion-segment-button value="all">
+          <ion-label>Todo</ion-label>
+        </ion-segment-button>
+      </ion-segment>
+    </div>
+
+    <!-- 📈 Gráficos -->
+    <ion-grid>
+      <ion-row>
+        <!-- Gráfico de Pedidos por Estado -->
+        <ion-col size="12" sizeMd="6">
+          <ion-card class="chart-card">
+            <ion-card-header>
+              <ion-card-title>
+                <ion-icon name="list-outline"></ion-icon>
+                Pedidos por Estado
+              </ion-card-title>
+            </ion-card-header>
+            <ion-card-content>
+              <div class="chart-container">
+                <canvas
+                  baseChart
+                  #pieChart
+                  [data]="pieChartData"
+                  [options]="pieChartOptions"
+                  type="pie"
+                ></canvas>
+              </div>
+            </ion-card-content>
+          </ion-card>
+        </ion-col>
+
+        <!-- Gráfico de Ingresos -->
+        <ion-col size="12" sizeMd="6">
+          <ion-card class="chart-card">
+            <ion-card-header>
+              <ion-card-title>
+                <ion-icon name="stats-chart-outline"></ion-icon>
+                Ingresos {{ getPeriodLabel() }}
+              </ion-card-title>
+            </ion-card-header>
+            <ion-card-content>
+              <div class="chart-container">
+                <canvas
+                  baseChart
+                  #lineChart
+                  [data]="lineChartData"
+                  [options]="lineChartOptions"
+                  type="line"
+                ></canvas>
+              </div>
+            </ion-card-content>
+          </ion-card>
+        </ion-col>
+      </ion-row>
+    </ion-grid>
+
+    <!-- 🏆 Top Productos -->
+    <ion-card
+      *ngIf="dashboardData.topProducts && dashboardData.topProducts.length > 0"
+    >
+      <ion-card-header>
+        <ion-card-title>
+          <ion-icon name="trophy-outline"></ion-icon>
+          Productos Más Vendidos
+        </ion-card-title>
+      </ion-card-header>
+      <ion-card-content>
+        <ion-list lines="full">
+          <ion-item
+            *ngFor="let product of dashboardData.topProducts; let i = index"
+          >
+            <div class="rank-badge" slot="start">{{ i + 1 }}</div>
+            <ion-label>
+              <h3>{{ product.productName }}</h3>
+              <p>{{ product.quantity }} vendidos</p>
+            </ion-label>
+            <ion-badge slot="end" color="success">
+              S/ {{ product.revenue | number: '1.2-2' }}
+            </ion-badge>
+          </ion-item>
+        </ion-list>
+      </ion-card-content>
+    </ion-card>
+
+    <!-- 🚴 Repartidores Activos -->
+    <ion-card
+      *ngIf="dashboardData.activeDrivers && dashboardData.activeDrivers.length > 0"
+    >
+      <ion-card-header>
+        <ion-card-title>
+          <ion-icon name="people-outline"></ion-icon>
+          Repartidores en Entregas
+        </ion-card-title>
+      </ion-card-header>
+      <ion-card-content>
+        <ion-list lines="full">
+          <ion-item *ngFor="let driver of dashboardData.activeDrivers">
+            <ion-icon
+              name="bicycle-outline"
+              slot="start"
+              color="primary"
+            ></ion-icon>
+            <ion-label>
+              <h3>{{ driver.driverName }}</h3>
+              <p>Pedido #{{ driver.orderId.substring(0, 8) }}</p>
+            </ion-label>
+            <ion-badge slot="end" [color]="getStatusColor(driver.orderStatus)">
+              {{ getStatusLabel(driver.orderStatus) }}
+            </ion-badge>
+          </ion-item>
+        </ion-list>
+      </ion-card-content>
+    </ion-card>
+
+    <!-- Mensaje si no hay drivers activos -->
+    <ion-card
+      *ngIf="!dashboardData.activeDrivers || dashboardData.activeDrivers.length === 0"
+    >
+      <ion-card-content class="empty-state">
+        <ion-icon name="bicycle-outline" size="large" color="medium"></ion-icon>
+        <p>No hay repartidores en entregas actualmente</p>
+      </ion-card-content>
+    </ion-card>
+  </div>
+</ion-content>

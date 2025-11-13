@@ -64,6 +64,8 @@ import { AppService } from './app.service';
         password: configService.get<string>('DB_PASSWORD'),
         database: configService.get<string>('DB_DATABASE'),
         autoLoadEntities: true,
+        // Configuración de zona horaria para Lima, Perú (UTC-5)
+        timezone: 'America/Lima',
         // En producción usamos migraciones; activar bootstrap puntual con DB_BOOTSTRAP=true
         synchronize:
           process.env.NODE_ENV !== 'production' ||

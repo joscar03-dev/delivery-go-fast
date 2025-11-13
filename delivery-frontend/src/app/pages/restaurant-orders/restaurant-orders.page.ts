@@ -50,6 +50,7 @@ import {
   warningOutline,
   wifi,
   wifiOutline,
+  callOutline,
 } from 'ionicons/icons';
 import { Subscription, interval } from 'rxjs';
 
@@ -70,6 +71,7 @@ addIcons({
   'warning-outline': warningOutline,
   wifi: wifi,
   'wifi-outline': wifiOutline,
+  'call-outline': callOutline,
 });
 
 @Component({

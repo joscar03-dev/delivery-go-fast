@@ -1,0 +1,272 @@
+ion-content {
+  --background: var(--ion-color-light);
+}
+
+.loading-section {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 60px 20px;
+
+  ion-spinner {
+    margin-bottom: 16px;
+  }
+
+  p {
+    color: var(--ion-color-medium);
+    font-size: 14px;
+  }
+}
+
+.dashboard-content {
+  padding-bottom: 20px;
+}
+
+// � Filtro de Período
+.period-filter {
+  padding: 16px;
+  background: var(--ion-color-light);
+
+  ion-segment {
+    --background: white;
+    border-radius: 12px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+    padding: 4px;
+
+    ion-segment-button {
+      --indicator-color: var(--ion-color-primary);
+      --color-checked: white;
+      --color: var(--ion-color-medium);
+      min-height: 36px;
+      font-size: 13px;
+      font-weight: 600;
+      text-transform: none;
+      border-radius: 8px;
+      margin: 2px;
+
+      ion-label {
+        margin: 0;
+      }
+
+      &.segment-button-checked {
+        ion-label {
+          font-weight: 700;
+        }
+      }
+    }
+  }
+}
+
+// �📊 Tarjetas de Resumen (Cards Superiores)
+.summary-grid {
+  padding: 12px 12px 0 12px;
+}
+
+.stat-card {
+  margin: 0;
+  border-radius: 16px;
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.08);
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+
+  &:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.12);
+  }
+
+  ion-card-content {
+    padding: 20px;
+    text-align: center;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .stat-icon {
+    width: 50px;
+    height: 50px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: 8px;
+
+    ion-icon {
+      font-size: 28px;
+      color: white;
+    }
+  }
+
+  .stat-value {
+    font-size: 28px;
+    font-weight: 700;
+    color: var(--ion-color-dark);
+    line-height: 1;
+  }
+
+  .stat-label {
+    font-size: 12px;
+    font-weight: 500;
+    color: var(--ion-color-medium);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+  }
+}
+
+// Colores específicos para cada tarjeta
+.orders-card {
+  .stat-icon {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  }
+}
+
+.revenue-card {
+  .stat-icon {
+    background: linear-gradient(135deg, #2dd36f 0%, #0ba360 100%);
+  }
+}
+
+.delivery-card {
+  .stat-icon {
+    background: linear-gradient(135deg, #ff6b6b 0%, #ee5a6f 100%);
+  }
+}
+
+.drivers-card {
+  .stat-icon {
+    background: linear-gradient(135deg, #3880ff 0%, #0051d5 100%);
+  }
+}
+
+.time-card {
+  .stat-icon {
+    background: linear-gradient(135deg, #ffc409 0%, #ff9500 100%);
+  }
+}
+
+// 📈 Gráficos
+.chart-card {
+  margin: 12px;
+  border-radius: 16px;
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.08);
+
+  ion-card-header {
+    padding-bottom: 8px;
+  }
+
+  ion-card-title {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 16px;
+    font-weight: 600;
+    color: var(--ion-color-dark);
+
+    ion-icon {
+      font-size: 20px;
+      color: var(--ion-color-primary);
+    }
+  }
+
+  ion-card-content {
+    padding: 16px;
+  }
+
+  .chart-container {
+    position: relative;
+    height: 280px;
+    width: 100%;
+  }
+}
+
+// 🏆 Top Productos
+.rank-badge {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #ffd700 0%, #ffa500 100%);
+  color: white;
+  font-weight: 700;
+  font-size: 14px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-right: 12px;
+}
+
+// 🚴 Repartidores Activos
+ion-list {
+  background: transparent;
+  padding: 0;
+
+  ion-item {
+    --background: var(--ion-background-color);
+    --border-radius: 8px;
+    margin-bottom: 8px;
+
+    &:last-child {
+      margin-bottom: 0;
+    }
+
+    ion-label {
+      h3 {
+        font-weight: 600;
+        color: var(--ion-color-dark);
+        margin-bottom: 4px;
+      }
+
+      p {
+        color: var(--ion-color-medium);
+        font-size: 13px;
+      }
+    }
+  }
+}
+
+// Estado vacío
+.empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 40px 20px;
+  text-align: center;
+
+  ion-icon {
+    margin-bottom: 12px;
+    opacity: 0.5;
+  }
+
+  p {
+    color: var(--ion-color-medium);
+    font-size: 14px;
+    margin: 0;
+  }
+}
+
+// Responsive
+@media (max-width: 576px) {
+  .stat-card {
+    .stat-icon {
+      width: 40px;
+      height: 40px;
+
+      ion-icon {
+        font-size: 22px;
+      }
+    }
+
+    .stat-value {
+      font-size: 22px;
+    }
+
+    .stat-label {
+      font-size: 11px;
+    }
+  }
+
+  .chart-container {
+    height: 240px !important;
+  }
+}

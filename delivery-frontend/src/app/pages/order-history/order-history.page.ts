@@ -24,6 +24,7 @@ import { OrderService } from '../../services/order.service';
 import { SocketService } from '../../services/socket.service';
 import { WaveBackgroundComponent } from '../../components/wave-background/wave-background.component';
 import { Order, OrderStatus } from '../../models/order.model';
+import { PenCurrencyPipe } from '../../pipes/pen-currency.pipe';
 import { addIcons } from 'ionicons';
 import {
   timeOutline,
@@ -64,6 +65,7 @@ addIcons({
     CommonModule,
     FormsModule,
     WaveBackgroundComponent,
+    PenCurrencyPipe,
   ],
 })
 export class OrderHistoryPage implements OnInit, OnDestroy {

@@ -41,6 +41,13 @@ export const routes: Routes = [
         (m) => m.EditProfilePage
       ),
   },
+  // Encuesta POST de satisfacción
+  {
+    path: 'survey/:id',
+    canMatch: [authGuard],
+    loadComponent: () =>
+      import('./pages/survey/survey.page').then((m) => m.SurveyPage),
+  },
   // Solicitud de conductor (Driver Application)
   {
     path: 'driver-application',
@@ -183,6 +190,16 @@ export const routes: Routes = [
         (m) => m.RestaurantOrdersPage
       ),
   },
+  // Dashboard del Restaurante
+  {
+    path: 'restaurant-dashboard/:id',
+    canMatch: [authGuard, rolesGuard],
+    data: { roles: ['restaurant_owner', 'super_admin'] },
+    loadComponent: () =>
+      import('./pages/restaurant-dashboard/restaurant-dashboard.page').then(
+        (m) => m.RestaurantDashboardPage
+      ),
+  },
   // Editar información del restaurante (para restaurant_owner)
   {
     path: 'restaurant-edit',
@@ -250,5 +267,14 @@ export const routes: Routes = [
       import(
         './pages/admin/admin-restaurant-application-detail/admin-restaurant-application-detail.page'
       ).then((m) => m.AdminRestaurantApplicationDetailPage),
+  },
+  {
+    path: 'admin/admin-dashboard',
+    loadComponent: () =>
+      import('./pages/admin/admin-dashboard/admin-dashboard.page').then(
+        (m) => m.AdminDashboardPage
+      ),
+    canMatch: [authGuard, rolesGuard],
+    data: { roles: ['super_admin'] },
   },
 ];

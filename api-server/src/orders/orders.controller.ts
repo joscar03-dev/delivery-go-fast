@@ -19,9 +19,11 @@ import { RolesGuard } from '../auth/guards/roles.guard';
 import { Roles } from '../auth/decorators/roles.decorator';
 import { Role } from '../common/enums/role.enum';
 import { CheckoutDto } from '../payments/dto/checkout.dto';
+import { ActiveUserGuard } from '../auth/guards/active-user.guard';
+import { CreateReviewDto } from './dto/create-review.dto';
 
 @Controller('orders')
-@UseGuards(JwtAuthGuard, RolesGuard)
+@UseGuards(JwtAuthGuard, ActiveUserGuard, RolesGuard)
 export class OrdersController {
   constructor(private readonly ordersService: OrdersService) {}
 
@@ -199,6 +201,26 @@ export class OrdersController {
       { status: 'delivered' as any },
       currentUser.id,
       currentUser.role,
+    );
+  }
+
+  /**
+   * POST /api/orders/:id/review
+   * Endpoint para que el cliente envíe la encuesta POST de satisfacción
+   * Solo clientes pueden enviar reviews
+   */
+  @Post(':id/review')
+  @Roles(Role.CLIENT, Role.SUPER_ADMIN)
+  createReview(
+    @Param('id', ParseUUIDPipe) orderId: string,
+    @Body() createReviewDto: CreateReviewDto,
+    @Request() req,
+  ) {
+    const currentUser = req.user;
+    return this.ordersService.createReview(
+      orderId,
+      createReviewDto,
+      currentUser.id,
     );
   }
 }

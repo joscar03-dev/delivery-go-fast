@@ -15,6 +15,7 @@ import {
   UpdateMenuItemDto,
 } from '../../../services/restaurant.service';
 import { AuthService } from '../../../services/auth.service';
+import { PenCurrencyPipe } from '../../../pipes/pen-currency.pipe';
 import { addIcons } from 'ionicons';
 import {
   createOutline,
@@ -40,7 +41,7 @@ addIcons({
 @Component({
   selector: 'app-admin-menu-items',
   standalone: true,
-  imports: [CommonModule, IonicModule, ReactiveFormsModule],
+  imports: [CommonModule, IonicModule, ReactiveFormsModule, PenCurrencyPipe],
   templateUrl: './menu-items.page.html',
   styleUrls: ['./menu-items.page.scss'],
 })
@@ -99,6 +100,25 @@ export class AdminMenuItemsPage implements OnInit {
         (
           await this.toast.create({
             message: err?.error?.message || 'Error al cargar ítems',
+            duration: 1500,
+            color: 'danger',
+          })
+        ).present();
+      },
+    });
+  }
+
+  handleRefresh(event: any) {
+    this.restaurants.listMenu(this.restaurantId).subscribe({
+      next: (r) => {
+        this.list = r || [];
+        event.target.complete();
+      },
+      error: async (err) => {
+        event.target.complete();
+        (
+          await this.toast.create({
+            message: err?.error?.message || 'Error al recargar ítems',
             duration: 1500,
             color: 'danger',
           })
@@ -276,7 +296,7 @@ export class AdminMenuItemsPage implements OnInit {
 @Component({
   selector: 'app-item-options-modal',
   standalone: true,
-  imports: [CommonModule, IonicModule, ReactiveFormsModule],
+  imports: [CommonModule, IonicModule, ReactiveFormsModule, PenCurrencyPipe],
   templateUrl: './item-options-modal.component.html',
 })
 export class ItemOptionsModalComponent implements OnInit {

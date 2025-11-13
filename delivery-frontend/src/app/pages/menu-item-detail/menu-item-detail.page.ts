@@ -14,6 +14,7 @@ import { RestaurantService } from '../../services/restaurant.service';
 import { CartService } from '../../services/cart.service';
 import type { MenuItemModel } from '../../models/restaurant.model';
 import { FormsModule } from '@angular/forms';
+import { PenCurrencyPipe } from '../../pipes/pen-currency.pipe';
 import { addIcons } from 'ionicons';
 import { cartOutline } from 'ionicons/icons';
 
@@ -34,6 +35,7 @@ addIcons({ 'cart-outline': cartOutline });
     IonNote,
     IonSpinner,
     IonToast,
+    PenCurrencyPipe,
   ],
 })
 export class MenuItemDetailPage implements OnInit {

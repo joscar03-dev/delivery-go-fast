@@ -66,6 +66,15 @@ export class User {
   @Index('idx_users_auth_method')
   authMethod: AuthMethod;
 
+  /**
+   * Indica si el usuario está activo en el sistema
+   * - true: Usuario puede acceder y usar el sistema
+   * - false: Usuario bloqueado/desactivado
+   */
+  @Column({ name: 'is_active', type: 'boolean', default: true })
+  @Index('idx_users_is_active')
+  isActive: boolean;
+
   @CreateDateColumn({ type: 'timestamp with time zone' })
   created_at: Date;
 

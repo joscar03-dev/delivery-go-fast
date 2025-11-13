@@ -86,20 +86,34 @@
     <div class="location-section">
       <h3>
         <ion-icon name="location-outline"></ion-icon>
-        Ubicación GPS (opcional)
+        Ubicación GPS (opcional pero recomendado)
       </h3>
       <p class="description">
-        Esto ayuda a los repartidores a encontrar tu dirección más fácilmente
+        <ion-icon name="information-circle-outline"></ion-icon>
+        Arrastra el marcador en el mapa o usa el botón GPS para seleccionar tu
+        ubicación
       </p>
+
+      <!-- Mapa interactivo -->
+      <div class="map-container" #mapContainer></div>
 
       <ion-button
         expand="block"
         fill="outline"
         (click)="getCurrentLocation()"
-        [disabled]="loading"
+        [disabled]="loading || locationLoading"
       >
-        <ion-icon slot="start" name="locate-outline"></ion-icon>
-        Usar mi ubicación actual
+        <ion-spinner *ngIf="locationLoading" slot="start"></ion-spinner>
+        <ion-icon
+          *ngIf="!locationLoading"
+          slot="start"
+          name="locate-outline"
+        ></ion-icon>
+        {{
+          locationLoading
+            ? "Obteniendo ubicación..."
+            : "Usar mi ubicación actual"
+        }}
       </ion-button>
 
       <div class="coordinates-row">
@@ -108,7 +122,7 @@
           <ion-input
             type="number"
             formControlName="latitude"
-            placeholder="-16.409047"
+            placeholder="-5.636"
             step="0.000001"
           ></ion-input>
         </ion-item>
@@ -118,10 +132,26 @@
           <ion-input
             type="number"
             formControlName="longitude"
-            placeholder="-71.537451"
+            placeholder="-78.532"
             step="0.000001"
           ></ion-input>
         </ion-item>
+      </div>
+
+      <!-- Mostrar coordenadas detectadas -->
+      <div
+        class="location-info"
+        *ngIf="
+          addressForm.get('latitude')?.value &&
+          addressForm.get('longitude')?.value
+        "
+      >
+        <ion-icon name="checkmark-circle-outline" color="success"></ion-icon>
+        <span>
+          Ubicación registrada:
+          {{ addressForm.get("latitude")?.value | number : "1.6-6" }},
+          {{ addressForm.get("longitude")?.value | number : "1.6-6" }}
+        </span>
       </div>
     </div>
 

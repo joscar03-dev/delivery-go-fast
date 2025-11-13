@@ -86,7 +86,10 @@ export class UsersService {
 
   async findAllDrivers(): Promise<User[]> {
     return await this.userRepository.find({
-      where: { role: { name: RoleEnum.DRIVER } },
+      where: {
+        role: { name: RoleEnum.DRIVER },
+        isActive: true, // Solo drivers activos
+      },
       relations: ['role'],
       order: { name: 'ASC' },
     });
@@ -124,6 +127,28 @@ export class UsersService {
       throw new NotFoundException('User not found');
     }
     await this.userRepository.remove(user);
+  }
+
+  /**
+   * Activar o desactivar un usuario
+   */
+  async toggleActive(id: string, isActive: boolean): Promise<User> {
+    const user = await this.userRepository.findOne({ where: { id } });
+    if (!user) {
+      throw new NotFoundException('User not found');
+    }
+    user.isActive = isActive;
+    return await this.userRepository.save(user);
+  }
+
+  /**
+   * Obtener todos los usuarios (incluyendo inactivos) - Solo para admin
+   */
+  async findAllForAdmin(): Promise<User[]> {
+    return await this.userRepository.find({
+      relations: ['role'],
+      order: { created_at: 'DESC' },
+    });
   }
 
   async updateUserRole(userId: string, roleName: RoleEnum): Promise<User> {

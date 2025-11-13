@@ -1,9 +1,12 @@
-<ion-header>
-  <ion-toolbar>
+<ion-content>
+  <app-wave-background></app-wave-background>
+
+  <div class="custom-header">
     <ion-buttons slot="start">
       <ion-back-button defaultHref="/tabs/account"></ion-back-button>
     </ion-buttons>
-    <ion-title>Mis Pedidos</ion-title>
+    <h1 class="header-title">Historial de Pedidos</h1>
+    <div class="header-spacer"></div>
     <ion-buttons slot="end">
       <!-- Indicador de conexión Socket.IO -->
       <ion-chip
@@ -17,11 +20,7 @@
         >
       </ion-chip>
     </ion-buttons>
-  </ion-toolbar>
-</ion-header>
-
-<ion-content>
-  <app-wave-background></app-wave-background>
+  </div>
 
   <!-- Pull to refresh -->
   <ion-refresher slot="fixed" (ionRefresh)="refresh($event)">
@@ -68,7 +67,7 @@
           </div>
 
           <div class="order-total">
-            <strong>{{ order.total | currency:'PEN':'symbol':'1.2-2' }}</strong>
+            <strong>{{ order.total | penCurrency }}</strong>
           </div>
         </ion-label>
 

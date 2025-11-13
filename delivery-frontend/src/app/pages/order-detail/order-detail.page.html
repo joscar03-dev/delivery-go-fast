@@ -1,13 +1,12 @@
-<ion-header>
-  <ion-toolbar>
-    <ion-buttons slot="start">
-      <ion-back-button defaultHref="tabs/order-history"></ion-back-button>
-    </ion-buttons>
-    <ion-title>Detalle del Pedido</ion-title>
-  </ion-toolbar>
-</ion-header>
-
 <ion-content class="ion-padding">
+  <app-wave-background></app-wave-background>
+  <div class="custom-header">
+    <ion-buttons>
+      <ion-back-button defaultHref="/tabs/order-history"></ion-back-button>
+    </ion-buttons>
+    <h1 class="header-title">Detalle del Pedido</h1>
+    <div class="header-spacer"></div>
+  </div>
   <!-- Loading -->
   <div *ngIf="loading" class="loading-container">
     <ion-spinner></ion-spinner>
@@ -164,8 +163,7 @@
                       <span class="chip" *ngFor="let o of g.options">
                         {{ o.name }}
                         <small *ngIf="o.extraPrice"
-                          >(+{{ o.extraPrice | currency:'USD':'symbol':'1.2-2'
-                          }})</small
+                          >(+{{ o.extraPrice | penCurrency }})</small
                         >
                       </span>
                     </div>
@@ -175,38 +173,27 @@
               <div class="item-details">
                 <span class="quantity">Cantidad: {{ item.quantity }}</span>
                 <span class="price">
-                  {{ unitTotal(item) | currency:'USD':'symbol':'1.2-2' }} c/u
+                  {{ unitTotal(item) | penCurrency }} c/u
                 </span>
               </div>
               <div class="price-breakdown">
                 <div class="row">
                   <span>Base</span>
-                  <span
-                    >{{ baseUnit(item) | currency:'USD':'symbol':'1.2-2'
-                    }}</span
-                  >
+                  <span>{{ baseUnit(item) | penCurrency }}</span>
                 </div>
                 <div class="row" *ngIf="extrasUnit(item) > 0">
                   <span>Extras</span>
-                  <span
-                    >+ {{ extrasUnit(item) | currency:'USD':'symbol':'1.2-2'
-                    }}</span
-                  >
+                  <span>+ {{ extrasUnit(item) | penCurrency }}</span>
                 </div>
                 <div class="row total">
                   <span>Precio unitario</span>
-                  <span
-                    >{{ unitTotal(item) | currency:'USD':'symbol':'1.2-2'
-                    }}</span
-                  >
+                  <span>{{ unitTotal(item) | penCurrency }}</span>
                 </div>
               </div>
             </ion-label>
 
             <div slot="end" class="item-total">
-              <strong
-                >{{ lineTotal(item) | currency:'USD':'symbol':'1.2-2' }}</strong
-              >
+              <strong>{{ lineTotal(item) | penCurrency }}</strong>
             </div>
           </ion-item>
         </ion-list>
@@ -228,9 +215,7 @@
       <ion-card-content>
         <div class="total-section">
           <span class="total-label">Total del Pedido</span>
-          <span class="total-amount"
-            >{{ order.total | currency:'USD':'symbol':'1.2-2' }}</span
-          >
+          <span class="total-amount">{{ order.total | penCurrency }}</span>
         </div>
       </ion-card-content>
     </ion-card>

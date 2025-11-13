@@ -24,11 +24,27 @@ export class UserService {
     return this.http.get<User[]>(`${this.base}/users`);
   }
 
+  /**
+   * Obtener todos los usuarios incluyendo inactivos (Solo admin)
+   */
+  getAllUsersForAdmin(): Observable<User[]> {
+    return this.http.get<User[]>(`${this.base}/users/admin/all`);
+  }
+
   updateUser(
     id: string,
     data: Partial<User> & { password?: string; role?: RoleName }
   ): Observable<User> {
     return this.http.patch<User>(`${this.base}/users/${id}`, data);
+  }
+
+  /**
+   * Activar o desactivar un usuario
+   */
+  toggleActive(id: string, isActive: boolean): Observable<User> {
+    return this.http.patch<User>(`${this.base}/users/${id}/toggle-active`, {
+      isActive,
+    });
   }
 
   deleteUser(id: string): Observable<void> {

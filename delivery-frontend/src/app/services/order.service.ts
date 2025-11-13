@@ -182,4 +182,25 @@ export class OrderService {
       headers: this.getHeaders(),
     });
   }
+
+  /**
+   * Envía la encuesta POST de satisfacción para un pedido entregado
+   * @param orderId ID del pedido
+   * @param surveyData Respuestas de la encuesta
+   */
+  submitSurvey(
+    orderId: string,
+    surveyData: {
+      usabilityRating: number;
+      precisionAnswer: 'yes' | 'no' | 'errors';
+      monitoringAnswer: 'very_useful' | 'useful' | 'not_used';
+      punctualityAnswer: 'on_time' | 'delayed';
+      generalSatisfaction: number;
+      comment?: string;
+    }
+  ): Observable<any> {
+    return this.http.post(`${this.apiUrl}/${orderId}/review`, surveyData, {
+      headers: this.getHeaders(),
+    });
+  }
 }

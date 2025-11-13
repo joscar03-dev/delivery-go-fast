@@ -139,6 +139,13 @@ export class AuthService {
       throw new UnauthorizedException('Credenciales inválidas');
     }
 
+    // Verificar si el usuario está activo
+    if (!user.isActive) {
+      throw new UnauthorizedException(
+        'Usuario desactivado. Contacta al administrador.',
+      );
+    }
+
     const isPasswordValid = await bcrypt.compare(password, user.password_hash);
     if (!isPasswordValid) {
       throw new UnauthorizedException('Credenciales inválidas');
@@ -250,6 +257,14 @@ export class AuthService {
       this.logger.warn(`⚠️ Usuario no encontrado con teléfono: ${phone}`);
       throw new UnauthorizedException(
         'Usuario no registrado. Por favor regístrate primero.',
+      );
+    }
+
+    // 2.5 Verificar si el usuario está activo
+    if (!user.isActive) {
+      this.logger.warn(`🚫 Usuario desactivado: ${user.id}`);
+      throw new UnauthorizedException(
+        'Usuario desactivado. Contacta al administrador.',
       );
     }
 

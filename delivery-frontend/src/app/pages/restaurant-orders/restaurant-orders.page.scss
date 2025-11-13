@@ -119,6 +119,19 @@ ion-content {
     flex: 1;
     color: var(--ion-color-medium);
   }
+
+  .phone-link {
+    color: var(--ion-color-primary);
+    text-decoration: none;
+    font-weight: 600;
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+
+    &:hover {
+      text-decoration: underline;
+    }
+  }
 }
 
 .items-section {
@@ -232,7 +245,11 @@ ion-content {
   gap: 12px;
   margin: 16px 0;
   padding: 12px;
-  background: linear-gradient(135deg, var(--ion-color-primary-tint) 0%, var(--ion-color-primary) 100%);
+  background: linear-gradient(
+    135deg,
+    var(--ion-color-primary-tint) 0%,
+    var(--ion-color-primary) 100%
+  );
   border-radius: 8px;
 
   ion-icon {

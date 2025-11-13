@@ -39,7 +39,8 @@
               "src/styles/tailwind.css",
               "src/global.scss",
               "src/theme/variables.scss",
-              "node_modules/swiper/swiper-bundle.min.css"
+              "node_modules/swiper/swiper-bundle.min.css",
+              "node_modules/leaflet/dist/leaflet.css"
             ],
             "scripts": [],
             "browser": "src/main.ts"

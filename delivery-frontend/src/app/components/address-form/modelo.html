@@ -1,0 +1,242 @@
+<!DOCTYPE html>
+
+<html class="light" lang="es">
+  <head>
+    <meta charset="utf-8" />
+    <meta content="width=device-width, initial-scale=1.0" name="viewport" />
+    <title>Nueva Dirección</title>
+    <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+    <link
+      href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&amp;display=swap"
+      rel="stylesheet"
+    />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined"
+      rel="stylesheet"
+    />
+    <script>
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            colors: {
+              primary: "#f27f0d",
+              "background-light": "#f8f7f5",
+              "background-dark": "#221910",
+            },
+            fontFamily: {
+              display: ["Plus Jakarta Sans", "sans-serif"],
+            },
+            borderRadius: {
+              DEFAULT: "1rem",
+              lg: "2rem",
+              xl: "3rem",
+              full: "9999px",
+            },
+          },
+        },
+      };
+    </script>
+    <style>
+      .material-symbols-outlined {
+        font-variation-settings: "FILL" 0, "wght" 400, "GRAD" 0, "opsz" 24;
+        font-size: 24px;
+      }
+      select.form-input {
+        -webkit-appearance: none;
+        -moz-appearance: none;
+        appearance: none;
+        background-repeat: no-repeat;
+        background-position: right 1rem center;
+        background-size: 1.5em 1.5em;
+        padding-right: 3rem;
+      }
+    </style>
+    <style>
+      body {
+        min-height: max(884px, 100dvh);
+      }
+    </style>
+  </head>
+  <body
+    class="bg-background-light dark:bg-background-dark font-display text-gray-800 dark:text-gray-200"
+  >
+    <div
+      class="relative flex min-h-screen w-full flex-col group/design-root overflow-x-hidden"
+      style="
+        --select-button-svg: url('data:image/svg+xml,%3csvg xmlns=%27http://www.w3.org/2000/svg%27 width=%2724px%27 height=%2724px%27 fill=%27rgb(138,117,96)%27 viewBox=%270 0 256 256%27%3e%3cpath d=%27M181.66,170.34a8,8,0,0,1,0,11.32l-48,48a8,8,0,0,1-11.32,0l-48-48a8,8,0,0,1,11.32-11.32L128,212.69l42.34-42.35A8,8,0,0,1,181.66,170.34Zm-96-84.68L128,43.31l42.34,42.35a8,8,0,0,0,11.32-11.32l-48-48a8,8,0,0,0-11.32,0l-48,48A8,8,0,0,0,85.66,85.66Z%27%3e%3c/path%3e%3c/svg%3e');
+      "
+    >
+      <!-- Top App Bar -->
+      <header
+        class="sticky top-0 z-10 flex items-center bg-background-light dark:bg-background-dark p-4 pb-2 justify-between border-b border-gray-200/80 dark:border-gray-800/80"
+      >
+        <button
+          class="text-gray-800 dark:text-gray-200 flex size-12 shrink-0 items-center justify-center rounded-full hover:bg-gray-200 dark:hover:bg-gray-800"
+        >
+          <span class="material-symbols-outlined">arrow_back</span>
+        </button>
+        <h1
+          class="text-gray-900 dark:text-gray-100 text-lg font-bold leading-tight tracking-[-0.015em] flex-1 text-center pr-12"
+        >
+          Nueva Dirección
+        </h1>
+      </header>
+      <!-- Main Content -->
+      <main class="flex-1 pb-32">
+        <div class="space-y-4 pt-4">
+          <!-- Address Input Fields -->
+          <div class="flex max-w-[480px] flex-col gap-3 px-4">
+            <label class="flex flex-col min-w-40 flex-1">
+              <p
+                class="text-gray-800 dark:text-gray-300 text-base font-medium leading-normal pb-2"
+              >
+                Tipo de Dirección
+              </p>
+              <select
+                class="form-input flex w-full min-w-0 flex-1 resize-none overflow-hidden rounded-xl text-gray-800 dark:text-gray-200 focus:outline-0 focus:ring-2 focus:ring-primary/50 border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 focus:border-primary h-14 bg-[image:--select-button-svg] placeholder:text-gray-400 p-4 text-base font-normal leading-normal"
+              >
+                <option value="casa">Casa</option>
+                <option value="trabajo">Trabajo</option>
+                <option value="otro">Otro</option>
+              </select>
+            </label>
+            <label class="flex flex-col min-w-40 flex-1">
+              <p
+                class="text-gray-800 dark:text-gray-300 text-base font-medium leading-normal pb-2"
+              >
+                Calle/Dirección
+              </p>
+              <input
+                class="form-input flex w-full min-w-0 flex-1 resize-none overflow-hidden rounded-xl text-gray-800 dark:text-gray-200 focus:outline-0 focus:ring-2 focus:ring-primary/50 border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 focus:border-primary h-14 placeholder:text-gray-400 p-4 text-base font-normal leading-normal"
+                placeholder="Introduce tu dirección"
+                value=""
+              />
+            </label>
+            <div class="flex flex-wrap items-end gap-4">
+              <label class="flex flex-col min-w-40 flex-1">
+                <p
+                  class="text-gray-800 dark:text-gray-300 text-base font-medium leading-normal pb-2"
+                >
+                  Ciudad
+                </p>
+                <input
+                  class="form-input flex w-full min-w-0 flex-1 resize-none overflow-hidden rounded-xl text-gray-800 dark:text-gray-200 focus:outline-0 focus:ring-2 focus:ring-primary/50 border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 focus:border-primary h-14 placeholder:text-gray-400 p-4 text-base font-normal leading-normal"
+                  placeholder="Ciudad"
+                  value=""
+                />
+              </label>
+              <label class="flex flex-col min-w-40 flex-1">
+                <p
+                  class="text-gray-800 dark:text-gray-300 text-base font-medium leading-normal pb-2"
+                >
+                  Código Postal
+                </p>
+                <input
+                  class="form-input flex w-full min-w-0 flex-1 resize-none overflow-hidden rounded-xl text-gray-800 dark:text-gray-200 focus:outline-0 focus:ring-2 focus:ring-primary/50 border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 focus:border-primary h-14 placeholder:text-gray-400 p-4 text-base font-normal leading-normal"
+                  placeholder="Código Postal"
+                  value=""
+                />
+              </label>
+            </div>
+            <label class="flex flex-col min-w-40 flex-1">
+              <p
+                class="text-gray-800 dark:text-gray-300 text-base font-medium leading-normal pb-2"
+              >
+                Referencia
+              </p>
+              <textarea
+                class="form-input flex w-full min-w-0 flex-1 resize-none overflow-hidden rounded-xl text-gray-800 dark:text-gray-200 focus:outline-0 focus:ring-2 focus:ring-primary/50 border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 focus:border-primary min-h-36 placeholder:text-gray-400 p-4 text-base font-normal leading-normal"
+                placeholder="Piso, apartamento, indicaciones..."
+              ></textarea>
+            </label>
+          </div>
+          <div class="px-4 py-2">
+            <button
+              class="flex w-full items-center justify-center gap-2.5 rounded-xl bg-primary/20 dark:bg-primary/30 h-14 px-4 text-base font-bold text-primary dark:text-orange-300"
+            >
+              <span class="material-symbols-outlined">my_location</span>
+              <span>Usar Ubicación Actual</span>
+            </button>
+          </div>
+          <!-- Map and Coordinates -->
+          <div class="px-4 space-y-4">
+            <div class="relative w-full h-48 rounded-xl overflow-hidden group">
+              <img
+                class="w-full h-full object-cover"
+                data-alt="Abstract map view of a city with streets and buildings."
+                data-location="City"
+                src="https://lh3.googleusercontent.com/aida-public/AB6AXuA1Tbm2PtcKa-A-FRnJi1I7IiPJ-ZklC0YErScDyQ6dBsNA8AqtKRpXrkY42J37jGeqdah6xNcOnpx7SC6S3tf4eRh6vuVbnM-hLaD2cs196yT_7RfclnIOQqBETfOG_T2M_Tp4eo_Y2QC7kr3NLAuJJK7gjV02wIocvOP5c1saIP7jK5RH_MHFVkhz8lgEz9HPagVW-jYLfIB3keIKl4w53meHUISXzivQgY_J1iPnBYsk_InOXgKiQH7qyHMDAxveNPpxKiZ5ilI"
+              />
+              <div class="absolute inset-0 flex items-center justify-center">
+                <span
+                  class="material-symbols-outlined text-primary text-5xl drop-shadow-lg"
+                  style="font-size: 48px"
+                  >location_on</span
+                >
+              </div>
+            </div>
+            <div class="flex flex-wrap items-end gap-4">
+              <div class="flex flex-col min-w-40 flex-1">
+                <p
+                  class="text-gray-500 dark:text-gray-400 text-sm font-medium leading-normal pb-2"
+                >
+                  Latitud
+                </p>
+                <div
+                  class="flex w-full min-w-0 flex-1 resize-none overflow-hidden rounded-xl text-gray-500 dark:text-gray-400 border border-gray-200 dark:border-gray-700 bg-gray-100 dark:bg-gray-800 h-14 p-4 text-base font-normal leading-normal items-center"
+                >
+                  40.416775
+                </div>
+              </div>
+              <div class="flex flex-col min-w-40 flex-1">
+                <p
+                  class="text-gray-500 dark:text-gray-400 text-sm font-medium leading-normal pb-2"
+                >
+                  Longitud
+                </p>
+                <div
+                  class="flex w-full min-w-0 flex-1 resize-none overflow-hidden rounded-xl text-gray-500 dark:text-gray-400 border border-gray-200 dark:border-gray-700 bg-gray-100 dark:bg-gray-800 h-14 p-4 text-base font-normal leading-normal items-center"
+                >
+                  -3.703790
+                </div>
+              </div>
+            </div>
+          </div>
+          <!-- Default Address Toggle -->
+          <div class="px-4 py-2">
+            <label
+              class="flex cursor-pointer items-center justify-between rounded-xl bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 p-4"
+              for="default-address"
+            >
+              <span
+                class="text-base font-medium text-gray-800 dark:text-gray-200"
+                >Marcar como Dirección Predeterminada</span
+              >
+              <div class="relative inline-flex items-center">
+                <input
+                  class="peer sr-only"
+                  id="default-address"
+                  type="checkbox"
+                />
+                <div
+                  class="h-6 w-11 rounded-full bg-gray-200 dark:bg-gray-600 after:absolute after:top-0.5 after:left-0.5 after:h-5 after:w-5 after:rounded-full after:border after:border-gray-300 dark:after:border-gray-500 after:bg-white after:transition-all peer-checked:bg-primary peer-checked:after:translate-x-full peer-checked:after:border-white"
+                ></div>
+              </div>
+            </label>
+          </div>
+        </div>
+      </main>
+      <!-- Footer Action Button -->
+      <footer
+        class="fixed bottom-0 left-0 right-0 z-10 bg-background-light/80 dark:bg-background-dark/80 backdrop-blur-sm p-4 border-t border-gray-200/80 dark:border-gray-800/80"
+      >
+        <button
+          class="flex w-full items-center justify-center gap-2.5 rounded-xl bg-primary h-14 px-4 text-base font-bold text-white"
+        >
+          Guardar Dirección
+        </button>
+      </footer>
+    </div>
+  </body>
+</html>

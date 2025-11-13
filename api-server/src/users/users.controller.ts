@@ -49,6 +49,16 @@ export class UsersController {
     return list.map((u) => this.sanitizeUser(u));
   }
 
+  // Obtener todos los usuarios incluyendo inactivos (solo super admin)
+  // DEBE IR ANTES de otros @Get() con params para evitar conflictos
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(RoleEnum.SUPER_ADMIN)
+  @Get('admin/all')
+  async findAllForAdmin() {
+    const list = await this.usersService.findAllForAdmin();
+    return list.map((u) => this.sanitizeUser(u));
+  }
+
   // Listado de drivers disponibles (para restaurantes)
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles(RoleEnum.RESTAURANT_OWNER, RoleEnum.SUPER_ADMIN)
@@ -76,15 +86,28 @@ export class UsersController {
     return { message: 'User deleted' };
   }
 
+  // Activar/desactivar usuario (solo super admin)
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(RoleEnum.SUPER_ADMIN)
+  @Patch(':id/toggle-active')
+  async toggleActive(
+    @Param('id') id: string,
+    @Body('isActive') isActive: boolean,
+  ) {
+    const updated = await this.usersService.toggleActive(id, isActive);
+    return this.sanitizeUser(updated);
+  }
+
   private sanitizeUser(u: any) {
     if (!u) return u;
     return {
       id: u.id,
       email: u.email,
       name: u.name,
-      phone: u.phone, // ✅ Agregar campo phone
-      phoneVerified: u.phoneVerified, // ✅ Agregar phoneVerified
+      phone: u.phone,
+      phoneVerified: u.phoneVerified,
       role: u.role?.name ?? u.role,
+      isActive: u.isActive, // ✅ Agregar isActive
       created_at: u.created_at,
       updated_at: u.updated_at,
     };

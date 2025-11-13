@@ -154,6 +154,11 @@ export class RestaurantAdminPage implements OnInit, ViewWillEnter {
     });
   }
 
+  goToDashboard(restaurantId: string) {
+    // Navegar al dashboard del restaurante
+    this.router.navigate(['/restaurant-dashboard', restaurantId]);
+  }
+
   goToOrders(restaurantId: string) {
     // Navegar al módulo de pedidos del restaurante (fuera de tabs)
     this.router.navigate(['/restaurant-orders'], {
