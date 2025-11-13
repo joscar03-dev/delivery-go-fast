@@ -265,3 +265,16 @@
   pointer-events: none;
   z-index: -1;
 }
+
+// Estilos para el badge de encuestas pendientes
+.pending-badge-text {
+  font-size: 0.85rem;
+  color: var(--ion-color-danger);
+  font-weight: 500;
+  margin-top: 4px;
+}
+
+ion-badge[slot="end"] {
+  margin-right: 8px;
+  font-weight: 600;
+}

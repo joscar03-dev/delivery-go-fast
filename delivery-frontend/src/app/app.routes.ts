@@ -48,6 +48,15 @@ export const routes: Routes = [
     loadComponent: () =>
       import('./pages/survey/survey.page').then((m) => m.SurveyPage),
   },
+  // Lista de encuestas pendientes
+  {
+    path: 'pending-reviews',
+    canMatch: [authGuard],
+    loadComponent: () =>
+      import('./pages/pending-reviews/pending-reviews.page').then(
+        (m) => m.PendingReviewsPage
+      ),
+  },
   // Solicitud de conductor (Driver Application)
   {
     path: 'driver-application',

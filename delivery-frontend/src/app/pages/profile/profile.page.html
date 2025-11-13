@@ -186,6 +186,41 @@
 
           <div class="divider"></div>
 
+          <!-- Encuestas Pendientes (solo para clientes) -->
+          <ion-item
+            *ngIf="user?.role === 'client'"
+            button
+            (click)="goToPendingReviews()"
+            lines="none"
+            class="option-item"
+          >
+            <div class="option-icon" slot="start">
+              <ion-icon name="clipboard-outline"></ion-icon>
+            </div>
+            <ion-label>
+              <h3>Encuestas Pendientes</h3>
+              <p *ngIf="pendingReviewsCount > 0" class="pending-badge-text">
+                {{ pendingReviewsCount }} encuesta{{ pendingReviewsCount > 1 ?
+                's' : '' }} por completar
+              </p>
+            </ion-label>
+            <!-- Badge rojo con número -->
+            <ion-badge
+              *ngIf="pendingReviewsCount > 0"
+              color="danger"
+              slot="end"
+            >
+              {{ pendingReviewsCount }}
+            </ion-badge>
+            <ion-icon
+              name="chevron-forward-outline"
+              slot="end"
+              class="chevron-icon"
+            ></ion-icon>
+          </ion-item>
+
+          <div class="divider"></div>
+
           <ion-item
             button
             (click)="goToAddresses()"

@@ -1,0 +1,120 @@
+.empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 40px 20px;
+  text-align: center;
+  min-height: 50vh;
+
+  ion-icon {
+    font-size: 80px;
+    margin-bottom: 16px;
+  }
+
+  h2 {
+    font-size: 1.5rem;
+    font-weight: 600;
+    margin: 8px 0;
+  }
+
+  p {
+    color: var(--ion-color-medium);
+    margin: 8px 0 24px 0;
+  }
+}
+
+.order-card {
+  margin-bottom: 16px;
+
+  .card-header-content {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+
+    .restaurant-info {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      flex: 1;
+
+      ion-icon {
+        font-size: 24px;
+      }
+
+      ion-card-title {
+        font-size: 1.1rem;
+        margin: 0;
+      }
+    }
+
+    ion-badge {
+      flex-shrink: 0;
+    }
+  }
+
+  .order-info {
+    margin: 16px 0;
+
+    .info-row {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin-bottom: 8px;
+      color: var(--ion-color-medium);
+
+      ion-icon {
+        font-size: 18px;
+      }
+
+      span {
+        font-size: 0.9rem;
+      }
+    }
+  }
+
+  .action-section {
+    margin-top: 16px;
+    padding-top: 16px;
+    border-top: 1px solid var(--ion-color-light);
+
+    ion-note {
+      display: block;
+      margin-bottom: 12px;
+
+      p {
+        font-size: 0.85rem;
+        line-height: 1.4;
+        margin: 0;
+      }
+    }
+
+    ion-button {
+      margin-top: 8px;
+    }
+  }
+}
+
+.loading-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 50vh;
+  gap: 16px;
+
+  p {
+    color: var(--ion-color-medium);
+  }
+}
+
+.footer-note {
+  display: block;
+  text-align: center;
+  margin: 24px 0;
+
+  p {
+    font-size: 0.85rem;
+    line-height: 1.5;
+  }
+}

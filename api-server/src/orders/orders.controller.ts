@@ -56,6 +56,18 @@ export class OrdersController {
     );
   }
 
+  /**
+   * GET /api/orders/pending-reviews
+   * Obtiene pedidos entregados sin review (encuestas pendientes)
+   * Solo para clientes
+   */
+  @Get('pending-reviews')
+  @Roles(Role.CLIENT, Role.SUPER_ADMIN)
+  getPendingReviews(@Request() req) {
+    const currentUser = req.user;
+    return this.ordersService.findPendingReviews(currentUser.id);
+  }
+
   @Get(':id')
   @Roles(Role.CLIENT, Role.DRIVER, Role.RESTAURANT_OWNER, Role.SUPER_ADMIN)
   findOne(@Param('id', ParseUUIDPipe) id: string, @Request() req) {

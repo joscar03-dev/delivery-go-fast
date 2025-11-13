@@ -203,4 +203,14 @@ export class OrderService {
       headers: this.getHeaders(),
     });
   }
+
+  /**
+   * Obtiene los pedidos entregados que aún no tienen review (encuestas pendientes)
+   * Solo para clientes
+   */
+  getPendingReviews(): Observable<Order[]> {
+    return this.http.get<Order[]>(`${this.apiUrl}/pending-reviews`, {
+      headers: this.getHeaders(),
+    });
+  }
 }

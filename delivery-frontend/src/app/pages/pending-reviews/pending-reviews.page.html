@@ -1,0 +1,96 @@
+<ion-header>
+  <ion-toolbar color="primary">
+    <ion-buttons slot="start">
+      <ion-back-button defaultHref="/tabs/profile"></ion-back-button>
+    </ion-buttons>
+    <ion-title>Encuestas Pendientes</ion-title>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content class="ion-padding">
+  <!-- Pull to refresh -->
+  <ion-refresher slot="fixed" (ionRefresh)="handleRefresh($event)">
+    <ion-refresher-content
+      pullingIcon="chevron-down-circle-outline"
+      pullingText="Desliza para recargar"
+      refreshingSpinner="circles"
+      refreshingText="Recargando..."
+    >
+    </ion-refresher-content>
+  </ion-refresher>
+
+  <ng-container *ngIf="!loading; else loadingTpl">
+    <!-- Sin encuestas pendientes -->
+    <div *ngIf="pendingOrders.length === 0" class="empty-state">
+      <ion-icon name="checkmark-circle-outline" color="success"></ion-icon>
+      <h2>¡Todo al día!</h2>
+      <p>No tienes encuestas pendientes por completar</p>
+      <ion-button routerLink="/tabs/order-history" fill="outline">
+        Ver historial de pedidos
+      </ion-button>
+    </div>
+
+    <!-- Lista de pedidos pendientes -->
+    <div *ngIf="pendingOrders.length > 0">
+      <ion-card *ngFor="let order of pendingOrders" class="order-card">
+        <ion-card-header>
+          <div class="card-header-content">
+            <div class="restaurant-info">
+              <ion-icon name="restaurant-outline" color="primary"></ion-icon>
+              <ion-card-title
+                >{{ order.restaurant?.name || 'Restaurante' }}</ion-card-title
+              >
+            </div>
+            <ion-badge color="warning">Pendiente</ion-badge>
+          </div>
+        </ion-card-header>
+
+        <ion-card-content>
+          <div class="order-info">
+            <div class="info-row">
+              <ion-icon name="time-outline" color="medium"></ion-icon>
+              <span>Entregado el {{ formatDate(order.createdAt) }}</span>
+            </div>
+            <div class="info-row">
+              <ion-icon name="receipt-outline" color="medium"></ion-icon>
+              <span>Total: S/. {{ order.total }}</span>
+            </div>
+          </div>
+
+          <div class="action-section">
+            <ion-note color="medium">
+              <p>
+                Tu opinión es muy importante para mejorar nuestro servicio. Por
+                favor, completa esta breve encuesta.
+              </p>
+            </ion-note>
+            <ion-button
+              expand="block"
+              color="primary"
+              (click)="goToSurvey(order.id)"
+            >
+              <ion-icon name="clipboard-outline" slot="start"></ion-icon>
+              Responder encuesta
+            </ion-button>
+          </div>
+        </ion-card-content>
+      </ion-card>
+    </div>
+
+    <!-- Información adicional -->
+    <ion-note color="medium" class="footer-note">
+      <p>
+        📊 Las encuestas nos ayudan a mejorar la experiencia de todos nuestros
+        usuarios. ¡Gracias por tu tiempo!
+      </p>
+    </ion-note>
+  </ng-container>
+
+  <!-- Loading -->
+  <ng-template #loadingTpl>
+    <div class="loading-container">
+      <ion-spinner name="crescent"></ion-spinner>
+      <p>Cargando encuestas pendientes...</p>
+    </div>
+  </ng-template>
+</ion-content>

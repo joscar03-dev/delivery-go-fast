@@ -11,6 +11,7 @@ import {
   IonItem,
   IonIcon,
   IonLabel,
+  IonBadge,
   AlertController,
   LoadingController,
   ToastController,
@@ -20,6 +21,7 @@ import { Subscription } from 'rxjs';
 import { UserService } from '../../services/user.service';
 import { AuthService } from '../../services/auth.service';
 import { PhoneAuthService } from '../../services/phone-auth.service';
+import { OrderService } from '../../services/order.service';
 import type { User } from '../../models/user.model';
 import { WaveBackgroundComponent } from '../../components/wave-background/wave-background.component';
 import { addIcons } from 'ionicons';
@@ -38,6 +40,7 @@ import {
   callOutline,
   addCircleOutline,
   checkmarkCircleOutline,
+  clipboardOutline,
 } from 'ionicons/icons';
 
 // Register icons
@@ -56,6 +59,7 @@ addIcons({
   'call-outline': callOutline,
   'add-circle-outline': addCircleOutline,
   'checkmark-circle-outline': checkmarkCircleOutline,
+  'clipboard-outline': clipboardOutline,
 });
 
 @Component({
@@ -75,6 +79,7 @@ addIcons({
     IonItem,
     IonIcon,
     IonLabel,
+    IonBadge,
   ],
   templateUrl: './profile.page.html',
   styleUrls: ['./profile.page.scss'],
@@ -83,6 +88,7 @@ export class ProfilePage implements OnInit, OnDestroy {
   private userService = inject(UserService);
   private auth = inject(AuthService);
   private phoneAuthService = inject(PhoneAuthService);
+  private orderService = inject(OrderService);
   private router = inject(Router);
   private alertController = inject(AlertController);
   private loadingController = inject(LoadingController);
@@ -91,6 +97,7 @@ export class ProfilePage implements OnInit, OnDestroy {
   user?: User;
   loading = false;
   isLoggedIn = false;
+  pendingReviewsCount = 0; // Contador de encuestas pendientes
   private authSubscription?: Subscription;
 
   ngOnInit(): void {
@@ -144,6 +151,10 @@ export class ProfilePage implements OnInit, OnDestroy {
           next: (u) => {
             this.user = u;
             this.loading = false;
+            // Cargar encuestas pendientes solo para clientes
+            if (u.role === 'client') {
+              this.loadPendingReviews();
+            }
           },
           error: (err) => {
             console.error('Error loading profile:', err);
@@ -168,6 +179,29 @@ export class ProfilePage implements OnInit, OnDestroy {
         });
       },
     });
+  }
+
+  /**
+   * Carga el número de encuestas pendientes para mostrar badge
+   */
+  private loadPendingReviews(): void {
+    this.orderService.getPendingReviews().subscribe({
+      next: (orders) => {
+        this.pendingReviewsCount = orders.length;
+        console.log(`📋 ${this.pendingReviewsCount} encuestas pendientes`);
+      },
+      error: (err) => {
+        console.error('Error cargando encuestas pendientes:', err);
+        this.pendingReviewsCount = 0;
+      },
+    });
+  }
+
+  /**
+   * Navega a la lista de encuestas pendientes
+   */
+  goToPendingReviews(): void {
+    this.router.navigate(['/pending-reviews']);
   }
 
   logout() {
