@@ -1,6 +1,7 @@
 import { Injectable, UnauthorizedException, Logger } from '@nestjs/common';
 import * as admin from 'firebase-admin';
 import * as path from 'path';
+import * as fs from 'fs';
 
 /**
  * Servicio para verificar códigos OTP usando Firebase Admin SDK
@@ -34,15 +35,22 @@ export class OtpService {
 
         this.logger.log(`📄 Usando credenciales de: ${serviceAccountPath}`);
 
-        // Inicializar Firebase Admin con el archivo JSON
+        // Leer el archivo JSON de credenciales
+        const serviceAccount = JSON.parse(
+          fs.readFileSync(serviceAccountPath, 'utf8'),
+        );
+
+        // Inicializar Firebase Admin con el objeto JSON
         admin.initializeApp({
-          credential: admin.credential.cert(serviceAccountPath),
+          credential: admin.credential.cert(serviceAccount),
+          projectId: serviceAccount.project_id,
         });
 
         this.logger.log('✅ Firebase Admin SDK inicializado correctamente');
-        this.logger.log(`📱 Project ID: ${admin.app().options.projectId}`);
+        this.logger.log(`📱 Project ID: ${serviceAccount.project_id}`);
       } else {
         this.logger.log('✅ Firebase Admin SDK ya estaba inicializado');
+        this.logger.log(`📱 Project ID: ${admin.app().options.projectId}`);
       }
 
       this.auth = admin.auth();

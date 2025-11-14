@@ -31,6 +31,9 @@ import { AuthService } from '../../services/auth.service';
 import { addIcons } from 'ionicons';
 import { call, arrowBack, checkmarkCircle } from 'ionicons/icons';
 
+import { Auth } from '@angular/fire/auth';
+import { FirebaseDiagnostics } from '../../utils/firebase-diagnostics';
+
 @Component({
   selector: 'app-phone-login',
   templateUrl: './phone-login.page.html',
@@ -83,13 +86,19 @@ export class PhoneLoginPage implements OnInit, OnDestroy {
     private authService: AuthService,
     private router: Router,
     private alertController: AlertController,
-    private loadingController: LoadingController
+    private loadingController: LoadingController,
+    private auth: Auth
   ) {
     addIcons({ call, arrowBack, checkmarkCircle });
   }
 
   ngOnInit() {
     console.log('📱 PhoneLoginPage inicializada');
+
+    /*  // 🔍 Ejecutar diagnósticos de Firebase
+    setTimeout(() => {
+      FirebaseDiagnostics.runDiagnostics(this.auth);
+    }, 1000); */
   }
 
   ngOnDestroy() {

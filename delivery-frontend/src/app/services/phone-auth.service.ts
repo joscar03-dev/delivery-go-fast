@@ -125,6 +125,20 @@ export class PhoneAuthService {
           case 'auth/network-request-failed':
             message = 'Error de conexión. Verifica tu internet.';
             break;
+          case 'auth/invalid-app-credential':
+            message =
+              'Error de configuración. El dominio no está autorizado en Firebase.';
+            break;
+          case 'auth/error-code:-39':
+            message =
+              'Servicio temporalmente no disponible. Intenta en unos momentos.';
+            break;
+          default:
+            // Para errores desconocidos, mostrar código
+            if (error.code) {
+              message = `Error de autenticación: ${error.code}`;
+            }
+            break;
         }
 
         return throwError(() => ({
