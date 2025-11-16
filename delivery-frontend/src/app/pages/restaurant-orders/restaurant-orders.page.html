@@ -5,6 +5,16 @@
     </ion-buttons>
     <ion-title>Gestión de Pedidos</ion-title>
     <ion-buttons slot="end">
+      <!-- Botón de estado de impresora -->
+      <ion-button (click)="connectPrinter()" fill="clear">
+        <ion-icon
+          slot="icon-only"
+          [name]="isPrinterConnected() ? 'bluetooth' : 'bluetooth-outline'"
+          [color]="isPrinterConnected() ? 'success' : 'medium'"
+        ></ion-icon>
+      </ion-button>
+
+      <!-- Estado de conexión Socket -->
       <ion-chip
         [color]="isSocketConnected ? 'success' : 'danger'"
         style="margin-right: 8px"
@@ -187,6 +197,19 @@
 
           <!-- Botones de acción -->
           <div class="action-buttons">
+            <!-- Botón de imprimir (disponible para todas las órdenes) -->
+            <ion-button
+              expand="block"
+              fill="outline"
+              color="dark"
+              size="small"
+              (click)="printOrder(order)"
+              class="print-button"
+            >
+              <ion-icon slot="start" name="print-outline"></ion-icon>
+              Imprimir Orden
+            </ion-button>
+
             <!-- Pedidos Pendientes -->
             <div *ngIf="order.status === 'pending'" class="button-group">
               <ion-button

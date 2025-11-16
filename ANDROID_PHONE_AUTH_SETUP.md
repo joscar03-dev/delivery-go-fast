@@ -3,12 +3,14 @@
 ## ✅ **PASO 1: COMPLETADO - Plugin Nativo Instalado**
 
 ### Paquetes instalados:
+
 ```bash
 npm install @capacitor-firebase/authentication
 npx cap sync
 ```
 
 ### Plugin detectado:
+
 ```
 @capacitor-firebase/authentication@7.4.0
 ```
@@ -20,6 +22,7 @@ npx cap sync
 ### Modificaciones en `phone-auth.service.ts`:
 
 1. **Detección de plataforma:**
+
    ```typescript
    constructor(private auth: Auth, private platform: Platform) {
      this.isNativeApp = this.platform.is('capacitor');
@@ -28,6 +31,7 @@ npx cap sync
    ```
 
 2. **Método `sendOTP()` híbrido:**
+
    ```typescript
    sendOTP(phoneNumber: string): Observable<PhoneAuthResponse> {
      if (this.isNativeApp) {
@@ -48,6 +52,7 @@ npx cap sync
    ```
 
 ### Compilación: ✅ **EXITOSA**
+
 ```
 Build completed: www/
 No TypeScript errors
@@ -60,24 +65,26 @@ No TypeScript errors
 Necesitamos modificar `phone-login.page.ts` para:
 
 ### 1. Guardar el `verificationId`:
+
 ```typescript
 export class PhoneLoginPage {
-  private verificationId: string = '';  // 🆕 AGREGAR
-  
+  private verificationId: string = ""; // 🆕 AGREGAR
+
   async sendOTP() {
     this.phoneAuthService.sendOTP(this.fullPhoneNumber).subscribe({
       next: (response) => {
         if (response.success) {
-          this.verificationId = response.verificationId || '';  // 🆕 GUARDAR
-          this.showStep = 'verify';
+          this.verificationId = response.verificationId || ""; // 🆕 GUARDAR
+          this.showStep = "verify";
         }
-      }
+      },
     });
   }
 }
 ```
 
 ### 2. Pasar `verificationId` a `verifyOTP()`:
+
 ```typescript
 async verifyOTP() {
   this.phoneAuthService.verifyOTP(this.otpCode, this.verificationId).subscribe({
@@ -91,6 +98,7 @@ async verifyOTP() {
 ## 📋 **PASO 4: PENDIENTE - Configurar Firebase para Android**
 
 ### 4.1. Descargar `google-services.json`:
+
 1. Ve a: https://console.firebase.google.com/project/delivery-go-fast/settings/general
 2. Scroll hasta "Your apps"
 3. Selecciona tu app Android
@@ -100,6 +108,7 @@ async verifyOTP() {
 ### 4.2. Obtener huellas digitales SHA-1 y SHA-256:
 
 **Para Debug (desarrollo local):**
+
 ```bash
 cd android
 ./gradlew signingReport
@@ -108,10 +117,12 @@ cd android
 ```
 
 Copiar los valores de:
+
 - `SHA1:` (ej: `AA:BB:CC:DD...`)
 - `SHA-256:` (ej: `11:22:33:44...`)
 
 **Para Production (Google Play):**
+
 1. Ve a: https://play.google.com/console
 2. Selecciona tu app
 3. Release → Setup → App Integrity
@@ -119,6 +130,7 @@ Copiar los valores de:
 5. Copia SHA-1 y SHA-256 del **"App signing key certificate"**
 
 ### 4.3. Agregar huellas a Firebase:
+
 1. Ve a: https://console.firebase.google.com/project/delivery-go-fast/settings/general
 2. Scroll hasta tu app Android
 3. Click en **"Add fingerprint"**
@@ -130,10 +142,12 @@ Copiar los valores de:
 ### 4.4. Habilitar Play Integrity API:
 
 **Google Cloud Console:**
+
 1. Ve a: https://console.cloud.google.com/apis/library/playintegrity.googleapis.com?project=delivery-go-fast
 2. Click en **"ENABLE"**
 
 **Google Play Console:**
+
 1. Ve a: https://play.google.com/console
 2. Selecciona tu app
 3. Release → App integrity
@@ -147,38 +161,45 @@ Copiar los valores de:
 ## 🧪 **PASO 5: PENDIENTE - Pruebas**
 
 ### Test 1: Web (ya funciona)
+
 ```bash
 ionic serve
 # O accede a: https://www.gofastdelivery.site
 ```
+
 ✅ **Esperado:** Sigue funcionando con reCAPTCHA
 
 ### Test 2: Android Debug
+
 ```bash
 ionic cap run android
 ```
+
 ❓ **Esperado después de configuración:**
+
 - Se envía SMS usando Play Integrity
 - No muestra reCAPTCHA
 - Funciona sin internet en verificación
 
 ### Test 3: Android Production
+
 ```bash
 # Después de publicar en Google Play
 ```
+
 ✅ **Debe funcionar** si agregaste las huellas de production
 
 ---
 
 ## 📊 **Estado actual:**
 
-| Paso | Estado | Descripción |
-|------|--------|-------------|
-| 1. Instalar plugin | ✅ Completo | `@capacitor-firebase/authentication` instalado |
-| 2. Servicio híbrido | ✅ Completo | `phone-auth.service.ts` modificado |
-| 3. Actualizar page | ⏳ Pendiente | Guardar y pasar `verificationId` |
-| 4. Config Firebase | ⏳ Pendiente | SHA fingerprints + Play Integrity |
-| 5. Probar Android | ⏳ Pendiente | Build y test en dispositivo |
+| Paso                | Estado       | Descripción                                    |
+| ------------------- | ------------ | ---------------------------------------------- |
+| 1. Instalar plugin  | ✅ Completo  | `@capacitor-firebase/authentication` instalado |
+| 2. Servicio híbrido | ✅ Completo  | `phone-auth.service.ts` modificado             |
+| 3. Actualizar page  | ⏳ Pendiente | Guardar y pasar `verificationId`               |
+| 4. Config Firebase  | ⏳ Pendiente | SHA fingerprints + Play Integrity              |
+| 5. Probar Android   | ⏳ Pendiente | Build y test en dispositivo                    |
 
 ---
 
@@ -186,7 +207,7 @@ ionic cap run android
 
 ✅ **Web/Producción:** Sigue funcionando igual (verifi cado con compilación)  
 ✅ **Sin breaking changes:** Código web existente no modificado  
-✅ **Arquitectura híbrida:** Automáticamente detecta plataforma  
+✅ **Arquitectura híbrida:** Automáticamente detecta plataforma
 
 ---
 

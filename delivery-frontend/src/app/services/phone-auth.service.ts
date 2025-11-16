@@ -28,14 +28,21 @@ export class PhoneAuthService {
   private confirmationResult: ConfirmationResult | null = null;
   private isNativeApp: boolean = false;
 
-  constructor(
-    private auth: Auth,
-    private platform: Platform
-  ) {
+  constructor(private auth: Auth, private platform: Platform) {
     // Detectar si estamos en una app nativa (Android/iOS) o en web
     this.isNativeApp = this.platform.is('capacitor');
+
+    // 🔍 DEBUG: Logs detallados de plataforma
     console.log('🔥 PhoneAuthService initialized');
-    console.log('📱 Platform:', this.isNativeApp ? 'Native (Android/iOS)' : 'Web/PWA');
+    console.log(
+      '📱 Platform:',
+      this.isNativeApp ? 'Native (Android/iOS)' : 'Web/PWA'
+    );
+    console.log('🔍 DEBUG - is capacitor:', this.platform.is('capacitor'));
+    console.log('🔍 DEBUG - is android:', this.platform.is('android'));
+    console.log('🔍 DEBUG - is ios:', this.platform.is('ios'));
+    console.log('🔍 DEBUG - platforms:', this.platform.platforms());
+    console.log('🔍 DEBUG - isNativeApp:', this.isNativeApp);
   }
 
   /**
@@ -82,7 +89,10 @@ export class PhoneAuthService {
    */
   sendOTP(phoneNumber: string): Observable<PhoneAuthResponse> {
     console.log('📱 Enviando OTP a:', phoneNumber);
-    console.log('🔍 Plataforma:', this.isNativeApp ? 'Nativa (Android/iOS)' : 'Web');
+    console.log(
+      '🔍 Plataforma:',
+      this.isNativeApp ? 'Nativa (Android/iOS)' : 'Web'
+    );
 
     // Validar formato E.164
     if (!this.validatePhoneFormat(phoneNumber)) {
@@ -186,44 +196,119 @@ export class PhoneAuthService {
    */
   private sendOTPNative(phoneNumber: string): Observable<PhoneAuthResponse> {
     console.log('📱 Usando método NATIVO (Play Integrity/APNs)');
+    console.log(
+      '📱 Llamando FirebaseAuthentication.signInWithPhoneNumber con:',
+      phoneNumber
+    );
 
-    return from(
-      FirebaseAuthentication.signInWithPhoneNumber({ phoneNumber })
-    ).pipe(
-      map((result: any) => {
-        // El plugin nativo retorna el verificationId de manera diferente
-        const verificationId = result?.verificationId || 'native-verification';
-        console.log('✅ OTP enviado correctamente (Nativo). VerificationId:', verificationId);
-        return {
+    return new Observable((observer) => {
+      let codeSentHandler: any;
+      let verificationFailedHandler: any;
+      let completed = false;
+
+      // 🔥 Timeout manual de 30 segundos
+      const timeoutId = setTimeout(() => {
+        if (!completed) {
+          completed = true;
+          console.error('❌ Timeout: No se recibió respuesta en 30 segundos');
+
+          // Limpiar listeners
+          if (codeSentHandler) codeSentHandler.remove();
+          if (verificationFailedHandler) verificationFailedHandler.remove();
+
+          observer.error({
+            success: false,
+            message:
+              'Timeout: No se recibió el código de verificación. Intenta nuevamente.',
+            error: { name: 'TimeoutError' },
+          });
+        }
+      }, 30000);
+
+      // 🔥 Listener para phoneCodeSent (éxito)
+      FirebaseAuthentication.addListener('phoneCodeSent', (event) => {
+        if (completed) return;
+        completed = true;
+
+        clearTimeout(timeoutId);
+        console.log('✅ phoneCodeSent event recibido:', event);
+        console.log('✅ VerificationId:', event.verificationId);
+
+        // Limpiar listeners
+        if (codeSentHandler) codeSentHandler.remove();
+        if (verificationFailedHandler) verificationFailedHandler.remove();
+
+        observer.next({
           success: true,
           message: 'Código OTP enviado correctamente',
-          verificationId: verificationId,
-        };
-      }),
-      catchError((error: any) => {
-        console.error('❌ Error al enviar OTP (Nativo):', error);
+          verificationId: event.verificationId,
+        });
+        observer.complete();
+      }).then((handler) => {
+        codeSentHandler = handler;
+      });
+
+      // 🔥 Listener para phoneVerificationFailed (error)
+      FirebaseAuthentication.addListener('phoneVerificationFailed', (event) => {
+        if (completed) return;
+        completed = true;
+
+        clearTimeout(timeoutId);
+        console.error('❌ phoneVerificationFailed event:', event);
+        console.error('❌ Error message:', event.message);
+
+        // Limpiar listeners
+        if (codeSentHandler) codeSentHandler.remove();
+        if (verificationFailedHandler) verificationFailedHandler.remove();
+
         let message = 'Error al enviar el código OTP';
 
-        // Mensajes de error específicos para apps nativas
-        if (error.message) {
-          if (error.message.includes('INVALID_PHONE_NUMBER')) {
+        if (event.message) {
+          if (event.message.includes('blocked all requests')) {
+            message =
+              'Firebase bloqueó las solicitudes. Usa números de prueba o espera 24 horas.';
+          } else if (event.message.includes('INVALID_PHONE_NUMBER')) {
             message = 'Número de teléfono inválido';
-          } else if (error.message.includes('TOO_MANY_REQUESTS')) {
+          } else if (event.message.includes('TOO_MANY_REQUESTS')) {
             message = 'Demasiados intentos. Por favor espera unos minutos.';
-          } else if (error.message.includes('QUOTA_EXCEEDED')) {
-            message = 'Has superado el límite de SMS. Intenta más tarde.';
           } else {
-            message = `Error: ${error.message}`;
+            message = event.message;
           }
         }
 
-        return throwError(() => ({
+        observer.error({
           success: false,
-          message,
-          error,
-        }));
-      })
-    );
+          message: message,
+          error: event,
+        });
+      }).then((handler) => {
+        verificationFailedHandler = handler;
+      });
+
+      // 🔥 Llamar al método nativo
+      FirebaseAuthentication.signInWithPhoneNumber({ phoneNumber })
+        .then(() => {
+          console.log('✅ signInWithPhoneNumber llamado exitosamente');
+          console.log('⏳ Esperando evento phoneCodeSent...');
+        })
+        .catch((error) => {
+          if (completed) return;
+          completed = true;
+
+          clearTimeout(timeoutId);
+          console.error('❌ Error al llamar signInWithPhoneNumber:', error);
+
+          // Limpiar listeners
+          if (codeSentHandler) codeSentHandler.remove();
+          if (verificationFailedHandler) verificationFailedHandler.remove();
+
+          observer.error({
+            success: false,
+            message: 'Error al enviar el código OTP',
+            error: error,
+          });
+        });
+    });
   }
 
   /**
@@ -232,7 +317,10 @@ export class PhoneAuthService {
    * @param verificationId ID de verificación (solo para apps nativas)
    * @returns Observable con el token de Firebase
    */
-  verifyOTP(otpCode: string, verificationId?: string): Observable<PhoneAuthResponse> {
+  verifyOTP(
+    otpCode: string,
+    verificationId?: string
+  ): Observable<PhoneAuthResponse> {
     console.log('🔐 Verificando código OTP:', otpCode);
     console.log('🔍 Plataforma:', this.isNativeApp ? 'Nativa' : 'Web');
 
@@ -317,8 +405,13 @@ export class PhoneAuthService {
   /**
    * 📱 Verifica OTP usando el plugin nativo (para Android/iOS)
    */
-  private verifyOTPNative(otpCode: string, verificationId?: string): Observable<PhoneAuthResponse> {
+  private verifyOTPNative(
+    otpCode: string,
+    verificationId?: string
+  ): Observable<PhoneAuthResponse> {
     console.log('📱 Verificando código OTP (Nativo)');
+    console.log('📱 VerificationId:', verificationId);
+    console.log('📱 Code:', otpCode);
 
     if (!verificationId) {
       console.error('❌ No hay verificationId para app nativa');
@@ -328,16 +421,16 @@ export class PhoneAuthService {
       }));
     }
 
+    // 🔥 CORRECCIÓN: Usar confirmVerificationCode según la documentación del plugin
     return from(
       FirebaseAuthentication.confirmVerificationCode({
-        verificationId,
+        verificationId: verificationId,
         verificationCode: otpCode,
       })
     ).pipe(
       switchMap((result: any) => {
-        console.log('✅ Código OTP verificado (Nativo). User:', result.user);
-        
-        // Obtener el ID token
+        console.log('✅ Código OTP verificado (Nativo). Result:', result);
+        // Obtener el ID token después de la autenticación exitosa
         return from(FirebaseAuthentication.getIdToken());
       }),
       map((tokenResult: any) => {
@@ -352,10 +445,15 @@ export class PhoneAuthService {
       }),
       catchError((error: any) => {
         console.error('❌ Error al verificar OTP (Nativo):', error);
+        console.error('❌ Error code:', error.code);
+        console.error('❌ Error message:', error.message);
         let message = 'Código incorrecto o expirado';
 
         if (error.message) {
-          if (error.message.includes('INVALID_CODE') || error.message.includes('INVALID_VERIFICATION_CODE')) {
+          if (
+            error.message.includes('INVALID_CODE') ||
+            error.message.includes('INVALID_VERIFICATION_CODE')
+          ) {
             message = 'Código incorrecto. Verifica e intenta nuevamente.';
           } else if (error.message.includes('EXPIRED')) {
             message = 'El código ha expirado. Solicita uno nuevo.';

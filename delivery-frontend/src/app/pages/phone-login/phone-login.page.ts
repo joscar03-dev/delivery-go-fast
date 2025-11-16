@@ -71,6 +71,7 @@ export class PhoneLoginPage implements OnInit, OnDestroy {
   phoneNumber = '';
   otpCode = '';
   fullPhoneNumber = '';
+  verificationId = ''; // 🆕 Para apps nativas de Android/iOS
 
   // Control de reenvío
   canResend = false;
@@ -152,6 +153,8 @@ export class PhoneLoginPage implements OnInit, OnDestroy {
 
           if (response.success) {
             console.log('✅ OTP enviado:', response.verificationId);
+            // 🆕 Guardar verificationId para apps nativas
+            this.verificationId = response.verificationId || '';
             this.successMessage = 'Código enviado correctamente';
             this.currentStep = 'otp';
             this.startResendTimer();
@@ -203,32 +206,35 @@ export class PhoneLoginPage implements OnInit, OnDestroy {
 
     try {
       // Verificar OTP con Firebase
-      this.phoneAuthService.verifyOTP(this.otpCode).subscribe({
-        next: async (response) => {
-          if (response.success && response.firebaseToken) {
-            console.log('✅ OTP verificado. Token obtenido');
+      // 🆕 Pasar verificationId para apps nativas
+      this.phoneAuthService
+        .verifyOTP(this.otpCode, this.verificationId)
+        .subscribe({
+          next: async (response) => {
+            if (response.success && response.firebaseToken) {
+              console.log('✅ OTP verificado. Token obtenido');
 
-            // Intentar login o registro con el backend
-            await this.loginOrRegisterWithBackend(response.firebaseToken);
-          }
-          await loading.dismiss();
-          this.isLoading = false;
-        },
-        error: async (error) => {
-          await loading.dismiss();
-          this.isLoading = false;
-          this.errorMessage = error.message || 'Código incorrecto';
-          console.error('❌ Error al verificar OTP:', error);
+              // Intentar login o registro con el backend
+              await this.loginOrRegisterWithBackend(response.firebaseToken);
+            }
+            await loading.dismiss();
+            this.isLoading = false;
+          },
+          error: async (error) => {
+            await loading.dismiss();
+            this.isLoading = false;
+            this.errorMessage = error.message || 'Código incorrecto';
+            console.error('❌ Error al verificar OTP:', error);
 
-          // Mostrar alerta
-          const alert = await this.alertController.create({
-            header: 'Código incorrecto',
-            message: this.errorMessage,
-            buttons: ['OK'],
-          });
-          await alert.present();
-        },
-      });
+            // Mostrar alerta
+            const alert = await this.alertController.create({
+              header: 'Código incorrecto',
+              message: this.errorMessage,
+              buttons: ['OK'],
+            });
+            await alert.present();
+          },
+        });
     } catch (error: any) {
       await loading.dismiss();
       this.isLoading = false;

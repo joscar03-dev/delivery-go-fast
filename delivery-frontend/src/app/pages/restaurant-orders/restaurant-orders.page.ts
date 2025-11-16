@@ -31,6 +31,9 @@ import { OrderService } from '../../services/order.service';
 import { SocketService } from '../../services/socket.service';
 import { AuthService } from '../../services/auth.service';
 import { RestaurantService, User } from '../../services/restaurant.service';
+import { ThermalPrinterService } from '../../services/thermal-printer.service';
+import { WebPrinterService } from '../../services/web-printer.service';
+import { Platform } from '@ionic/angular';
 import { Order, OrderStatus } from '../../models/order.model';
 import { addIcons } from 'ionicons';
 import {
@@ -51,6 +54,8 @@ import {
   wifi,
   wifiOutline,
   callOutline,
+  printOutline,
+  bluetoothOutline,
 } from 'ionicons/icons';
 import { Subscription, interval } from 'rxjs';
 
@@ -72,6 +77,8 @@ addIcons({
   wifi: wifi,
   'wifi-outline': wifiOutline,
   'call-outline': callOutline,
+  'print-outline': printOutline,
+  'bluetooth-outline': bluetoothOutline,
 });
 
 @Component({
@@ -113,6 +120,9 @@ export class RestaurantOrdersPage implements OnInit, OnDestroy {
   private auth = inject(AuthService);
   private toastCtrl = inject(ToastController);
   private alertCtrl = inject(AlertController);
+  private thermalPrinterService = inject(ThermalPrinterService);
+  private webPrinterService = inject(WebPrinterService);
+  private platform = inject(Platform);
 
   selectedSegment: 'pending' | 'preparing' | 'completed' = 'pending';
   orders: Order[] = [];
@@ -120,9 +130,17 @@ export class RestaurantOrdersPage implements OnInit, OnDestroy {
   isSocketConnected = false;
   backHref = '/tabs/restaurant-admin'; // Valor por defecto
   currentRestaurantId: string | null = null;
+  isNativeApp: boolean = false;
   private subscriptions: Subscription[] = [];
 
   ngOnInit() {
+    // Detectar si es app nativa o web
+    this.isNativeApp = this.platform.is('capacitor');
+    console.log(
+      '🖨️ Plataforma detectada:',
+      this.isNativeApp ? 'Nativa (Android/iOS)' : 'Web (navegador)'
+    );
+
     this.loadOrders();
     this.setupSocketConnection();
     this.setupAutoRefresh();
@@ -844,5 +862,275 @@ export class RestaurantOrdersPage implements OnInit, OnDestroy {
       position: 'top',
     });
     await toast.present();
+  }
+
+  /**
+   * ============================================
+   * MÉTODOS DE IMPRESIÓN HÍBRIDA (Nativa/Web)
+   * ============================================
+   */
+
+  /**
+   * Conecta con una impresora térmica (solo para apps nativas)
+   */
+  async connectPrinter() {
+    if (!this.isNativeApp) {
+      const alert = await this.alertCtrl.create({
+        header: 'ℹ️ Impresión Web',
+        message:
+          'En la versión web, la impresión se realiza directamente usando el diálogo estándar del navegador. ' +
+          'Puedes seleccionar cualquier impresora conectada a tu PC (USB, red, o térmica). ' +
+          'No es necesario conectar previamente.',
+        buttons: ['Entendido'],
+      });
+      await alert.present();
+      return;
+    }
+
+    // Código para app nativa (Bluetooth)
+    try {
+      const printers = await this.thermalPrinterService.searchPrinters();
+
+      if (printers.length === 0) {
+        const alert = await this.alertCtrl.create({
+          header: '⚠️ Sin impresoras',
+          message:
+            'No se encontraron impresoras Bluetooth emparejadas. Ve a Configuración de Bluetooth y empareja tu impresora primero.',
+          buttons: ['OK'],
+        });
+        await alert.present();
+        return;
+      }
+
+      // Mostrar lista de impresoras disponibles
+      const alert = await this.alertCtrl.create({
+        header: '🖨️ Seleccionar Impresora',
+        message: 'Elige la impresora térmica para conectar:',
+        inputs: printers.map((printer: any) => ({
+          type: 'radio',
+          label: printer.name,
+          value: printer,
+        })),
+        buttons: [
+          {
+            text: 'Cancelar',
+            role: 'cancel',
+          },
+          {
+            text: 'Conectar',
+            handler: async (selectedPrinter) => {
+              if (selectedPrinter) {
+                await this.thermalPrinterService.connectToPrinter(
+                  selectedPrinter
+                );
+              }
+            },
+          },
+        ],
+      });
+
+      await alert.present();
+    } catch (error) {
+      console.error('❌ Error conectando impresora:', error);
+      const alert = await this.alertCtrl.create({
+        header: '❌ Error',
+        message:
+          'No se pudo buscar impresoras. Verifica que Bluetooth esté habilitado.',
+        buttons: ['OK'],
+      });
+      await alert.present();
+    }
+  }
+
+  /**
+   * Imprime una orden (detecta si es web o nativa)
+   */
+  async printOrder(order: Order) {
+    // Preparar datos de la orden para imprimir
+    const orderToPrint = {
+      id: order.id,
+      orderNumber: order.id.substring(0, 8).toUpperCase(),
+      createdAt: order.createdAt,
+      client: {
+        name: order.client?.name || 'Cliente',
+        phone: order.client?.phone,
+      },
+      items: (order.items || []).map((item) => ({
+        quantity: item.quantity,
+        menuItem: {
+          name: item.menuItem?.name || 'Producto',
+          price: (item as any).unit_price || item.menuItem?.price || 0,
+        },
+        selectedOptions: this.hasOptions(item)
+          ? this.getItemOptions(item).reduce(
+              (acc: any[], g: any) => [...acc, ...(g.options || [])],
+              []
+            )
+          : [],
+        comment: item.comment,
+      })),
+      deliveryAddress: order.deliveryAddress,
+      deliveryType: (order as any).deliveryType || 'Delivery',
+      paymentMethod: (order as any).paymentMethod || 'Efectivo',
+      notes: order.notes,
+      subtotal: (order as any).subtotal || order.total,
+      deliveryFee: (order as any).deliveryFee || 0,
+      total: order.total,
+    };
+
+    // 🌐 WEB: Usar window.print()
+    if (!this.isNativeApp) {
+      const alert = await this.alertCtrl.create({
+        header: '🖨️ Imprimir Orden',
+        message: `¿Deseas imprimir el pedido #${orderToPrint.orderNumber}?`,
+        inputs: [
+          {
+            type: 'radio',
+            label: 'Impresora 80mm (estándar)',
+            value: 80,
+            checked: true,
+          },
+          {
+            type: 'radio',
+            label: 'Impresora 58mm (compacta)',
+            value: 58,
+          },
+        ],
+        buttons: [
+          {
+            text: 'Cancelar',
+            role: 'cancel',
+          },
+          {
+            text: 'Imprimir',
+            handler: (printerWidth) => {
+              this.webPrinterService.printOrder(
+                orderToPrint,
+                printerWidth || 80
+              );
+              this.showToast('✅ Abriendo diálogo de impresión...', 'success');
+            },
+          },
+        ],
+      });
+      await alert.present();
+      return;
+    }
+
+    // 📱 NATIVA: Verificar si hay impresora Bluetooth conectada
+    if (!this.thermalPrinterService.isPrinterConnected()) {
+      const alert = await this.alertCtrl.create({
+        header: '⚠️ Sin conexión',
+        message: '¿Deseas conectarte a una impresora Bluetooth?',
+        buttons: [
+          {
+            text: 'No',
+            role: 'cancel',
+          },
+          {
+            text: 'Sí, Conectar',
+            handler: async () => {
+              await this.connectPrinter();
+            },
+          },
+        ],
+      });
+      await alert.present();
+      return;
+    }
+
+    // Mostrar diálogo de confirmación con opciones para impresora térmica nativa
+    const alert = await this.alertCtrl.create({
+      header: '🖨️ Imprimir Orden',
+      message: `¿Deseas imprimir el pedido #${orderToPrint.orderNumber}?`,
+      inputs: [
+        {
+          type: 'radio',
+          label: 'Impresora 58mm (pequeña)',
+          value: 58,
+          checked: true,
+        },
+        {
+          type: 'radio',
+          label: 'Impresora 80mm (grande)',
+          value: 80,
+        },
+      ],
+      buttons: [
+        {
+          text: 'Cancelar',
+          role: 'cancel',
+        },
+        {
+          text: 'Imprimir',
+          handler: async (printerWidth) => {
+            const success = await this.thermalPrinterService.printOrder(
+              orderToPrint,
+              printerWidth || 58
+            );
+            if (success) {
+              await this.showToast('✅ Orden impresa correctamente', 'success');
+            }
+          },
+        },
+      ],
+    });
+
+    await alert.present();
+  }
+
+  /**
+   * Imprime un ticket de prueba
+   */
+  async printTestTicket() {
+    if (this.isNativeApp) {
+      // Nativa: verificar conexión Bluetooth
+      if (!this.thermalPrinterService.isPrinterConnected()) {
+        await this.connectPrinter();
+        return;
+      }
+
+      const success = await this.thermalPrinterService.printTest();
+      if (success) {
+        await this.showToast('✅ Ticket de prueba impreso', 'success');
+      } else {
+        await this.showToast('❌ Error al imprimir', 'danger');
+      }
+    } else {
+      // Web: imprimir ticket de prueba HTML
+      this.webPrinterService.printTestTicket();
+      await this.showToast('✅ Abriendo diálogo de impresión...', 'success');
+    }
+  }
+
+  /**
+   * Desconecta la impresora (solo nativa)
+   */
+  async disconnectPrinter() {
+    if (this.isNativeApp) {
+      await this.thermalPrinterService.disconnect();
+      await this.showToast('🔌 Impresora desconectada', 'medium');
+    }
+  }
+
+  /**
+   * Obtiene el estado de la impresora
+   */
+  isPrinterConnected(): boolean {
+    if (!this.isNativeApp) {
+      return true; // En web siempre hay impresoras disponibles
+    }
+    return this.thermalPrinterService.isPrinterConnected();
+  }
+
+  /**
+   * Obtiene el nombre de la impresora conectada
+   */
+  getConnectedPrinterName(): string {
+    if (!this.isNativeApp) {
+      return 'Sistema'; // En web usa el sistema operativo
+    }
+    const printer = this.thermalPrinterService.getConnectedPrinter();
+    return printer ? printer.name : 'Sin conexión';
   }
 }
