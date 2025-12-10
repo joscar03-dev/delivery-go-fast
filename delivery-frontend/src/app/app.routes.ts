@@ -286,4 +286,13 @@ export const routes: Routes = [
     canMatch: [authGuard, rolesGuard],
     data: { roles: ['super_admin'] },
   },
+  {
+    path: 'admin/survey-analytics',
+    loadComponent: () =>
+      import('./pages/admin/survey-analytics/survey-analytics.page').then(
+        (m) => m.SurveyAnalyticsPage
+      ),
+    canMatch: [authGuard, rolesGuard],
+    data: { roles: ['super_admin'] },
+  },
 ];

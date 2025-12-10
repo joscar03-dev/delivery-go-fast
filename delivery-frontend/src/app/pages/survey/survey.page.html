@@ -11,169 +11,414 @@
   <ion-card>
     <ion-card-header>
       <ion-card-title>¡Tu opinión es importante!</ion-card-title>
-      <ion-card-subtitle>Ayúdanos a mejorar tu experiencia</ion-card-subtitle>
+      <ion-card-subtitle
+        >Ayúdanos a mejorar tu experiencia con 11 preguntas
+        rápidas</ion-card-subtitle
+      >
     </ion-card-header>
 
     <ion-card-content>
       <form>
         <!-- ============================================ -->
-        <!-- DIMENSIÓN 1: USABILIDAD/INTERFAZ -->
+        <!-- DIMENSIÓN 1: INTERFAZ/USABILIDAD (3 preguntas) -->
         <!-- ============================================ -->
+        <div class="section-header">
+          <h3>📱 Interfaz y Usabilidad</h3>
+        </div>
+
+        <!-- Pregunta 1: Velocidad de carga -->
         <ion-item lines="none">
           <ion-label class="ion-text-wrap">
-            <h2><strong>1. Facilidad de uso</strong></h2>
-            <p class="question-text">
-              ¿Qué tan fácil fue hacer tu pedido en nuestra app?
-            </p>
+            <p class="question-number">Pregunta 1 de 11</p>
+            <h2>
+              <strong
+                >¿Qué tan rápido fue abrir la app y empezar tu pedido?</strong
+              >
+            </h2>
           </ion-label>
         </ion-item>
 
         <ion-item>
           <ion-range
-            [(ngModel)]="usabilityRating"
-            name="usabilityRating"
+            [(ngModel)]="q1AppLoadingSpeed"
+            name="q1AppLoadingSpeed"
             [min]="1"
             [max]="5"
             [pin]="true"
-            [pinFormatter]="getUsabilityLabel.bind(this)"
             [ticks]="true"
             [snaps]="true"
             color="primary"
           >
-            <ion-label slot="start">1</ion-label>
-            <ion-label slot="end">5</ion-label>
+            <ion-label slot="start">Muy lento</ion-label>
+            <ion-label slot="end">Muy rápido</ion-label>
           </ion-range>
         </ion-item>
 
         <ion-item lines="none">
           <ion-note color="medium">
-            <small>{{ getUsabilityLabel(usabilityRating) }}</small>
+            <small>Valor seleccionado: {{ q1AppLoadingSpeed }}/5</small>
           </ion-note>
         </ion-item>
 
-        <!-- ============================================ -->
-        <!-- DIMENSIÓN 2: PRECISIÓN -->
-        <!-- ============================================ -->
+        <!-- Pregunta 2: Facilidad de selección -->
         <ion-item lines="none" class="ion-margin-top">
           <ion-label class="ion-text-wrap">
-            <h2><strong>2. Precisión del pedido</strong></h2>
-            <p class="question-text">¿Tu pedido llegó completo y correcto?</p>
-          </ion-label>
-        </ion-item>
-
-        <ion-radio-group [(ngModel)]="precisionAnswer" name="precisionAnswer">
-          <ion-item>
-            <ion-radio value="yes" slot="start"></ion-radio>
-            <ion-label>
-              <ion-icon name="checkmark-circle" color="success"></ion-icon>
-              Sí, todo correcto
-            </ion-label>
-          </ion-item>
-          <ion-item>
-            <ion-radio value="no" slot="start"></ion-radio>
-            <ion-label>
-              <ion-icon name="close-circle" color="danger"></ion-icon>
-              No, faltaron productos
-            </ion-label>
-          </ion-item>
-          <ion-item>
-            <ion-radio value="errors" slot="start"></ion-radio>
-            <ion-label>
-              <ion-icon name="close-circle" color="warning"></ion-icon>
-              Hubo errores en el pedido
-            </ion-label>
-          </ion-item>
-        </ion-radio-group>
-
-        <!-- ============================================ -->
-        <!-- DIMENSIÓN 3: MONITOREO -->
-        <!-- ============================================ -->
-        <ion-item lines="none" class="ion-margin-top">
-          <ion-label class="ion-text-wrap">
-            <h2><strong>3. Seguimiento en tiempo real</strong></h2>
-            <p class="question-text">
-              ¿Te fue útil el seguimiento en tiempo real de tu pedido?
-            </p>
-          </ion-label>
-        </ion-item>
-
-        <ion-radio-group [(ngModel)]="monitoringAnswer" name="monitoringAnswer">
-          <ion-item>
-            <ion-radio value="very_useful" slot="start"></ion-radio>
-            <ion-label>Muy útil</ion-label>
-          </ion-item>
-          <ion-item>
-            <ion-radio value="useful" slot="start"></ion-radio>
-            <ion-label>Útil</ion-label>
-          </ion-item>
-          <ion-item>
-            <ion-radio value="not_used" slot="start"></ion-radio>
-            <ion-label>No lo usé</ion-label>
-          </ion-item>
-        </ion-radio-group>
-
-        <!-- ============================================ -->
-        <!-- DIMENSIÓN 4: PUNTUALIDAD -->
-        <!-- ============================================ -->
-        <ion-item lines="none" class="ion-margin-top">
-          <ion-label class="ion-text-wrap">
-            <h2><strong>4. Puntualidad en la entrega</strong></h2>
-            <p class="question-text">¿Tu pedido llegó en el tiempo estimado?</p>
-          </ion-label>
-        </ion-item>
-
-        <ion-radio-group
-          [(ngModel)]="punctualityAnswer"
-          name="punctualityAnswer"
-        >
-          <ion-item>
-            <ion-radio value="on_time" slot="start"></ion-radio>
-            <ion-label>
-              <ion-icon name="checkmark-circle" color="success"></ion-icon>
-              Sí, llegó a tiempo
-            </ion-label>
-          </ion-item>
-          <ion-item>
-            <ion-radio value="delayed" slot="start"></ion-radio>
-            <ion-label>
-              <ion-icon name="close-circle" color="warning"></ion-icon>
-              No, se retrasó
-            </ion-label>
-          </ion-item>
-        </ion-radio-group>
-
-        <!-- ============================================ -->
-        <!-- VARIABLE DEPENDIENTE: SATISFACCIÓN GENERAL -->
-        <!-- ============================================ -->
-        <ion-item lines="none" class="ion-margin-top">
-          <ion-label class="ion-text-wrap">
-            <h2><strong>5. Satisfacción general</strong></h2>
-            <p class="question-text">
-              ¿Cuál es tu satisfacción general con esta experiencia en la app?
-            </p>
+            <p class="question-number">Pregunta 2 de 11</p>
+            <h2>
+              <strong
+                >¿Qué tan fácil fue seleccionar productos e ingresar
+                datos?</strong
+              >
+            </h2>
           </ion-label>
         </ion-item>
 
         <ion-item>
           <ion-range
-            [(ngModel)]="generalSatisfaction"
-            name="generalSatisfaction"
+            [(ngModel)]="q2ProductSelectionEase"
+            name="q2ProductSelectionEase"
             [min]="1"
             [max]="5"
             [pin]="true"
-            [pinFormatter]="getSatisfactionLabel.bind(this)"
             [ticks]="true"
             [snaps]="true"
-            color="secondary"
+            color="primary"
           >
-            <ion-label slot="start">1</ion-label>
-            <ion-label slot="end">5</ion-label>
+            <ion-label slot="start">Muy difícil</ion-label>
+            <ion-label slot="end">Muy fácil</ion-label>
           </ion-range>
         </ion-item>
 
         <ion-item lines="none">
           <ion-note color="medium">
-            <small>{{ getSatisfactionLabel(generalSatisfaction) }}</small>
+            <small>Valor seleccionado: {{ q2ProductSelectionEase }}/5</small>
+          </ion-note>
+        </ion-item>
+
+        <!-- Pregunta 3: Facilidad de navegación -->
+        <ion-item lines="none" class="ion-margin-top">
+          <ion-label class="ion-text-wrap">
+            <p class="question-number">Pregunta 3 de 11</p>
+            <h2>
+              <strong
+                >¿Qué tan fácil fue encontrar el menú y ver precios?</strong
+              >
+            </h2>
+          </ion-label>
+        </ion-item>
+
+        <ion-item>
+          <ion-range
+            [(ngModel)]="q3MenuNavigationEase"
+            name="q3MenuNavigationEase"
+            [min]="1"
+            [max]="5"
+            [pin]="true"
+            [ticks]="true"
+            [snaps]="true"
+            color="primary"
+          >
+            <ion-label slot="start">Muy difícil</ion-label>
+            <ion-label slot="end">Muy fácil</ion-label>
+          </ion-range>
+        </ion-item>
+
+        <ion-item lines="none">
+          <ion-note color="medium">
+            <small>Valor seleccionado: {{ q3MenuNavigationEase }}/5</small>
+          </ion-note>
+        </ion-item>
+
+        <!-- ============================================ -->
+        <!-- DIMENSIÓN 2: PRECISIÓN (2 preguntas) -->
+        <!-- ============================================ -->
+        <div class="section-header ion-margin-top">
+          <h3>🎯 Precisión del Pedido</h3>
+        </div>
+
+        <!-- Pregunta 4: Coincidencia del pedido -->
+        <ion-item lines="none">
+          <ion-label class="ion-text-wrap">
+            <p class="question-number">Pregunta 4 de 11</p>
+            <h2>
+              <strong
+                >¿El pedido coincide con lo seleccionado en la pantalla?</strong
+              >
+            </h2>
+          </ion-label>
+        </ion-item>
+
+        <ion-item>
+          <ion-range
+            [(ngModel)]="q4OrderAccuracy"
+            name="q4OrderAccuracy"
+            [min]="1"
+            [max]="5"
+            [pin]="true"
+            [ticks]="true"
+            [snaps]="true"
+            color="secondary"
+          >
+            <ion-label slot="start">Muchos errores</ion-label>
+            <ion-label slot="end">Idéntico</ion-label>
+          </ion-range>
+        </ion-item>
+
+        <ion-item lines="none">
+          <ion-note color="medium">
+            <small>Valor seleccionado: {{ q4OrderAccuracy }}/5</small>
+          </ion-note>
+        </ion-item>
+
+        <!-- Pregunta 5: Monto y dirección -->
+        <ion-item lines="none" class="ion-margin-top">
+          <ion-label class="ion-text-wrap">
+            <p class="question-number">Pregunta 5 de 11</p>
+            <h2>
+              <strong>¿El monto y dirección fueron correctos?</strong>
+            </h2>
+          </ion-label>
+        </ion-item>
+
+        <ion-item>
+          <ion-range
+            [(ngModel)]="q5PaymentAddressAccuracy"
+            name="q5PaymentAddressAccuracy"
+            [min]="1"
+            [max]="5"
+            [pin]="true"
+            [ticks]="true"
+            [snaps]="true"
+            color="secondary"
+          >
+            <ion-label slot="start">Incorrectos</ion-label>
+            <ion-label slot="end">Totalmente correctos</ion-label>
+          </ion-range>
+        </ion-item>
+
+        <ion-item lines="none">
+          <ion-note color="medium">
+            <small>Valor seleccionado: {{ q5PaymentAddressAccuracy }}/5</small>
+          </ion-note>
+        </ion-item>
+
+        <!-- ============================================ -->
+        <!-- DIMENSIÓN 3: MONITOREO (2 preguntas) -->
+        <!-- ============================================ -->
+        <!-- ============================================ -->
+        <!-- DIMENSIÓN 3: MONITOREO (2 preguntas) -->
+        <!-- ============================================ -->
+        <div class="section-header ion-margin-top">
+          <h3>👁️ Seguimiento y Monitoreo</h3>
+        </div>
+
+        <!-- Pregunta 6: Visibilidad del proceso -->
+        <ion-item lines="none">
+          <ion-label class="ion-text-wrap">
+            <p class="question-number">Pregunta 6 de 11</p>
+            <h2>
+              <strong>¿La app mostró visualmente las etapas del pedido?</strong>
+            </h2>
+          </ion-label>
+        </ion-item>
+
+        <ion-item>
+          <ion-range
+            [(ngModel)]="q6OrderTrackingVisibility"
+            name="q6OrderTrackingVisibility"
+            [min]="1"
+            [max]="5"
+            [pin]="true"
+            [ticks]="true"
+            [snaps]="true"
+            color="tertiary"
+          >
+            <ion-label slot="start">No mostró nada</ion-label>
+            <ion-label slot="end">Todo el proceso</ion-label>
+          </ion-range>
+        </ion-item>
+
+        <ion-item lines="none">
+          <ion-note color="medium">
+            <small>Valor seleccionado: {{ q6OrderTrackingVisibility }}/5</small>
+          </ion-note>
+        </ion-item>
+
+        <!-- Pregunta 7: Necesidad de comunicación -->
+        <ion-item lines="none" class="ion-margin-top">
+          <ion-label class="ion-text-wrap">
+            <p class="question-number">Pregunta 7 de 11</p>
+            <h2>
+              <strong
+                >¿Sintió necesidad de llamar al restaurante/repartidor?</strong
+              >
+            </h2>
+          </ion-label>
+        </ion-item>
+
+        <ion-item>
+          <ion-range
+            [(ngModel)]="q7CommunicationNeed"
+            name="q7CommunicationNeed"
+            [min]="1"
+            [max]="5"
+            [pin]="true"
+            [ticks]="true"
+            [snaps]="true"
+            color="tertiary"
+          >
+            <ion-label slot="start">Llamé varias veces</ion-label>
+            <ion-label slot="end">No necesité llamar</ion-label>
+          </ion-range>
+        </ion-item>
+
+        <ion-item lines="none">
+          <ion-note color="medium">
+            <small>Valor seleccionado: {{ q7CommunicationNeed }}/5</small>
+          </ion-note>
+        </ion-item>
+
+        <!-- ============================================ -->
+        <!-- DIMENSIÓN 4: PUNTUALIDAD/EFICIENCIA (2 preguntas) -->
+        <!-- ============================================ -->
+        <div class="section-header ion-margin-top">
+          <h3>⏰ Puntualidad y Eficiencia</h3>
+        </div>
+
+        <!-- Pregunta 8: Puntualidad de entrega -->
+        <ion-item lines="none">
+          <ion-label class="ion-text-wrap">
+            <p class="question-number">Pregunta 8 de 11</p>
+            <h2>
+              <strong>¿El pedido llegó en el rango de tiempo estimado?</strong>
+            </h2>
+          </ion-label>
+        </ion-item>
+
+        <ion-item>
+          <ion-range
+            [(ngModel)]="q8DeliveryTimeliness"
+            name="q8DeliveryTimeliness"
+            [min]="1"
+            [max]="5"
+            [pin]="true"
+            [ticks]="true"
+            [snaps]="true"
+            color="warning"
+          >
+            <ion-label slot="start">Mucho después</ion-label>
+            <ion-label slot="end">A tiempo o antes</ion-label>
+          </ion-range>
+        </ion-item>
+
+        <ion-item lines="none">
+          <ion-note color="medium">
+            <small>Valor seleccionado: {{ q8DeliveryTimeliness }}/5</small>
+          </ion-note>
+        </ion-item>
+
+        <!-- Pregunta 9: App vs teléfono -->
+        <ion-item lines="none" class="ion-margin-top">
+          <ion-label class="ion-text-wrap">
+            <p class="question-number">Pregunta 9 de 11</p>
+            <h2>
+              <strong>¿La app fue más rápida que pedir por teléfono?</strong>
+            </h2>
+          </ion-label>
+        </ion-item>
+
+        <ion-item>
+          <ion-range
+            [(ngModel)]="q9AppVsPhoneSpeed"
+            name="q9AppVsPhoneSpeed"
+            [min]="1"
+            [max]="5"
+            [pin]="true"
+            [ticks]="true"
+            [snaps]="true"
+            color="warning"
+          >
+            <ion-label slot="start">Mucho más lenta</ion-label>
+            <ion-label slot="end">Mucho más rápida</ion-label>
+          </ion-range>
+        </ion-item>
+
+        <ion-item lines="none">
+          <ion-note color="medium">
+            <small>Valor seleccionado: {{ q9AppVsPhoneSpeed }}/5</small>
+          </ion-note>
+        </ion-item>
+
+        <!-- ============================================ -->
+        <!-- DIMENSIÓN 5: SATISFACCIÓN GENERAL (2 preguntas) -->
+        <!-- ============================================ -->
+        <div class="section-header ion-margin-top">
+          <h3>⭐ Satisfacción General</h3>
+        </div>
+
+        <!-- Pregunta 10: Satisfacción general -->
+        <ion-item lines="none">
+          <ion-label class="ion-text-wrap">
+            <p class="question-number">Pregunta 10 de 11</p>
+            <h2>
+              <strong>¿Cuál es tu satisfacción general con la app?</strong>
+            </h2>
+          </ion-label>
+        </ion-item>
+
+        <ion-item>
+          <ion-range
+            [(ngModel)]="q10OverallSatisfaction"
+            name="q10OverallSatisfaction"
+            [min]="1"
+            [max]="5"
+            [pin]="true"
+            [ticks]="true"
+            [snaps]="true"
+            color="success"
+          >
+            <ion-label slot="start">Muy insatisfecho</ion-label>
+            <ion-label slot="end">Muy satisfecho</ion-label>
+          </ion-range>
+        </ion-item>
+
+        <ion-item lines="none">
+          <ion-note color="medium">
+            <small>Valor seleccionado: {{ q10OverallSatisfaction }}/5</small>
+          </ion-note>
+        </ion-item>
+
+        <!-- Pregunta 11: Probabilidad de recomendación -->
+        <ion-item lines="none" class="ion-margin-top">
+          <ion-label class="ion-text-wrap">
+            <p class="question-number">Pregunta 11 de 11</p>
+            <h2>
+              <strong>¿Recomendarías la app a tus amigos?</strong>
+            </h2>
+          </ion-label>
+        </ion-item>
+
+        <ion-item>
+          <ion-range
+            [(ngModel)]="q11RecommendationLikelihood"
+            name="q11RecommendationLikelihood"
+            [min]="1"
+            [max]="5"
+            [pin]="true"
+            [ticks]="true"
+            [snaps]="true"
+            color="success"
+          >
+            <ion-label slot="start">No la recomendaría</ion-label>
+            <ion-label slot="end">Totalmente</ion-label>
+          </ion-range>
+        </ion-item>
+
+        <ion-item lines="none">
+          <ion-note color="medium">
+            <small
+              >Valor seleccionado: {{ q11RecommendationLikelihood }}/5</small
+            >
           </ion-note>
         </ion-item>
 

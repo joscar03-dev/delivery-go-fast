@@ -186,16 +186,22 @@ export class OrderService {
   /**
    * Envía la encuesta POST de satisfacción para un pedido entregado
    * @param orderId ID del pedido
-   * @param surveyData Respuestas de la encuesta
+   * @param surveyData Respuestas de la encuesta (11 preguntas)
    */
   submitSurvey(
     orderId: string,
     surveyData: {
-      usabilityRating: number;
-      precisionAnswer: 'yes' | 'no' | 'errors';
-      monitoringAnswer: 'very_useful' | 'useful' | 'not_used';
-      punctualityAnswer: 'on_time' | 'delayed';
-      generalSatisfaction: number;
+      q1AppLoadingSpeed: number;
+      q2ProductSelectionEase: number;
+      q3MenuNavigationEase: number;
+      q4OrderAccuracy: number;
+      q5PaymentAddressAccuracy: number;
+      q6OrderTrackingVisibility: number;
+      q7CommunicationNeed: number;
+      q8DeliveryTimeliness: number;
+      q9AppVsPhoneSpeed: number;
+      q10OverallSatisfaction: number;
+      q11RecommendationLikelihood: number;
       comment?: string;
     }
   ): Observable<any> {

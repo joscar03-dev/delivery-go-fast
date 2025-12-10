@@ -235,4 +235,29 @@ export class OrdersController {
       currentUser.id,
     );
   }
+
+  /**
+   * GET /api/orders/admin/reviews/analytics
+   * Obtiene estadísticas completas de las encuestas POST
+   * Solo para administradores
+   */
+  @Get('admin/reviews/analytics')
+  @Roles(Role.SUPER_ADMIN)
+  getReviewAnalytics() {
+    return this.ordersService.getReviewAnalytics();
+  }
+
+  /**
+   * GET /api/orders/admin/reviews/all
+   * Obtiene todas las respuestas de encuestas con detalles
+   * Solo para administradores
+   */
+  @Get('admin/reviews/all')
+  @Roles(Role.SUPER_ADMIN)
+  getAllReviews(
+    @Query('startDate') startDate?: string,
+    @Query('endDate') endDate?: string,
+  ) {
+    return this.ordersService.getAllReviews(startDate, endDate);
+  }
 }

@@ -1,0 +1,218 @@
+// ============================================
+// ESTADÍSTICAS GENERALES
+// ============================================
+.stat-box {
+  text-align: center;
+  padding: 16px;
+  border-radius: 8px;
+  background: var(--ion-color-light);
+
+  h1 {
+    margin: 0;
+    font-size: 2rem;
+    font-weight: bold;
+    color: var(--ion-color-primary);
+  }
+
+  p {
+    margin: 8px 0 0 0;
+    font-size: 0.875rem;
+    color: var(--ion-color-medium);
+  }
+}
+
+// ============================================
+// DIMENSIONES
+// ============================================
+.dimension-section {
+  margin-bottom: 32px;
+
+  h3 {
+    margin-bottom: 12px;
+    font-size: 1.1rem;
+    color: var(--ion-color-dark);
+  }
+
+  .score-bar {
+    position: relative;
+    margin-bottom: 16px;
+
+    ion-progress-bar {
+      height: 24px;
+      border-radius: 12px;
+    }
+
+    .score-value {
+      position: absolute;
+      right: 8px;
+      top: 50%;
+      transform: translateY(-50%);
+      font-weight: bold;
+      font-size: 0.875rem;
+      color: white;
+      text-shadow: 0 1px 2px rgba(0, 0, 0, 0.5);
+    }
+  }
+
+  .question-list {
+    background: transparent;
+    padding: 0;
+
+    ion-item {
+      --background: transparent;
+      --padding-start: 0;
+      --inner-padding-end: 0;
+      margin-bottom: 8px;
+
+      ion-label {
+        margin: 0;
+      }
+
+      ion-badge {
+        font-size: 0.875rem;
+        padding: 4px 8px;
+      }
+    }
+  }
+}
+
+// ============================================
+// DISTRIBUCIÓN DE RESPUESTAS
+// ============================================
+.distribution-item {
+  margin-bottom: 32px;
+  padding-bottom: 16px;
+  border-bottom: 1px solid var(--ion-color-light);
+
+  &:last-child {
+    border-bottom: none;
+  }
+
+  h4 {
+    margin-bottom: 12px;
+    font-size: 0.9rem;
+    color: var(--ion-color-dark);
+  }
+
+  .distribution-bars {
+    .bar-row {
+      display: flex;
+      align-items: center;
+      margin-bottom: 8px;
+
+      .bar-label {
+        width: 40px;
+        font-size: 0.75rem;
+        color: var(--ion-color-medium);
+      }
+
+      .bar-container {
+        flex: 1;
+        height: 24px;
+        background: var(--ion-color-light);
+        border-radius: 4px;
+        position: relative;
+        overflow: hidden;
+
+        .bar {
+          height: 100%;
+          display: flex;
+          align-items: center;
+          justify-content: flex-end;
+          padding-right: 8px;
+          transition: width 0.3s ease;
+          border-radius: 4px;
+
+          .bar-count {
+            font-size: 0.75rem;
+            font-weight: bold;
+            color: white;
+            text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
+          }
+
+          &.bar-5 {
+            background: linear-gradient(
+              90deg,
+              var(--ion-color-success),
+              var(--ion-color-success-shade)
+            );
+          }
+
+          &.bar-4 {
+            background: linear-gradient(
+              90deg,
+              var(--ion-color-primary),
+              var(--ion-color-primary-shade)
+            );
+          }
+
+          &.bar-3 {
+            background: linear-gradient(
+              90deg,
+              var(--ion-color-warning),
+              var(--ion-color-warning-shade)
+            );
+          }
+
+          &.bar-2 {
+            background: linear-gradient(
+              90deg,
+              var(--ion-color-danger-tint),
+              var(--ion-color-danger)
+            );
+          }
+
+          &.bar-1 {
+            background: linear-gradient(
+              90deg,
+              var(--ion-color-danger),
+              var(--ion-color-danger-shade)
+            );
+          }
+        }
+      }
+    }
+  }
+}
+
+// ============================================
+// ENCUESTAS RECIENTES
+// ============================================
+ion-list {
+  ion-item {
+    ion-label {
+      h2 {
+        margin-bottom: 4px;
+      }
+
+      p {
+        margin: 4px 0;
+
+        ion-icon {
+          vertical-align: middle;
+          margin-right: 4px;
+        }
+      }
+
+      ion-note {
+        margin-top: 8px;
+        display: block;
+      }
+    }
+  }
+}
+
+// ============================================
+// RESPONSIVE
+// ============================================
+@media (max-width: 768px) {
+  .stat-box {
+    h1 {
+      font-size: 1.5rem;
+    }
+
+    p {
+      font-size: 0.75rem;
+    }
+  }
+}

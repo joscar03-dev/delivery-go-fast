@@ -32,6 +32,21 @@
           </ion-card>
         </ion-col>
 
+        <!-- Dashboard de Encuestas -->
+        <ion-col size="12" size-md="6">
+          <ion-card button [routerLink]="['/admin/survey-analytics']">
+            <ion-card-header>
+              <ion-card-title>
+                <ion-icon name="bar-chart-outline"></ion-icon>
+                Análisis de Encuestas
+              </ion-card-title>
+            </ion-card-header>
+            <ion-card-content>
+              Visualiza estadísticas y exporta datos de encuestas POST
+            </ion-card-content>
+          </ion-card>
+        </ion-col>
+
         <ion-col size="12" size-md="6">
           <ion-card button [routerLink]="['/admin/restaurants']">
             <ion-card-header>

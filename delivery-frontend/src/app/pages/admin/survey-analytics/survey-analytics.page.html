@@ -1,0 +1,485 @@
+<ion-header>
+  <ion-toolbar color="primary">
+    <ion-buttons slot="start">
+      <ion-back-button defaultHref="/tabs/tab2"></ion-back-button>
+    </ion-buttons>
+    <ion-title>📊 Análisis de Encuestas</ion-title>
+    <ion-buttons slot="end">
+      <ion-button (click)="refresh()">
+        <ion-icon name="refresh-outline"></ion-icon>
+      </ion-button>
+    </ion-buttons>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content>
+  <ion-refresher slot="fixed" (ionRefresh)="refresh($event)">
+    <ion-refresher-content></ion-refresher-content>
+  </ion-refresher>
+
+  <!-- Loading -->
+  <div *ngIf="loading" class="ion-text-center ion-padding">
+    <ion-spinner name="crescent"></ion-spinner>
+    <p>Cargando estadísticas...</p>
+  </div>
+
+  <!-- Sin datos -->
+  <div
+    *ngIf="!loading && analytics && analytics.totalResponses === 0"
+    class="ion-text-center ion-padding"
+  >
+    <ion-icon
+      name="stats-chart-outline"
+      style="font-size: 64px; color: var(--ion-color-medium)"
+    ></ion-icon>
+    <h2>No hay encuestas todavía</h2>
+    <p>Las estadísticas aparecerán cuando los clientes respondan encuestas.</p>
+  </div>
+
+  <!-- Dashboard con datos -->
+  <div *ngIf="!loading && analytics && analytics.totalResponses > 0">
+    <!-- ============================================ -->
+    <!-- RESUMEN GENERAL -->
+    <!-- ============================================ -->
+    <ion-card>
+      <ion-card-header>
+        <ion-card-title>
+          <ion-icon name="stats-chart-outline"></ion-icon>
+          Resumen General
+        </ion-card-title>
+      </ion-card-header>
+      <ion-card-content>
+        <ion-grid>
+          <ion-row>
+            <ion-col size="6" size-md="3">
+              <div class="stat-box">
+                <h1>{{ analytics.totalResponses }}</h1>
+                <p>Respuestas Totales</p>
+              </div>
+            </ion-col>
+            <ion-col size="6" size-md="3">
+              <div class="stat-box">
+                <h1
+                  [style.color]="
+                    'var(--ion-color-' +
+                    getScoreColor(analytics.averages.q10OverallSatisfaction) +
+                    ')'
+                  "
+                >
+                  {{ analytics.averages.q10OverallSatisfaction.toFixed(1) }}/5
+                </h1>
+                <p>Satisfacción General</p>
+              </div>
+            </ion-col>
+            <ion-col size="6" size-md="3">
+              <div class="stat-box">
+                <h1
+                  [style.color]="
+                    'var(--ion-color-' +
+                    getScoreColor(
+                      analytics.averages.q11RecommendationLikelihood
+                    ) +
+                    ')'
+                  "
+                >
+                  {{ analytics.averages.q11RecommendationLikelihood.toFixed(1)
+                  }}/5
+                </h1>
+                <p>Recomendación</p>
+              </div>
+            </ion-col>
+            <ion-col size="6" size-md="3">
+              <div class="stat-box">
+                <h1
+                  [style.color]="
+                    'var(--ion-color-' +
+                    getScoreColor(
+                      (analytics.averages.q1AppLoadingSpeed +
+                        analytics.averages.q2ProductSelectionEase +
+                        analytics.averages.q3MenuNavigationEase +
+                        analytics.averages.q4OrderAccuracy +
+                        analytics.averages.q5PaymentAddressAccuracy +
+                        analytics.averages.q6OrderTrackingVisibility +
+                        analytics.averages.q7CommunicationNeed +
+                        analytics.averages.q8DeliveryTimeliness +
+                        analytics.averages.q9AppVsPhoneSpeed +
+                        analytics.averages.q10OverallSatisfaction +
+                        analytics.averages.q11RecommendationLikelihood) /
+                        11
+                    ) +
+                    ')'
+                  "
+                >
+                  {{ ( (analytics.averages.q1AppLoadingSpeed +
+                  analytics.averages.q2ProductSelectionEase +
+                  analytics.averages.q3MenuNavigationEase +
+                  analytics.averages.q4OrderAccuracy +
+                  analytics.averages.q5PaymentAddressAccuracy +
+                  analytics.averages.q6OrderTrackingVisibility +
+                  analytics.averages.q7CommunicationNeed +
+                  analytics.averages.q8DeliveryTimeliness +
+                  analytics.averages.q9AppVsPhoneSpeed +
+                  analytics.averages.q10OverallSatisfaction +
+                  analytics.averages.q11RecommendationLikelihood) / 11
+                  ).toFixed(1) }}/5
+                </h1>
+                <p>Promedio Global</p>
+              </div>
+            </ion-col>
+          </ion-row>
+        </ion-grid>
+
+        <!-- Botón de exportación -->
+        <ion-button
+          expand="block"
+          (click)="exportData()"
+          [disabled]="exporting"
+          class="ion-margin-top"
+        >
+          <ion-icon name="download-outline" slot="start"></ion-icon>
+          <span *ngIf="!exporting">Exportar a CSV</span>
+          <ion-spinner *ngIf="exporting" name="crescent"></ion-spinner>
+        </ion-button>
+      </ion-card-content>
+    </ion-card>
+
+    <!-- ============================================ -->
+    <!-- ANÁLISIS POR DIMENSIÓN -->
+    <!-- ============================================ -->
+    <ion-card>
+      <ion-card-header>
+        <ion-card-title>📊 Análisis por Dimensión</ion-card-title>
+        <ion-card-subtitle
+          >Promedios de las 5 áreas evaluadas</ion-card-subtitle
+        >
+      </ion-card-header>
+      <ion-card-content>
+        <!-- Dimensión 1: Interfaz/Usabilidad -->
+        <div class="dimension-section">
+          <h3>📱 {{ analytics.dimensions.interfazUsabilidad.name }}</h3>
+          <div class="score-bar">
+            <ion-progress-bar
+              [value]="analytics.dimensions.interfazUsabilidad.average / 5"
+              [color]="
+                getScoreColor(analytics.dimensions.interfazUsabilidad.average)
+              "
+            ></ion-progress-bar>
+            <span class="score-value">
+              {{ analytics.dimensions.interfazUsabilidad.average.toFixed(2) }}/5
+            </span>
+          </div>
+          <ion-list class="question-list">
+            <ion-item
+              *ngFor="let q of analytics.dimensions.interfazUsabilidad.questions"
+              lines="none"
+            >
+              <ion-label class="ion-text-wrap">
+                <p><small>{{ q.text }}</small></p>
+              </ion-label>
+              <ion-badge [color]="getScoreColor(q.average)" slot="end">
+                {{ q.average.toFixed(2) }}
+              </ion-badge>
+            </ion-item>
+          </ion-list>
+        </div>
+
+        <!-- Dimensión 2: Precisión -->
+        <div class="dimension-section">
+          <h3>🎯 {{ analytics.dimensions.precision.name }}</h3>
+          <div class="score-bar">
+            <ion-progress-bar
+              [value]="analytics.dimensions.precision.average / 5"
+              [color]="getScoreColor(analytics.dimensions.precision.average)"
+            ></ion-progress-bar>
+            <span class="score-value">
+              {{ analytics.dimensions.precision.average.toFixed(2) }}/5
+            </span>
+          </div>
+          <ion-list class="question-list">
+            <ion-item
+              *ngFor="let q of analytics.dimensions.precision.questions"
+              lines="none"
+            >
+              <ion-label class="ion-text-wrap">
+                <p><small>{{ q.text }}</small></p>
+              </ion-label>
+              <ion-badge [color]="getScoreColor(q.average)" slot="end">
+                {{ q.average.toFixed(2) }}
+              </ion-badge>
+            </ion-item>
+          </ion-list>
+        </div>
+
+        <!-- Dimensión 3: Monitoreo -->
+        <div class="dimension-section">
+          <h3>👁️ {{ analytics.dimensions.monitoreo.name }}</h3>
+          <div class="score-bar">
+            <ion-progress-bar
+              [value]="analytics.dimensions.monitoreo.average / 5"
+              [color]="getScoreColor(analytics.dimensions.monitoreo.average)"
+            ></ion-progress-bar>
+            <span class="score-value">
+              {{ analytics.dimensions.monitoreo.average.toFixed(2) }}/5
+            </span>
+          </div>
+          <ion-list class="question-list">
+            <ion-item
+              *ngFor="let q of analytics.dimensions.monitoreo.questions"
+              lines="none"
+            >
+              <ion-label class="ion-text-wrap">
+                <p><small>{{ q.text }}</small></p>
+              </ion-label>
+              <ion-badge [color]="getScoreColor(q.average)" slot="end">
+                {{ q.average.toFixed(2) }}
+              </ion-badge>
+            </ion-item>
+          </ion-list>
+        </div>
+
+        <!-- Dimensión 4: Puntualidad -->
+        <div class="dimension-section">
+          <h3>⏰ {{ analytics.dimensions.puntualidad.name }}</h3>
+          <div class="score-bar">
+            <ion-progress-bar
+              [value]="analytics.dimensions.puntualidad.average / 5"
+              [color]="getScoreColor(analytics.dimensions.puntualidad.average)"
+            ></ion-progress-bar>
+            <span class="score-value">
+              {{ analytics.dimensions.puntualidad.average.toFixed(2) }}/5
+            </span>
+          </div>
+          <ion-list class="question-list">
+            <ion-item
+              *ngFor="let q of analytics.dimensions.puntualidad.questions"
+              lines="none"
+            >
+              <ion-label class="ion-text-wrap">
+                <p><small>{{ q.text }}</small></p>
+              </ion-label>
+              <ion-badge [color]="getScoreColor(q.average)" slot="end">
+                {{ q.average.toFixed(2) }}
+              </ion-badge>
+            </ion-item>
+          </ion-list>
+        </div>
+
+        <!-- Dimensión 5: Satisfacción General -->
+        <div class="dimension-section">
+          <h3>⭐ {{ analytics.dimensions.satisfaccionGeneral.name }}</h3>
+          <div class="score-bar">
+            <ion-progress-bar
+              [value]="analytics.dimensions.satisfaccionGeneral.average / 5"
+              [color]="
+                getScoreColor(analytics.dimensions.satisfaccionGeneral.average)
+              "
+            ></ion-progress-bar>
+            <span class="score-value">
+              {{ analytics.dimensions.satisfaccionGeneral.average.toFixed(2)
+              }}/5
+            </span>
+          </div>
+          <ion-list class="question-list">
+            <ion-item
+              *ngFor="
+                let q of analytics.dimensions.satisfaccionGeneral.questions
+              "
+              lines="none"
+            >
+              <ion-label class="ion-text-wrap">
+                <p><small>{{ q.text }}</small></p>
+              </ion-label>
+              <ion-badge [color]="getScoreColor(q.average)" slot="end">
+                {{ q.average.toFixed(2) }}
+              </ion-badge>
+            </ion-item>
+          </ion-list>
+        </div>
+      </ion-card-content>
+    </ion-card>
+
+    <!-- ============================================ -->
+    <!-- ENCUESTAS RECIENTES -->
+    <!-- ============================================ -->
+    <ion-card>
+      <ion-card-header>
+        <ion-card-title>
+          <ion-icon name="people-outline"></ion-icon>
+          Últimas Encuestas
+        </ion-card-title>
+        <ion-card-subtitle>5 respuestas más recientes</ion-card-subtitle>
+      </ion-card-header>
+      <ion-card-content>
+        <ion-list>
+          <ion-item *ngFor="let review of analytics.recentReviews">
+            <ion-label class="ion-text-wrap">
+              <h2>
+                <strong
+                  >{{ review.client?.name || "Cliente desconocido" }}</strong
+                >
+              </h2>
+              <p>
+                <small>
+                  <ion-icon name="star-outline"></ion-icon>
+                  Promedio: {{ review.averageScore.toFixed(2) }}/5 - {{
+                  getScoreLabel(review.averageScore) }}
+                </small>
+              </p>
+              <p *ngIf="review.restaurant">
+                <small>
+                  <ion-icon name="restaurant-outline"></ion-icon>
+                  {{ review.restaurant.name }}
+                </small>
+              </p>
+              <p *ngIf="review.comment">
+                <small>💬 "{{ review.comment }}"</small>
+              </p>
+              <ion-note>
+                <small>{{ formatDate(review.createdAt) }}</small>
+              </ion-note>
+            </ion-label>
+            <ion-badge [color]="getScoreColor(review.averageScore)" slot="end">
+              {{ review.averageScore.toFixed(1) }}
+            </ion-badge>
+          </ion-item>
+        </ion-list>
+      </ion-card-content>
+    </ion-card>
+
+    <!-- ============================================ -->
+    <!-- DISTRIBUCIÓN DE RESPUESTAS -->
+    <!-- ============================================ -->
+    <ion-card>
+      <ion-card-header>
+        <ion-card-title>📈 Distribución de Respuestas</ion-card-title>
+        <ion-card-subtitle
+          >Cantidad de respuestas por valor (1-5)</ion-card-subtitle
+        >
+      </ion-card-header>
+      <ion-card-content>
+        <div
+          *ngFor="
+            let item of [
+              { key: 'q1', label: 'Q1: Velocidad de carga' },
+              { key: 'q2', label: 'Q2: Facilidad de selección' },
+              { key: 'q3', label: 'Q3: Navegación del menú' },
+              { key: 'q4', label: 'Q4: Precisión del pedido' },
+              { key: 'q5', label: 'Q5: Monto y dirección' },
+              { key: 'q6', label: 'Q6: Visibilidad de etapas' },
+              { key: 'q7', label: 'Q7: Necesidad de llamar' },
+              { key: 'q8', label: 'Q8: Puntualidad' },
+              { key: 'q9', label: 'Q9: App vs Teléfono' },
+              { key: 'q10', label: 'Q10: Satisfacción general' },
+              { key: 'q11', label: 'Q11: Recomendación' }
+            ]
+          "
+          class="distribution-item"
+        >
+          <h4>{{ item.label }}</h4>
+          <div class="distribution-bars">
+            <div class="bar-row">
+              <span class="bar-label">5⭐</span>
+              <div class="bar-container">
+                <div
+                  class="bar bar-5"
+                  [style.width.%]="
+                    (analytics.distribution[item.key][5] /
+                      analytics.totalResponses) *
+                    100
+                  "
+                >
+                  <span
+                    class="bar-count"
+                    *ngIf="analytics.distribution[item.key][5] > 0"
+                  >
+                    {{ analytics.distribution[item.key][5] }}
+                  </span>
+                </div>
+              </div>
+            </div>
+            <div class="bar-row">
+              <span class="bar-label">4⭐</span>
+              <div class="bar-container">
+                <div
+                  class="bar bar-4"
+                  [style.width.%]="
+                    (analytics.distribution[item.key][4] /
+                      analytics.totalResponses) *
+                    100
+                  "
+                >
+                  <span
+                    class="bar-count"
+                    *ngIf="analytics.distribution[item.key][4] > 0"
+                  >
+                    {{ analytics.distribution[item.key][4] }}
+                  </span>
+                </div>
+              </div>
+            </div>
+            <div class="bar-row">
+              <span class="bar-label">3⭐</span>
+              <div class="bar-container">
+                <div
+                  class="bar bar-3"
+                  [style.width.%]="
+                    (analytics.distribution[item.key][3] /
+                      analytics.totalResponses) *
+                    100
+                  "
+                >
+                  <span
+                    class="bar-count"
+                    *ngIf="analytics.distribution[item.key][3] > 0"
+                  >
+                    {{ analytics.distribution[item.key][3] }}
+                  </span>
+                </div>
+              </div>
+            </div>
+            <div class="bar-row">
+              <span class="bar-label">2⭐</span>
+              <div class="bar-container">
+                <div
+                  class="bar bar-2"
+                  [style.width.%]="
+                    (analytics.distribution[item.key][2] /
+                      analytics.totalResponses) *
+                    100
+                  "
+                >
+                  <span
+                    class="bar-count"
+                    *ngIf="analytics.distribution[item.key][2] > 0"
+                  >
+                    {{ analytics.distribution[item.key][2] }}
+                  </span>
+                </div>
+              </div>
+            </div>
+            <div class="bar-row">
+              <span class="bar-label">1⭐</span>
+              <div class="bar-container">
+                <div
+                  class="bar bar-1"
+                  [style.width.%]="
+                    (analytics.distribution[item.key][1] /
+                      analytics.totalResponses) *
+                    100
+                  "
+                >
+                  <span
+                    class="bar-count"
+                    *ngIf="analytics.distribution[item.key][1] > 0"
+                  >
+                    {{ analytics.distribution[item.key][1] }}
+                  </span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </ion-card-content>
+    </ion-card>
+  </div>
+</ion-content>

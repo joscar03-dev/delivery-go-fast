@@ -1046,4 +1046,326 @@ export class OrdersService {
 
     return ordersWithoutReview;
   }
+
+  /**
+   * Obtiene estadísticas completas de las encuestas POST
+   * Para el dashboard de analytics de administración
+   */
+  async getReviewAnalytics(): Promise<any> {
+    const reviews = await this.reviewRepository.find({
+      relations: ['order', 'order.client', 'order.restaurant'],
+      order: {
+        createdAt: 'DESC',
+      },
+    });
+
+    const totalResponses = reviews.length;
+
+    if (totalResponses === 0) {
+      return {
+        totalResponses: 0,
+        averages: {},
+        distribution: {},
+        dimensions: {},
+        recentReviews: [],
+      };
+    }
+
+    // Calcular promedios por pregunta
+    const averages = {
+      q1AppLoadingSpeed: this.calculateAverage(
+        reviews.map((r) => r.q1AppLoadingSpeed),
+      ),
+      q2ProductSelectionEase: this.calculateAverage(
+        reviews.map((r) => r.q2ProductSelectionEase),
+      ),
+      q3MenuNavigationEase: this.calculateAverage(
+        reviews.map((r) => r.q3MenuNavigationEase),
+      ),
+      q4OrderAccuracy: this.calculateAverage(
+        reviews.map((r) => r.q4OrderAccuracy),
+      ),
+      q5PaymentAddressAccuracy: this.calculateAverage(
+        reviews.map((r) => r.q5PaymentAddressAccuracy),
+      ),
+      q6OrderTrackingVisibility: this.calculateAverage(
+        reviews.map((r) => r.q6OrderTrackingVisibility),
+      ),
+      q7CommunicationNeed: this.calculateAverage(
+        reviews.map((r) => r.q7CommunicationNeed),
+      ),
+      q8DeliveryTimeliness: this.calculateAverage(
+        reviews.map((r) => r.q8DeliveryTimeliness),
+      ),
+      q9AppVsPhoneSpeed: this.calculateAverage(
+        reviews.map((r) => r.q9AppVsPhoneSpeed),
+      ),
+      q10OverallSatisfaction: this.calculateAverage(
+        reviews.map((r) => r.q10OverallSatisfaction),
+      ),
+      q11RecommendationLikelihood: this.calculateAverage(
+        reviews.map((r) => r.q11RecommendationLikelihood),
+      ),
+    };
+
+    // Calcular distribución (cuántas respuestas por cada valor 1-5)
+    const distribution = {
+      q1: this.calculateDistribution(reviews.map((r) => r.q1AppLoadingSpeed)),
+      q2: this.calculateDistribution(
+        reviews.map((r) => r.q2ProductSelectionEase),
+      ),
+      q3: this.calculateDistribution(
+        reviews.map((r) => r.q3MenuNavigationEase),
+      ),
+      q4: this.calculateDistribution(reviews.map((r) => r.q4OrderAccuracy)),
+      q5: this.calculateDistribution(
+        reviews.map((r) => r.q5PaymentAddressAccuracy),
+      ),
+      q6: this.calculateDistribution(
+        reviews.map((r) => r.q6OrderTrackingVisibility),
+      ),
+      q7: this.calculateDistribution(reviews.map((r) => r.q7CommunicationNeed)),
+      q8: this.calculateDistribution(
+        reviews.map((r) => r.q8DeliveryTimeliness),
+      ),
+      q9: this.calculateDistribution(reviews.map((r) => r.q9AppVsPhoneSpeed)),
+      q10: this.calculateDistribution(
+        reviews.map((r) => r.q10OverallSatisfaction),
+      ),
+      q11: this.calculateDistribution(
+        reviews.map((r) => r.q11RecommendationLikelihood),
+      ),
+    };
+
+    // Calcular promedios por dimensión
+    const dimensions = {
+      interfazUsabilidad: {
+        name: 'Interfaz y Usabilidad',
+        average:
+          (averages.q1AppLoadingSpeed +
+            averages.q2ProductSelectionEase +
+            averages.q3MenuNavigationEase) /
+          3,
+        questions: [
+          {
+            id: 'q1',
+            text: '¿Qué tan rápido fue abrir la app?',
+            average: averages.q1AppLoadingSpeed,
+          },
+          {
+            id: 'q2',
+            text: '¿Qué tan fácil fue seleccionar productos?',
+            average: averages.q2ProductSelectionEase,
+          },
+          {
+            id: 'q3',
+            text: '¿Qué tan fácil fue encontrar el menú?',
+            average: averages.q3MenuNavigationEase,
+          },
+        ],
+      },
+      precision: {
+        name: 'Precisión del Pedido',
+        average:
+          (averages.q4OrderAccuracy + averages.q5PaymentAddressAccuracy) / 2,
+        questions: [
+          {
+            id: 'q4',
+            text: '¿El pedido coincide con lo seleccionado?',
+            average: averages.q4OrderAccuracy,
+          },
+          {
+            id: 'q5',
+            text: '¿El monto y dirección fueron correctos?',
+            average: averages.q5PaymentAddressAccuracy,
+          },
+        ],
+      },
+      monitoreo: {
+        name: 'Seguimiento y Monitoreo',
+        average:
+          (averages.q6OrderTrackingVisibility + averages.q7CommunicationNeed) /
+          2,
+        questions: [
+          {
+            id: 'q6',
+            text: '¿La app mostró visualmente las etapas?',
+            average: averages.q6OrderTrackingVisibility,
+          },
+          {
+            id: 'q7',
+            text: '¿Sintió necesidad de llamar?',
+            average: averages.q7CommunicationNeed,
+          },
+        ],
+      },
+      puntualidad: {
+        name: 'Puntualidad y Eficiencia',
+        average:
+          (averages.q8DeliveryTimeliness + averages.q9AppVsPhoneSpeed) / 2,
+        questions: [
+          {
+            id: 'q8',
+            text: '¿El pedido llegó en el tiempo estimado?',
+            average: averages.q8DeliveryTimeliness,
+          },
+          {
+            id: 'q9',
+            text: '¿La app fue más rápida que el teléfono?',
+            average: averages.q9AppVsPhoneSpeed,
+          },
+        ],
+      },
+      satisfaccionGeneral: {
+        name: 'Satisfacción General',
+        average:
+          (averages.q10OverallSatisfaction +
+            averages.q11RecommendationLikelihood) /
+          2,
+        questions: [
+          {
+            id: 'q10',
+            text: '¿Cuál es tu satisfacción general?',
+            average: averages.q10OverallSatisfaction,
+          },
+          {
+            id: 'q11',
+            text: '¿Recomendarías la app?',
+            average: averages.q11RecommendationLikelihood,
+          },
+        ],
+      },
+    };
+
+    // Últimas 5 reviews
+    const recentReviews = reviews.slice(0, 5).map((review) => ({
+      id: review.id,
+      orderId: review.order.id,
+      createdAt: review.createdAt,
+      client: review.order.client
+        ? {
+            name: review.order.client.name,
+            phone: review.order.client.phone,
+          }
+        : null,
+      restaurant: review.order.restaurant
+        ? {
+            name: review.order.restaurant.name,
+          }
+        : null,
+      averageScore:
+        (review.q1AppLoadingSpeed +
+          review.q2ProductSelectionEase +
+          review.q3MenuNavigationEase +
+          review.q4OrderAccuracy +
+          review.q5PaymentAddressAccuracy +
+          review.q6OrderTrackingVisibility +
+          review.q7CommunicationNeed +
+          review.q8DeliveryTimeliness +
+          review.q9AppVsPhoneSpeed +
+          review.q10OverallSatisfaction +
+          review.q11RecommendationLikelihood) /
+        11,
+      comment: review.comment,
+    }));
+
+    console.log(`📊 Analytics generados: ${totalResponses} respuestas`);
+
+    return {
+      totalResponses,
+      averages,
+      distribution,
+      dimensions,
+      recentReviews,
+    };
+  }
+
+  /**
+   * Obtiene todas las respuestas de encuestas con filtro de fechas
+   * Para exportación y análisis detallado
+   */
+  async getAllReviews(startDate?: string, endDate?: string): Promise<any[]> {
+    const whereCondition: any = {};
+
+    if (startDate || endDate) {
+      whereCondition.createdAt = {};
+      if (startDate) {
+        whereCondition.createdAt.gte = new Date(startDate);
+      }
+      if (endDate) {
+        whereCondition.createdAt.lte = new Date(endDate);
+      }
+    }
+
+    const reviews = await this.reviewRepository.find({
+      where: whereCondition,
+      relations: ['order', 'order.client', 'order.restaurant', 'order.driver'],
+      order: {
+        createdAt: 'DESC',
+      },
+    });
+
+    return reviews.map((review) => ({
+      id: review.id,
+      orderId: review.order.id,
+      createdAt: review.createdAt,
+      // Información del cliente
+      clientName: review.order.client?.name || 'N/A',
+      clientPhone: review.order.client?.phone || 'N/A',
+      // Información del restaurante
+      restaurantName: review.order.restaurant?.name || 'N/A',
+      // Información del repartidor
+      driverName: review.order.driver?.name || 'N/A',
+      // Respuestas de la encuesta (11 preguntas)
+      q1AppLoadingSpeed: review.q1AppLoadingSpeed,
+      q2ProductSelectionEase: review.q2ProductSelectionEase,
+      q3MenuNavigationEase: review.q3MenuNavigationEase,
+      q4OrderAccuracy: review.q4OrderAccuracy,
+      q5PaymentAddressAccuracy: review.q5PaymentAddressAccuracy,
+      q6OrderTrackingVisibility: review.q6OrderTrackingVisibility,
+      q7CommunicationNeed: review.q7CommunicationNeed,
+      q8DeliveryTimeliness: review.q8DeliveryTimeliness,
+      q9AppVsPhoneSpeed: review.q9AppVsPhoneSpeed,
+      q10OverallSatisfaction: review.q10OverallSatisfaction,
+      q11RecommendationLikelihood: review.q11RecommendationLikelihood,
+      // Promedio general
+      averageScore:
+        (review.q1AppLoadingSpeed +
+          review.q2ProductSelectionEase +
+          review.q3MenuNavigationEase +
+          review.q4OrderAccuracy +
+          review.q5PaymentAddressAccuracy +
+          review.q6OrderTrackingVisibility +
+          review.q7CommunicationNeed +
+          review.q8DeliveryTimeliness +
+          review.q9AppVsPhoneSpeed +
+          review.q10OverallSatisfaction +
+          review.q11RecommendationLikelihood) /
+        11,
+      // Comentario opcional
+      comment: review.comment || '',
+    }));
+  }
+
+  /**
+   * Calcula el promedio de un array de números
+   */
+  private calculateAverage(values: number[]): number {
+    if (values.length === 0) return 0;
+    const sum = values.reduce((acc, val) => acc + val, 0);
+    return Math.round((sum / values.length) * 100) / 100; // 2 decimales
+  }
+
+  /**
+   * Calcula la distribución de respuestas (cuántas de cada valor 1-5)
+   */
+  private calculateDistribution(values: number[]): any {
+    const dist = { 1: 0, 2: 0, 3: 0, 4: 0, 5: 0 };
+    values.forEach((value) => {
+      if (value >= 1 && value <= 5) {
+        dist[value]++;
+      }
+    });
+    return dist;
+  }
 }
