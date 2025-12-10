@@ -291,35 +291,20 @@
           </h4>
 
           <div class="mb-4 p-3 bg-white rounded-lg">
-            <p class="text-sm text-gray-600 mb-1">
-              Realiza la transferencia a:
-            </p>
-            <p class="text-lg font-bold text-purple-600">933 044 973</p>
-            <p class="text-sm text-gray-500 mt-1">
+            <p class="text-sm text-gray-600 mb-1">Instrucciones</p>
+            <p class="text-lg font-bold text-purple-600">
               Monto: S/ {{ getFormattedTotal() }}
+            </p>
+            <p class="text-sm text-gray-500 mt-2">
+              Espera a que llegue el repartidor. Podrás pagarle mediante número
+              de celular (Yape/Plin) o mostrando el QR cuando él lo solicite.
             </p>
           </div>
 
-          <ion-item class="mb-3 rounded-lg">
-            <ion-label position="floating">Número de operación *</ion-label>
-            <ion-input
-              type="text"
-              [(ngModel)]="transactionReference"
-              placeholder="Ingresa el código de operación"
-              required
-            ></ion-input>
-          </ion-item>
-
-          <ion-item class="rounded-lg">
-            <ion-label position="floating"
-              >URL de comprobante (opcional)</ion-label
-            >
-            <ion-input
-              type="url"
-              [(ngModel)]="paymentProofUrl"
-              placeholder="https://..."
-            ></ion-input>
-          </ion-item>
+          <!-- Ocultamos inputs porque el usuario normalmente no sube comprobantes desde la app
+      pero el backend requiere una referencia. Generamos una referencia por defecto en TS. -->
+          <input type="hidden" [value]="transactionReference" />
+          <input type="hidden" [value]="paymentProofUrl" />
 
           <ion-note class="text-xs text-gray-500 mt-2 block">
             Tu pedido será verificado antes de ser procesado

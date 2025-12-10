@@ -59,18 +59,8 @@
       </div>
     </ion-item>
 
-    <!-- Código Postal -->
-    <ion-item [class.ion-invalid]="hasError('postalCode')">
-      <ion-label position="stacked">Código Postal *</ion-label>
-      <ion-input
-        type="text"
-        formControlName="postalCode"
-        placeholder="Ej: 04001"
-      ></ion-input>
-      <div class="error-message" *ngIf="hasError('postalCode')">
-        {{ getErrorMessage("postalCode") }}
-      </div>
-    </ion-item>
+    <!-- Código Postal (oculto) - valor por defecto 01720 para Bagua -->
+    <input type="hidden" formControlName="postalCode" />
 
     <!-- Referencia -->
     <ion-item>

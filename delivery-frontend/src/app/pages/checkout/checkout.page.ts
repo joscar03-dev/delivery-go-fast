@@ -252,9 +252,21 @@ export class CheckoutPage implements OnInit {
 
     // Limpiar campos específicos al cambiar de método
     this.cashAmount = undefined;
-    this.transactionReference = '';
     this.paymentProofUrl = '';
     this.changeAmount = 0;
+
+    // Si el método es Yape o Plin, generar una referencia por defecto para evitar
+    // que la validación del frontend la marque como obligatoria cuando el usuario
+    // no suba comprobante desde la app.
+    if (
+      methodCode === PaymentMethodCode.YAPE ||
+      methodCode === PaymentMethodCode.PLIN
+    ) {
+      // Generamos una referencia simple: prefijo + timestamp
+      this.transactionReference = `AUTO-${Date.now()}`;
+    } else {
+      this.transactionReference = '';
+    }
   }
 
   onCashAmountChange() {

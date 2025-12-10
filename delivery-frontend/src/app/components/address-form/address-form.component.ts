@@ -259,10 +259,10 @@ export class AddressFormComponent implements OnInit, AfterViewInit, OnDestroy {
         [Validators.required, Validators.minLength(5)],
       ],
       city: [
-        this.address?.city || '',
+        { value: this.address?.city || 'Bagua', disabled: true },
         [Validators.required, Validators.minLength(3)],
       ],
-      postalCode: [this.address?.postalCode || '', [Validators.required]],
+      postalCode: [this.address?.postalCode || '01720', [Validators.required]],
       reference: [this.address?.reference || ''],
       type: [this.address?.type || AddressType.HOME],
       isDefault: [this.address?.isDefault || false],
@@ -372,8 +372,8 @@ export class AddressFormComponent implements OnInit, AfterViewInit, OnDestroy {
     this.loading = true;
     this.errorMessage = '';
 
-    // Obtener y limpiar datos del formulario
-    const formData = this.addressForm.value;
+    // Obtener y limpiar datos del formulario (incluir controles deshabilitados)
+    const formData = this.addressForm.getRawValue();
     const cleanedData = this.cleanFormData(formData);
 
     console.log('💾 Guardando dirección:', cleanedData);
