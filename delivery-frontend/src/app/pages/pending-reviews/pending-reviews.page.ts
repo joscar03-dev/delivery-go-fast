@@ -33,6 +33,7 @@ import {
   timeOutline,
   restaurantOutline,
 } from 'ionicons/icons';
+import { chevronDownCircleOutline } from 'ionicons/icons';
 
 // Registrar iconos
 addIcons({
@@ -40,6 +41,7 @@ addIcons({
   'checkmark-circle-outline': checkmarkCircleOutline,
   'time-outline': timeOutline,
   'restaurant-outline': restaurantOutline,
+  'chevron-down-circle-outline': chevronDownCircleOutline,
 });
 
 @Component({

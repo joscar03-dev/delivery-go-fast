@@ -63,9 +63,16 @@ export class OrdersController {
    */
   @Get('pending-reviews')
   @Roles(Role.CLIENT, Role.SUPER_ADMIN)
-  getPendingReviews(@Request() req) {
+  async getPendingReviews(@Request() req) {
     const currentUser = req.user;
-    return this.ordersService.findPendingReviews(currentUser.id);
+    try {
+      return await this.ordersService.findPendingReviews(currentUser.id);
+    } catch (error) {
+      // Log error server-side for diagnostics
+      console.error('Error in GET /api/orders/pending-reviews:', error);
+      // Re-throw a generic error so client receives 500 with less internal detail
+      throw error;
+    }
   }
 
   @Get(':id')

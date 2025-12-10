@@ -1026,25 +1026,36 @@ export class OrdersService {
    * (Encuestas pendientes de responder)
    */
   async findPendingReviews(clientId: string): Promise<Order[]> {
-    const pendingOrders = await this.orderRepository.find({
-      where: {
-        client: { id: clientId },
-        status: OrderStatus.DELIVERED,
-      },
-      relations: ['client', 'restaurant', 'driver', 'review'],
-      order: {
-        createdAt: 'DESC', // Más recientes primero
-      },
-    });
+    try {
+      const pendingOrders = await this.orderRepository.find({
+        where: {
+          client: { id: clientId },
+          status: OrderStatus.DELIVERED,
+        },
+        relations: ['client', 'restaurant', 'driver', 'review'],
+        order: {
+          createdAt: 'DESC', // Más recientes primero
+        },
+      });
 
-    // Filtrar solo los que NO tienen review
-    const ordersWithoutReview = pendingOrders.filter((order) => !order.review);
+      // Filtrar solo los que NO tienen review
+      const ordersWithoutReview = pendingOrders.filter(
+        (order) => !order.review,
+      );
 
-    console.log(
-      `📋 Cliente ${clientId} tiene ${ordersWithoutReview.length} encuestas pendientes`,
-    );
+      console.log(
+        `📋 Cliente ${clientId} tiene ${ordersWithoutReview.length} encuestas pendientes`,
+      );
 
-    return ordersWithoutReview;
+      return ordersWithoutReview;
+    } catch (error) {
+      console.error(
+        'Error fetching pending reviews for client',
+        clientId,
+        error,
+      );
+      throw error;
+    }
   }
 
   /**
