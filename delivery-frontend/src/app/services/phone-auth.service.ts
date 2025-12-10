@@ -46,6 +46,14 @@ export class PhoneAuthService {
   }
 
   /**
+   * Verifica si la app está corriendo en modo nativo (Android/iOS)
+   * @returns true si es app nativa, false si es web/PWA
+   */
+  isNative(): boolean {
+    return this.isNativeApp;
+  }
+
+  /**
    * Inicializa el reCAPTCHA invisible (solo para web)
    * @param containerId ID del div donde se montará el reCAPTCHA (usar 'recaptcha-container')
    */

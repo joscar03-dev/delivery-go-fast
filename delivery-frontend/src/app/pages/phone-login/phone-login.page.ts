@@ -117,20 +117,22 @@ export class PhoneLoginPage implements OnInit, OnDestroy {
     this.errorMessage = '';
     this.successMessage = '';
 
-    // Validación del número
-    if (!this.phoneNumber || this.phoneNumber.length < 6) {
-      this.errorMessage = 'Ingresa un número de teléfono válido';
+    // Validación del número (9 dígitos para Perú)
+    if (!this.phoneNumber || this.phoneNumber.length !== 9) {
+      this.errorMessage = 'Ingresa un número de celular válido (9 dígitos)';
       return;
     }
 
-    // Construir número completo en formato E.164
+    // Validar que solo contenga números
+    if (!/^\d{9}$/.test(this.phoneNumber)) {
+      this.errorMessage = 'El número solo debe contener dígitos';
+      return;
+    }
+
+    // Construir número completo en formato E.164 (+51 para Perú)
     this.fullPhoneNumber = `${this.countryCode}${this.phoneNumber}`;
 
-    // Validar formato E.164
-    if (!this.phoneAuthService.validatePhoneFormat(this.fullPhoneNumber)) {
-      this.errorMessage = 'Formato de teléfono inválido. Ejemplo: +51987654321';
-      return;
-    }
+    console.log('📱 Número completo a enviar:', this.fullPhoneNumber);
 
     // Mostrar loading
     const loading = await this.loadingController.create({
@@ -141,9 +143,17 @@ export class PhoneLoginPage implements OnInit, OnDestroy {
     this.isLoading = true;
 
     try {
-      // Inicializar reCAPTCHA
+      // Inicializar reCAPTCHA solo si NO es una app nativa
+      // En Android/iOS, PhoneAuthService detecta automáticamente y usa método nativo
       await new Promise((resolve) => setTimeout(resolve, 100)); // Esperar render
-      this.phoneAuthService.initializeRecaptcha('recaptcha-container');
+
+      // Solo inicializar reCAPTCHA si es web/PWA (no Android/iOS)
+      if (!this.phoneAuthService.isNative()) {
+        console.log('🌐 Inicializando reCAPTCHA para Web/PWA');
+        this.phoneAuthService.initializeRecaptcha('recaptcha-container');
+      } else {
+        console.log('📱 App nativa detectada, saltando reCAPTCHA');
+      }
 
       // Enviar OTP
       this.phoneAuthService.sendOTP(this.fullPhoneNumber).subscribe({

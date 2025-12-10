@@ -1,0 +1,91 @@
+═══════════════════════════════════════════════════════════════
+🔐 SHA FINGERPRINTS - DELIVERY GO FAST
+═══════════════════════════════════════════════════════════════
+
+Fecha: 19 de noviembre de 2025
+Keystore: debug.keystore
+Usuario: pizan
+
+───────────────────────────────────────────────────────────────
+📱 ANDROID DEBUG KEYSTORE
+───────────────────────────────────────────────────────────────
+
+SHA-1:
+96:0E:46:EC:BC:28:A0:2A:18:BC:A2:76:49:07:E6:1A:60:C8:34:F4
+
+SHA-256:
+9A:C7:C2:C8:F6:C4:F2:BC:DD:01:AA:68:19:F3:57:A7:FC:9D:D0:F8:7C:7A:67:81:66:21:23:6B:49:A6:19:35
+
+───────────────────────────────────────────────────────────────
+📝 CÓMO AGREGAR EN FIREBASE CONSOLE
+───────────────────────────────────────────────────────────────
+
+1. Ir a: https://console.firebase.google.com/project/delivery-go-fast/settings/general
+
+2. Scroll abajo hasta "Your apps"
+
+3. Buscar la app Android: com.deliverygofast1.app
+
+4. En "SHA certificate fingerprints", click "Add fingerprint"
+
+5. Agregar AMBOS:
+   - Primero el SHA-1 (copiar todo: 96:0E:46:EC...)
+   - Luego el SHA-256 (copiar todo: 9A:C7:C2:C8...)
+
+6. Click "Save" o guardar
+
+7. IMPORTANTE: Después de agregar, descargar nuevo google-services.json
+
+───────────────────────────────────────────────────────────────
+🔄 DESPUÉS DE AGREGAR EN FIREBASE
+───────────────────────────────────────────────────────────────
+
+1. Descargar nuevo google-services.json:
+   Firebase Console → Project Settings → Android app → Download google-services.json
+
+2. Reemplazar archivo:
+   Copiar a: C:\laragon\www\delivery-go-fast\delivery-frontend\android\app\google-services.json
+
+3. Sincronizar con Capacitor:
+   cd C:\laragon\www\delivery-go-fast\delivery-frontend
+   npx cap sync android
+
+4. Rebuild en Android Studio:
+   npx cap open android
+   Build → Clean Project → Rebuild Project
+
+───────────────────────────────────────────────────────────────
+⚠️ NOTAS IMPORTANTES
+───────────────────────────────────────────────────────────────
+
+• Este es el keystore de DEBUG (desarrollo)
+• Válido hasta: 26 de octubre de 2055
+• Para PRODUCCIÓN necesitarás agregar también el SHA del release keystore
+• Estos SHA son seguros de compartir (son públicos)
+
+───────────────────────────────────────────────────────────────
+✅ VERIFICACIÓN
+───────────────────────────────────────────────────────────────
+
+Después de agregar y sincronizar, verifica que:
+
+[ ] SHA-1 y SHA-256 aparecen en Firebase Console
+[ ] google-services.json descargado DESPUÉS de agregar SHA
+[ ] Archivo reemplazado en android/app/google-services.json
+[ ] npx cap sync android ejecutado
+[ ] Rebuild completo en Android Studio
+[ ] Phone Authentication habilitado en Firebase Console
+
+───────────────────────────────────────────────────────────────
+🧪 PROBAR
+───────────────────────────────────────────────────────────────
+
+Después de completar los pasos:
+1. Abrir app en dispositivo/emulador
+2. Ir a Phone Login
+3. Ingresar número: +51987654321
+4. Verificar que SMS llegue
+5. Ingresar código OTP
+6. Verificar que login funcione
+
+═══════════════════════════════════════════════════════════════

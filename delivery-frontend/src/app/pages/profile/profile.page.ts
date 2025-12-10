@@ -18,6 +18,7 @@ import {
 } from '@ionic/angular/standalone';
 import { FormsModule } from '@angular/forms';
 import { Subscription } from 'rxjs';
+import { Browser } from '@capacitor/browser';
 import { UserService } from '../../services/user.service';
 import { AuthService } from '../../services/auth.service';
 import { PhoneAuthService } from '../../services/phone-auth.service';
@@ -250,6 +251,43 @@ export class ProfilePage implements OnInit, OnDestroy {
 
     // Si está logueado, ir al formulario
     this.router.navigate(['/restaurant-application']);
+  }
+
+  /**
+   * Abre las políticas de privacidad en el navegador
+   */
+  async openPrivacyPolicy() {
+    const privacyUrl =
+      'https://docs.google.com/document/u/2/d/e/2PACX-1vR7PEtEMtHzLzlGzwHe8Zvp0TSuU__bLRzi3utZLrQ6R95JJzj5905Y2Ef_xKjYEpYVK1iMDMfL2nn4/pub';
+
+    try {
+      await Browser.open({ url: privacyUrl });
+    } catch (error) {
+      console.error('❌ Error opening privacy policy:', error);
+      // Fallback: abrir en una nueva pestaña
+      window.open(privacyUrl, '_blank');
+    }
+  }
+
+  /**
+   * Abre WhatsApp para contactar con soporte
+   */
+  async contactSupport() {
+    const phoneNumber = '51927885314'; // Número de WhatsApp (código de país sin +)
+    const message = encodeURIComponent(
+      '¡Hola! Necesito ayuda con la app Al Toque Delivery.'
+    );
+
+    // URL de WhatsApp con mensaje predefinido
+    const whatsappUrl = `https://wa.me/${phoneNumber}?text=${message}`;
+
+    try {
+      await Browser.open({ url: whatsappUrl });
+    } catch (error) {
+      console.error('❌ Error opening WhatsApp:', error);
+      // Fallback: abrir en una nueva pestaña
+      window.open(whatsappUrl, '_blank');
+    }
   }
 
   /**

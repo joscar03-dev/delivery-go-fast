@@ -21,33 +21,25 @@
     <h1 class="title">Ingresa tu número</h1>
     <p class="subtitle">Te enviaremos un código de verificación por SMS</p>
 
-    <!-- País y número -->
+    <!-- Número de teléfono (código +51 se agrega automáticamente) -->
     <div class="phone-input-container">
-      <ion-item lines="none" class="country-code-item">
-        <ion-label>Código</ion-label>
-        <ion-input
-          [(ngModel)]="countryCode"
-          placeholder="+51"
-          type="tel"
-          maxlength="4"
-          class="country-code-input"
-        ></ion-input>
-      </ion-item>
-
       <ion-item lines="none" class="phone-number-item">
-        <ion-label position="floating">Número de teléfono</ion-label>
+        <ion-label position="floating">Número de celular</ion-label>
         <ion-input
           [(ngModel)]="phoneNumber"
           placeholder="987654321"
           type="tel"
-          maxlength="15"
+          maxlength="9"
+          inputmode="numeric"
           (keyup.enter)="sendOTP()"
         ></ion-input>
       </ion-item>
     </div>
 
     <!-- Ejemplo de formato -->
-    <p class="format-hint">Ejemplo: +51 987654321</p>
+    <p class="format-hint">
+      Ejemplo: 987654321 (se enviará como +51 987654321)
+    </p>
 
     <!-- Mensajes -->
     <ion-text color="danger" *ngIf="errorMessage" class="message">
