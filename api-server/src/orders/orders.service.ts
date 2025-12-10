@@ -1015,7 +1015,7 @@ export class OrdersService {
     const savedReview = await this.reviewRepository.save(review);
 
     console.log(
-      `✅ Encuesta POST guardada para pedido ${orderId} - Satisfacción: ${createReviewDto.generalSatisfaction}/5`,
+      `✅ Encuesta POST guardada para pedido ${orderId} - Satisfacción general: ${createReviewDto.q10OverallSatisfaction}/5, Recomendación: ${createReviewDto.q11RecommendationLikelihood}/5`,
     );
 
     return savedReview;
