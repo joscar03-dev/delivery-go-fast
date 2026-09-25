@@ -13,6 +13,7 @@ import { RolesGuard } from '../auth/guards/roles.guard';
 import { Roles } from '../auth/decorators/roles.decorator';
 import { Role } from '../common/enums/role.enum';
 import { VerifyPaymentDto } from './dto/checkout.dto';
+import { OrderPaymentResponseDto } from './dto/order-payment-response.dto';
 
 @Controller('payments')
 export class PaymentsController {
@@ -43,8 +44,15 @@ export class PaymentsController {
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles(Role.SUPER_ADMIN, Role.RESTAURANT_OWNER)
   @Get('orders/:id')
-  async getOrderPayment(@Param('id') orderId: string, @Request() req) {
-    return this.paymentsService.getOrderPayment(orderId, this.actorOf(req));
+  async getOrderPayment(
+    @Param('id') orderId: string,
+    @Request() req,
+  ): Promise<OrderPaymentResponseDto> {
+    const payment = await this.paymentsService.getOrderPayment(
+      orderId,
+      this.actorOf(req),
+    );
+    return OrderPaymentResponseDto.from(payment);
   }
 
   /**
@@ -54,13 +62,17 @@ export class PaymentsController {
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles(Role.SUPER_ADMIN, Role.RESTAURANT_OWNER)
   @Post('verify')
-  async verifyPayment(@Body() dto: VerifyPaymentDto, @Request() req) {
-    return this.paymentsService.verifyPayment(
+  async verifyPayment(
+    @Body() dto: VerifyPaymentDto,
+    @Request() req,
+  ): Promise<OrderPaymentResponseDto> {
+    const payment = await this.paymentsService.verifyPayment(
       dto.orderId,
       dto.status,
       this.actorOf(req),
       dto.notes,
     );
+    return OrderPaymentResponseDto.from(payment);
   }
 
   private actorOf(req: { user: { sub: string; role: string } }): PaymentActor {

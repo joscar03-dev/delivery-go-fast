@@ -1,5 +1,6 @@
 import { ForbiddenException, NotFoundException } from '@nestjs/common';
 import { PaymentsService, PaymentActor } from './payments.service';
+import { OrderPaymentResponseDto } from './dto/order-payment-response.dto';
 import { Role } from '../common/enums/role.enum';
 
 const OWNER_ID = 'owner-1';
@@ -204,6 +205,60 @@ describe('PaymentsService autorización de pagos', () => {
       await expect(
         service.getOrderPayment(ORDER_ID, OWNER),
       ).resolves.toMatchObject({ orderId: ORDER_ID });
+    });
+  });
+
+  describe('OrderPaymentResponseDto', () => {
+    function buildPaymentWithRelations() {
+      return {
+        id: 'payment-1',
+        orderId: ORDER_ID,
+        paymentMethodCode: 'yape',
+        paymentStatus: 'pending',
+        amount: 100,
+        subtotal: 80,
+        deliveryFee: 20,
+        transactionReference: 'OPE-9912',
+        paymentProofUrl: 'https://cdn.example.com/proof.png',
+        // Relaciones que el repositorio hoy no carga, pero podria cargar.
+        order: { id: ORDER_ID, deliveryAddress: 'Calle Secreta 123' },
+        verifier: {
+          id: 'admin-1',
+          email: 'admin@ejemplo.com',
+          password_hash: 'bcrypt-hash',
+        },
+      };
+    }
+
+    it('no expone las relaciones order ni verifier', () => {
+      const dto = OrderPaymentResponseDto.from(
+        buildPaymentWithRelations() as never,
+      );
+
+      expect(dto).not.toHaveProperty('order');
+      expect(dto).not.toHaveProperty('verifier');
+    });
+
+    it('no filtra password_hash ni el correo del verificador', () => {
+      const serialized = JSON.stringify(
+        OrderPaymentResponseDto.from(buildPaymentWithRelations() as never),
+      );
+
+      expect(serialized).not.toContain('bcrypt-hash');
+      expect(serialized).not.toContain('password_hash');
+      expect(serialized).not.toContain('admin@ejemplo.com');
+      expect(serialized).not.toContain('Calle Secreta 123');
+    });
+
+    it('conserva lo que el dueño necesita para verificar el pago', () => {
+      const dto = OrderPaymentResponseDto.from(
+        buildPaymentWithRelations() as never,
+      );
+
+      expect(dto.transactionReference).toBe('OPE-9912');
+      expect(dto.paymentProofUrl).toBe('https://cdn.example.com/proof.png');
+      expect(dto.amount).toBe(100);
+      expect(dto.paymentStatus).toBe('pending');
     });
   });
 });
