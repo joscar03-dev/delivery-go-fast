@@ -51,13 +51,12 @@ export class UserService {
     return this.http.delete<void>(`${this.base}/users/${id}`);
   }
 
-  // Crear usuario desde Admin usando el endpoint de auth/register (acepta rol opcional)
   createUser(data: {
     name: string;
     email: string;
     password: string;
     role: RoleName;
-  }): Observable<any> {
-    return this.http.post<any>(`${this.base}/auth/register`, data);
+  }): Observable<User> {
+    return this.http.post<User>(`${this.base}/users`, data);
   }
 }
