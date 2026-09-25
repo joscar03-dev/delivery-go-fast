@@ -33,6 +33,9 @@ import { AppService } from './app.service';
         JWT_ACCESS_TOKEN_EXPIRATION_TIME: Joi.string().default('1h'),
         JWT_REFRESH_TOKEN_EXPIRATION_TIME: Joi.string().default('7d'),
         BCRYPT_SALT_ROUNDS: Joi.number().default(10),
+        BOOTSTRAP_ADMIN_NAME: Joi.string().allow('', ''),
+        BOOTSTRAP_ADMIN_EMAIL: Joi.string().email().allow('', ''),
+        BOOTSTRAP_ADMIN_PASSWORD: Joi.string().allow('', ''),
       }),
     }),
 
