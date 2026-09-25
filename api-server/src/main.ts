@@ -2,10 +2,25 @@ import { NestFactory } from '@nestjs/core';
 import { ValidationPipe } from '@nestjs/common';
 import { AppModule } from './app.module';
 import * as bodyParser from 'body-parser';
+import { bootstrap as bootstrapGlobalAgent } from 'global-agent';
 
 async function bootstrap() {
   // Configurar zona horaria para Lima, Perú (UTC-5)
   process.env.TZ = 'America/Lima';
+
+  // 🌐 Usar el proxy corporativo si está definido en el entorno
+  if (process.env.HTTP_PROXY || process.env.HTTPS_PROXY) {
+    process.env.GLOBAL_AGENT_HTTP_PROXY =
+      process.env.HTTPS_PROXY || process.env.HTTP_PROXY;
+    process.env.GLOBAL_AGENT_HTTPS_PROXY =
+      process.env.HTTPS_PROXY || process.env.HTTP_PROXY;
+    bootstrapGlobalAgent();
+    console.log(
+      `🌐 Salidas de red vía proxy: ${process.env.GLOBAL_AGENT_HTTP_PROXY}`,
+    );
+  } else {
+    console.log('🌐 Salidas de red SIN proxy (conexión directa)');
+  }
 
   const app = await NestFactory.create(AppModule);
 
