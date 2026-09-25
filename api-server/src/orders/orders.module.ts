@@ -14,7 +14,6 @@ import { GeolocationModule } from '../geolocation/geolocation.module';
 import { NotificationsModule } from '../notifications/notifications.module';
 import { PaymentsModule } from '../payments/payments.module';
 import { AuthModule } from '../auth/auth.module';
-import { UsersModule } from '../users/users.module';
 
 @Module({
   imports: [
@@ -32,7 +31,6 @@ import { UsersModule } from '../users/users.module';
     NotificationsModule,
     PaymentsModule,
     AuthModule,
-    UsersModule, // ← Agregar para que ActiveUserGuard tenga acceso a UsersService
   ],
   controllers: [OrdersController],
   providers: [OrdersService],

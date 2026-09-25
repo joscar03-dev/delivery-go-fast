@@ -95,7 +95,7 @@ export class AuthService {
       sub: user.id,
       email: user.email, // puede ser null
       phone: user.phone, // incluir phone para clientes híbridos
-      role: user.role?.name || 'CLIENT',
+      role: user.role?.name ?? Role.CLIENT,
     };
     return await this._generateTokens(payload);
   }
@@ -118,6 +118,12 @@ export class AuthService {
         throw new UnauthorizedException('Usuario no encontrado');
       }
 
+      if (!user.isActive) {
+        throw new UnauthorizedException(
+          'Usuario desactivado. Contacta al administrador.',
+        );
+      }
+
       // Verificar si el refresh token coincide con el almacenado en la DB
       if (!user.hashedRefreshToken) {
         throw new UnauthorizedException('Token de refresco no válido');
@@ -136,7 +142,7 @@ export class AuthService {
         sub: user.id,
         email: user.email, // Puede ser null para usuarios phone-only
         phone: user.phone, // Incluir phone en el payload
-        role: user.role?.name || 'CLIENT',
+        role: user.role?.name ?? Role.CLIENT,
       };
       return await this._generateTokens(newPayload);
     } catch {
@@ -220,7 +226,7 @@ export class AuthService {
       sub: user.id,
       email: user.email,
       phone: user.phone,
-      role: user.role?.name || 'CLIENT',
+      role: user.role?.name ?? Role.CLIENT,
     };
 
     const tokens = await this._generateTokens(payload);
@@ -278,7 +284,7 @@ export class AuthService {
     const payload = {
       sub: newUser.id,
       phone: newUser.phone,
-      role: newUser.role?.name || 'CLIENT',
+      role: newUser.role?.name ?? Role.CLIENT,
     };
 
     const tokens = await this._generateTokens(payload);

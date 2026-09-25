@@ -19,11 +19,10 @@ import { RolesGuard } from '../auth/guards/roles.guard';
 import { Roles } from '../auth/decorators/roles.decorator';
 import { Role } from '../common/enums/role.enum';
 import { CheckoutDto } from '../payments/dto/checkout.dto';
-import { ActiveUserGuard } from '../auth/guards/active-user.guard';
 import { CreateReviewDto } from './dto/create-review.dto';
 
 @Controller('orders')
-@UseGuards(JwtAuthGuard, ActiveUserGuard, RolesGuard)
+@UseGuards(JwtAuthGuard, RolesGuard)
 export class OrdersController {
   constructor(private readonly ordersService: OrdersService) {}
 

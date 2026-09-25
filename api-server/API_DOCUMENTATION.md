@@ -63,7 +63,7 @@ cd api-server
 npm run seed:bootstrap
 ```
 
-Ver `BOOTSTRAP.md` en la raíz del repositorio.
+Ver `api-server/BOOTSTRAP.md`.
 
 #### 🔑 Iniciar Sesión
 
@@ -152,6 +152,37 @@ Una vez autenticado, incluye el token en el header de todas las peticiones prote
 Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
 ```
 
+El rol y el estado de la cuenta se leen **siempre de la base de datos**, no del claim
+`role` del token. Consecuencias:
+
+- Un cambio de rol surte efecto en la petición siguiente, sin esperar a que expire el token
+- Una cuenta desactivada recibe `401` en todos los endpoints protegidos, incluso con un
+  access token válido
+- `POST /auth/refresh` también rechaza a las cuentas desactivadas
+
+> El gateway de WebSocket (`/delivery`) aún valida el rol contra el claim del token al
+> conectar. Ese camino se corrige por separado.
+
+#### 🚪 Cerrar Sesión
+
+```http
+POST /auth/logout
+```
+
+**Autenticación:** Requiere access token  
+**Body:** ninguno
+
+Anula el refresh token almacenado en la base de datos, de modo que el token no pueda
+usarse para obtener nuevos access tokens.
+
+**Respuesta:**
+
+```json
+{
+  "message": "Logout exitoso"
+}
+```
+
 ---
 
 ## 👥 Users API (solo super admin)
@@ -178,13 +209,13 @@ POST /users
 }
 ```
 
-| Campo | Obligatorio | Notas |
-|---|---|---|
-| `name` | Sí | Mínimo 2 caracteres |
-| `email` | Sí | Debe ser único |
-| `password` | Sí | Mínimo 6 caracteres |
-| `phone` | No | Formato E.164 (`+51987654321`) |
-| `role` | No | `client`, `driver`, `restaurant_owner`, `super_admin`. Default: `client` |
+| Campo      | Obligatorio | Notas                                                                    |
+| ---------- | ----------- | ------------------------------------------------------------------------ |
+| `name`     | Sí          | Mínimo 2 caracteres                                                      |
+| `email`    | Sí          | Debe ser único                                                           |
+| `password` | Sí          | Mínimo 6 caracteres                                                      |
+| `phone`    | No          | Formato E.164 (`+51987654321`)                                           |
+| `role`     | No          | `client`, `driver`, `restaurant_owner`, `super_admin`. Default: `client` |
 
 **Respuesta (201):**
 
@@ -217,8 +248,8 @@ PATCH /users/{userId}
 }
 ```
 
-El usuario afectado debe volver a iniciar sesión para que su token refleje el nuevo
-rol.
+El cambio aplica **de inmediato**: el rol se resuelve contra la base de datos en cada
+petición, así que no hace falta esperar a que caduque el token.
 
 #### 🔄 Activar / desactivar usuario
 
@@ -231,6 +262,10 @@ PATCH /users/{userId}/toggle-active
   "isActive": false
 }
 ```
+
+La desactivación es **inmediata**: la cuenta recibe `401` en todos los endpoints
+protegidos y `POST /auth/refresh` deja de emitir tokens, aunque conserve un access token
+sin expirar.
 
 #### 🗑️ Eliminar usuario
 
@@ -644,10 +679,10 @@ Eran públicos, así que cualquier cliente podía auto-asignarse un rol privileg
 super admin inicial se crea con `npm run seed:bootstrap` (ver `BOOTSTRAP.md`) y los demás
 roles se crean desde `POST /users` con un token de super admin.
 
-| Endpoint Antiguo                | Nuevo Endpoint                                     |
-| ------------------------------- | -------------------------------------------------- |
-| `POST /auth/create-super-admin` | `npm run seed:bootstrap` (solo el primero)         |
-| `POST /auth/create-driver`      | `POST /users` con `{ "role": "driver" }`           |
+| Endpoint Antiguo                     | Nuevo Endpoint                                     |
+| ------------------------------------ | -------------------------------------------------- |
+| `POST /auth/create-super-admin`      | `npm run seed:bootstrap` (solo el primero)         |
+| `POST /auth/create-driver`           | `POST /users` con `{ "role": "driver" }`           |
 | `POST /auth/create-restaurant-owner` | `POST /users` con `{ "role": "restaurant_owner" }` |
 
 ---

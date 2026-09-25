@@ -3,6 +3,7 @@ import { PassportStrategy } from '@nestjs/passport';
 import { ExtractJwt, Strategy } from 'passport-jwt';
 import { ConfigService } from '@nestjs/config';
 import { UsersService } from '../users/users.service';
+import { Role } from '../common/enums/role.enum';
 
 @Injectable()
 export class JwtStrategy extends PassportStrategy(Strategy) {
@@ -32,6 +33,12 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
       throw new UnauthorizedException('Usuario no encontrado');
     }
 
+    if (!user.isActive) {
+      throw new UnauthorizedException(
+        'Tu cuenta ha sido desactivada. Contacta al administrador.',
+      );
+    }
+
     // Lo que retornes aquí se adjuntará al objeto request (request.user)
     return {
       sub: payload.sub,
@@ -39,7 +46,7 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
       userId: user.id, // ⬅️ AGREGAR userId para compatibilidad
       email: user.email,
       phone: user.phone,
-      role: payload.role,
+      role: user.role?.name ?? Role.CLIENT,
       name: user.name,
     };
   }

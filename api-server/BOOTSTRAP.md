@@ -47,12 +47,12 @@ duplicar nada):
 
 ## Comportamiento al re-ejecutarlo
 
-| Paso | Si ya existe |
-|---|---|
-| Roles | No hace nada, los deja como están |
-| Super admin | **No crea otro**, no reinicia contraseñas |
+| Paso            | Si ya existe                                  |
+| --------------- | --------------------------------------------- |
+| Roles           | No hace nada, los deja como están             |
+| Super admin     | **No crea otro**, no reinicia contraseñas     |
 | Métodos de pago | Actualiza nombre, descripción y estado activo |
-| Categorías | No inserta nada si ya hay al menos una |
+| Categorías      | No inserta nada si ya hay al menos una        |
 
 ## Después del bootstrap: operación diaria
 
@@ -78,14 +78,28 @@ curl -X POST http://localhost:3000/users \
 Solo un `super_admin` autenticado puede usar ese endpoint. El registro público
 `POST /auth/register` **siempre** crea rol `client`.
 
+## Cambiar un rol o desactivar una cuenta surte efecto inmediato
+
+El backend resuelve el rol y el estado de la cuenta contra la base de datos en **cada**
+petición, no contra el token:
+
+| Acción                                                  | Efecto                                                                                                                                        |
+| ------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------- |
+| `PATCH /users/{id}` con un `role` nuevo                 | El usuario empieza a recibir `403` en los endpoints de su rol anterior en la petición siguiente. No necesita volver a iniciar sesión          |
+| `PATCH /users/{id}/toggle-active` con `isActive: false` | La cuenta recibe `401` en todos los endpoints protegidos y `POST /auth/refresh` deja de emitir tokens, aunque conserve un access token válido |
+
+Excepción: el gateway de WebSocket (`/delivery`) todavía valida el rol contra el claim
+del token al conectar, así que una degradación puede tardar hasta que el socket se
+reconecte. Ese camino se corrige por separado.
+
 ## Variables de entorno
 
-| Variable | Obligatoria | Descripción |
-|---|---|---|
-| `BOOTSTRAP_ADMIN_NAME` | Solo si no hay super admin | Nombre del super admin inicial |
-| `BOOTSTRAP_ADMIN_EMAIL` | Solo si no hay super admin | Email del super admin inicial |
+| Variable                   | Obligatoria                | Descripción                     |
+| -------------------------- | -------------------------- | ------------------------------- |
+| `BOOTSTRAP_ADMIN_NAME`     | Solo si no hay super admin | Nombre del super admin inicial  |
+| `BOOTSTRAP_ADMIN_EMAIL`    | Solo si no hay super admin | Email del super admin inicial   |
 | `BOOTSTRAP_ADMIN_PASSWORD` | Solo si no hay super admin | Contraseña, mínimo 8 caracteres |
-| `BCRYPT_SALT_ROUNDS` | No | Rondas de bcrypt, default `10` |
+| `BCRYPT_SALT_ROUNDS`       | No                         | Rondas de bcrypt, default `10`  |
 
 ## Nota sobre producción
 

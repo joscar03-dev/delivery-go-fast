@@ -1,6 +1,6 @@
 import { Injectable, inject } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
-import { BehaviorSubject, Observable, map, tap, switchMap } from 'rxjs';
+import { BehaviorSubject, EMPTY, Observable, map, tap, switchMap, catchError } from 'rxjs';
 import { jwtDecode } from 'jwt-decode';
 import { environment } from '../../environments/environment';
 import type { User } from '../models/user.model';
@@ -180,6 +180,8 @@ export class AuthService {
   }
 
   logout(): void {
+    this.revokeSessionOnServer();
+
     // Desregistrar dispositivo de push notifications
     this.pushNotificationService.unregisterDevice().catch((error) => {
       console.warn('Error al desregistrar dispositivo:', error);
@@ -192,6 +194,20 @@ export class AuthService {
     this.isAuthenticatedSubject.next(false);
     // Redirigir a la pantalla principal (tabs) sin recargar
     this.router.navigateByUrl('/tabs');
+  }
+
+  private revokeSessionOnServer(): void {
+    const token = this.getAccessToken();
+    if (!token) return;
+
+    this.http
+      .post(
+        `${this.base}/auth/logout`,
+        {},
+        { headers: { Authorization: `Bearer ${token}` } }
+      )
+      .pipe(catchError(() => EMPTY))
+      .subscribe();
   }
 
   getAccessToken(): string | null {

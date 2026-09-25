@@ -19,12 +19,15 @@ export const authInterceptor: HttpInterceptorFn = (req, next) => {
   const auth = inject(AuthService);
   const token = auth.getAccessToken();
 
-  const isAuthEndpoint = (url: string) =>
+  const isTokenlessAuthEndpoint = (url: string) =>
     /\/auth\/(login|register|refresh)(\?|$|\/)/.test(url);
+
+  const isAuthEndpoint = (url: string) =>
+    /\/auth\/(login|register|refresh|logout)(\?|$|\/)/.test(url);
 
   // Evitar sobreescribir si ya viene un Authorization explícito o si es endpoint auth
   const needsAuthHeader =
-    token && !req.headers.has('Authorization') && !isAuthEndpoint(req.url);
+    token && !req.headers.has('Authorization') && !isTokenlessAuthEndpoint(req.url);
 
   const authReq = needsAuthHeader
     ? req.clone({ setHeaders: { Authorization: `Bearer ${token}` } })

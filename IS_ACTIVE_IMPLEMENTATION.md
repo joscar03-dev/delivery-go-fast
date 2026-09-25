@@ -1,5 +1,12 @@
 # Implementación de columna `isActive` para Restaurantes y Usuarios
 
+> **Nota: este documento es un registro histórico de una implementación.** La parte
+> sobre `ActiveUserGuard` quedó obsoleta: el guard fue **eliminado**. La validación de
+> `isActive` para usuarios ahora vive en `JwtStrategy.validate()`, que se ejecuta en
+> **todas** las peticiones que pasan `JwtAuthGuard` (antes solo cubría los endpoints de
+> Orders). El rol también se resuelve ahí, contra la base de datos.
+> `POST /auth/refresh` valida `isActive` en el service. Ver `api-server/BOOTSTRAP.md`.
+
 ## 📋 Resumen
 
 Se ha agregado la columna `isActive` tanto a restaurantes como a usuarios para permitir activar/desactivar entidades sin eliminarlas de la base de datos.
@@ -151,12 +158,10 @@ GET /users/admin/all
 #### ✅ Lo que SÍ sucede:
 
 1. **No aparecen en listados públicos**
-
    - `GET /restaurants` no los incluye
    - `GET /restaurants?latitude=X&longitude=Y` no los incluye
 
 2. **Pueden ser visualizados por admin**
-
    - `GET /restaurants/admin/all` los incluye
 
 3. **El dueño puede acceder a su dashboard**
@@ -185,7 +190,6 @@ if (!restaurant.isActive) {
 #### ✅ Lo que SÍ sucede:
 
 1. **No pueden hacer login**
-
    - Tanto por email/password
    - Como por teléfono/OTP
    - Mensaje: "Usuario desactivado. Contacta al administrador."
@@ -433,7 +437,7 @@ async toggleUserActive(user: any) {
 // orders.service.ts - create()
 if (!restaurant.isActive) {
   throw new BadRequestException(
-    "El restaurante no está disponible en este momento"
+    "El restaurante no está disponible en este momento",
   );
 }
 ```
@@ -444,7 +448,7 @@ if (!restaurant.isActive) {
 // orders.service.ts - assignDriver()
 if (!driver.isActive) {
   throw new BadRequestException(
-    "El repartidor no está disponible en este momento"
+    "El repartidor no está disponible en este momento",
   );
 }
 ```
@@ -455,7 +459,7 @@ if (!driver.isActive) {
 // orders.service.ts - assignRestaurantDriver()
 if (!driver.isActive) {
   throw new BadRequestException(
-    "El repartidor no está disponible en este momento"
+    "El repartidor no está disponible en este momento",
   );
 }
 ```
@@ -514,14 +518,14 @@ where: {
 // auth.service.ts - login()
 if (!user.isActive) {
   throw new UnauthorizedException(
-    "Usuario desactivado. Contacta al administrador."
+    "Usuario desactivado. Contacta al administrador.",
   );
 }
 
 // auth.service.ts - loginWithPhone()
 if (!user.isActive) {
   throw new UnauthorizedException(
-    "Usuario desactivado. Contacta al administrador."
+    "Usuario desactivado. Contacta al administrador.",
   );
 }
 ```
@@ -606,15 +610,16 @@ imports: [..., AuthModule],
 
 ## 📊 Resumen de Protecciones
 
-| Endpoint/Acción                   | Guard/Validación        | Mensaje de Error                                 |
-| --------------------------------- | ----------------------- | ------------------------------------------------ |
-| **Todos los endpoints de Orders** | `ActiveUserGuard`       | "Tu cuenta ha sido desactivada"                  |
-| **Login (email/phone)**           | Validación en service   | "Usuario desactivado. Contacta al administrador" |
-| **GET /restaurants (listado)**    | Filtro en query         | (No aparecen inactivos)                          |
-| **GET /restaurants/:id**          | `ActiveRestaurantGuard` | "El restaurante no está disponible"              |
-| **POST /orders**                  | Validación en service   | "El restaurante no está disponible"              |
-| **Asignar driver**                | Validación en service   | "El repartidor no está disponible"               |
-| **GET /users/drivers/available**  | Filtro en query         | (No aparecen inactivos)                          |
+| Endpoint/Acción                            | Guard/Validación             | Mensaje de Error                                 |
+| ------------------------------------------ | ---------------------------- | ------------------------------------------------ |
+| **Todos los endpoints de Orders**          | `ActiveUserGuard` (obsoleto) | "Tu cuenta ha sido desactivada"                  |
+| **Todos los endpoints con `JwtAuthGuard`** | `JwtStrategy.validate()`     | "Tu cuenta ha sido desactivada"                  |
+| **Login (email/phone)**                    | Validación en service        | "Usuario desactivado. Contacta al administrador" |
+| **GET /restaurants (listado)**             | Filtro en query              | (No aparecen inactivos)                          |
+| **GET /restaurants/:id**                   | `ActiveRestaurantGuard`      | "El restaurante no está disponible"              |
+| **POST /orders**                           | Validación en service        | "El restaurante no está disponible"              |
+| **Asignar driver**                         | Validación en service        | "El repartidor no está disponible"               |
+| **GET /users/drivers/available**           | Filtro en query              | (No aparecen inactivos)                          |
 
 ---
 
@@ -625,7 +630,7 @@ imports: [..., AuthModule],
 - [x] Services modificados
 - [x] Controllers actualizados
 - [x] Auth service valida usuarios activos (login)
-- [x] **ActiveUserGuard creado y aplicado**
+- [x] **ActiveUserGuard creado y aplicado** → luego eliminado; la validación vive en `JwtStrategy.validate()` y cubre todos los endpoints protegidos
 - [x] **ActiveRestaurantGuard creado y aplicado**
 - [x] **Validación en crear pedido (restaurante activo)**
 - [x] **Validación en asignar driver (driver activo)**

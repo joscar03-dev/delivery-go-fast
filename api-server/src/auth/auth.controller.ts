@@ -32,6 +32,12 @@ export class AuthController {
     return this.authService.refreshToken(refreshTokenDto.refreshToken);
   }
 
+  @Post('logout')
+  @UseGuards(JwtAuthGuard)
+  logout(@Request() req: any) {
+    return this.authService.logout(req.user.sub || req.user.id);
+  }
+
   // 🆕 PHONE AUTHENTICATION ENDPOINTS
 
   /**
