@@ -3,6 +3,8 @@
 /node_modules
 /build
 docker-compose.yml
+/api-server\google-services (1).json
+/api-server\google-services.json
 # Logs
 logs
 *.log

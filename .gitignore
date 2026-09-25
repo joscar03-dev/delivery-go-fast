@@ -2,7 +2,8 @@
 /dist
 /node_modules
 /build
-
+/api-server\google-services (1).json
+/api-server\google-services.json
 # Logs
 logs
 *.log
