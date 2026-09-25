@@ -1,11 +1,17 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import {
+  Injectable,
+  NotFoundException,
+  ConflictException,
+} from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { User } from './entities/user.entity';
 import { Repository } from 'typeorm';
+import * as bcrypt from 'bcryptjs';
 import { RegisterAuthDto } from '../auth/dto/register-auth.dto';
 import { Role } from '../auth/entities/role.entity';
 import { Role as RoleEnum } from '../common/enums/role.enum';
 import { UpdateUserDto } from './dto/update-user.dto';
+import { CreateUserDto } from './dto/create-user.dto';
 
 @Injectable()
 export class UsersService {
@@ -51,6 +57,35 @@ export class UsersService {
       role: role,
     });
     return await this.userRepository.save(newUser);
+  }
+
+  async createAsAdmin(dto: CreateUserDto): Promise<User> {
+    if (await this.findOneByEmail(dto.email)) {
+      throw new ConflictException('El correo electrónico ya está en uso');
+    }
+
+    if (dto.phone) {
+      if (await this.findOneByPhone(dto.phone)) {
+        throw new ConflictException('El teléfono ya está en uso');
+      }
+    }
+
+    const payload: RegisterAuthDto = {
+      name: dto.name,
+      email: dto.email,
+      password: dto.password,
+      phone: dto.phone,
+    };
+
+    const hashedPassword = await bcrypt.hash(dto.password, 10);
+
+    const user = await this.create(
+      payload,
+      hashedPassword,
+      dto.role ?? RoleEnum.CLIENT,
+    );
+
+    return this.findOneById(user.id).then((created) => created ?? user);
   }
 
   async findSuperAdmin(): Promise<User | undefined> {
