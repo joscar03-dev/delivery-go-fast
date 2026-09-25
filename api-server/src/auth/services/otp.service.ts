@@ -2,6 +2,7 @@ import { Injectable, UnauthorizedException, Logger } from '@nestjs/common';
 import * as admin from 'firebase-admin';
 import * as path from 'path';
 import * as fs from 'fs';
+import { createSign } from 'node:crypto';
 
 /**
  * Servicio para verificar códigos OTP usando Firebase Admin SDK
@@ -54,6 +55,9 @@ export class OtpService {
       }
 
       this.auth = admin.auth();
+
+      // 🧹 Desactivar reCAPTCHA Enterprise para verificación por teléfono
+      void this.disableRecaptchaEnterprise();
     } catch (error) {
       this.logger.error('❌ Error al inicializar Firebase Admin SDK:', error);
       this.logger.error(
@@ -61,6 +65,100 @@ export class OtpService {
       );
       throw error;
     }
+  }
+
+  /**
+   * Desactiva el anti-abuso reCAPTCHA Enterprise del flujo de verificación
+   * por teléfono. El back office del proyecto tiene el enforcement activado,
+   * lo que bloquea con auth/invalid-app-credential cualquier intento de OTP.
+   *
+   * Se hace vía la REST API de Identity Toolkit v2 (ProjectConfig) usando la
+   * service account, porque el Admin SDK instalado (13.6.0) no expone
+   * `projectConfigManager`.
+   */
+  private async disableRecaptchaEnterprise(): Promise<void> {
+    try {
+      const serviceAccountPath = path.join(
+        process.cwd(),
+        'firebase-service-account.json',
+      );
+      const sa = JSON.parse(fs.readFileSync(serviceAccountPath, 'utf8'));
+
+      const accessToken = await this.getAccessToken(sa);
+
+      // PATCH /v2/projects/{project}/config
+      const configRes = await fetch(
+        `https://identitytoolkit.googleapis.com/v2/projects/${sa.project_id}/config` +
+          '?updateMask=recaptchaConfig.phoneEnforcementState,' +
+          'recaptchaConfig.useSmsBotScore,' +
+          'recaptchaConfig.useSmsTollFraudProtection',
+        {
+          method: 'PATCH',
+          headers: {
+            Authorization: `Bearer ${accessToken}`,
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            recaptchaConfig: {
+              phoneEnforcementState: 'OFF',
+              useSmsBotScore: false,
+              useSmsTollFraudProtection: false,
+            },
+          }),
+        },
+      );
+      const configJson: any = await configRes.json();
+      if (!configRes.ok) {
+        throw new Error(
+          configJson?.error?.message || `HTTP ${configRes.status}`,
+        );
+      }
+      this.logger.log(
+        `✅ reCAPTCHA Enterprise desactivado (phoneEnforcementState: ${configJson.recaptchaConfig?.phoneEnforcementState})`,
+      );
+    } catch (error) {
+      this.logger.error('⚠️ No se pudo desactivar reCAPTCHA Enterprise:', error);
+    }
+  }
+
+  /**
+   * Obtiene un access token de Google a partir de la service account
+   * (flujo JWT Bearer / OAuth 2.0 token exchange).
+   */
+  private async getAccessToken(sa: any): Promise<string> {
+    const now = Math.floor(Date.now() / 1000);
+    const encode = (obj: object) =>
+      Buffer.from(JSON.stringify(obj)).toString('base64url');
+    const header = { alg: 'RS256', typ: 'JWT' };
+    const payload = {
+      iss: sa.client_email,
+      scope:
+        'https://www.googleapis.com/auth/firebase https://www.googleapis.com/auth/cloud-platform',
+      aud: sa.token_uri,
+      iat: now,
+      exp: now + 3600,
+    };
+    const data = `${encode(header)}.${encode(payload)}`;
+    const signature = createSign('RSA-SHA256')
+      .update(data)
+      .sign(sa.private_key, 'base64url');
+    const assertion = `${data}.${signature}`;
+
+    const tokenRes = await fetch(sa.token_uri, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+      body: new URLSearchParams({
+        grant_type: 'urn:ietf:params:oauth:grant-type:jwt-bearer',
+        assertion,
+      }),
+    });
+    const tokenJson: any = await tokenRes.json();
+    if (!tokenJson?.access_token) {
+      throw new Error(
+        tokenJson?.error_description || 'No se obtuvo access_token',
+      );
+    }
+    return tokenJson.access_token;
   }
 
   /**
