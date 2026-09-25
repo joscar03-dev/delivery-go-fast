@@ -23,10 +23,10 @@ export const environment = {
     measurementId: 'G-D57Y0RRB4J',
   },
 
-  // 🆕 reCAPTCHA Site Key para App Check (Web/PWA)
-  // Obtén esta clave de: Firebase Console > App Check > Apps > Web app > reCAPTCHA provider
+  // 🆕 reCAPTCHA Enterprise Site Key para App Check (Web/PWA)
+  // Obtén esta clave de: Firebase Console > App Check > Apps > Web app > reCAPTCHA Enterprise
   // NOTA: Esta es la CLAVE PÚBLICA, es seguro incluirla en el código
-  recaptchaSiteKey: '6LcKFxIsAAAAALSzaPpsdCNsXDqTwKCXYV1IHpnY',
+  recaptchaSiteKey: '6LcXywssAAAAAHscWY-S2jgHTysnlzwXMVg6mTEP',
 };
 
 /*
