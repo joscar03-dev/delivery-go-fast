@@ -32,21 +32,6 @@ export class AuthController {
     return this.authService.refreshToken(refreshTokenDto.refreshToken);
   }
 
-  @Post('create-super-admin')
-  createSuperAdmin(@Body() registerDto: RegisterAuthDto) {
-    return this.authService.createSuperAdmin(registerDto);
-  }
-
-  @Post('create-driver')
-  createDriver(@Body() registerDto: RegisterAuthDto) {
-    return this.authService.createDriver(registerDto);
-  }
-
-  @Post('create-restaurant-owner')
-  createRestaurantOwner(@Body() registerDto: RegisterAuthDto) {
-    return this.authService.createRestaurantOwner(registerDto);
-  }
-
   // 🆕 PHONE AUTHENTICATION ENDPOINTS
 
   /**
