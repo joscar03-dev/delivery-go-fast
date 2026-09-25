@@ -8,10 +8,12 @@ import { DeliveryGateway } from './delivery.gateway';
 import { DriverLocation } from './entities/driver-location.entity';
 import { User } from '../users/entities/user.entity';
 import { Order } from '../orders/entities/order.entity';
+import { UsersModule } from '../users/users.module';
 
 @Module({
   imports: [
     TypeOrmModule.forFeature([DriverLocation, User, Order]),
+    UsersModule,
     JwtModule.registerAsync({
       imports: [ConfigModule],
       useFactory: (configService: ConfigService) => ({

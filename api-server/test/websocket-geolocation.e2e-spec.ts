@@ -9,6 +9,7 @@ import { DriverLocation } from '../src/geolocation/entities/driver-location.enti
 import { User } from '../src/users/entities/user.entity';
 import { Order } from '../src/orders/entities/order.entity';
 import { Role } from '../src/common/enums/role.enum';
+import { UsersService } from '../src/users/users.service';
 
 describe('WebSocket Geolocation Tests', () => {
   let app: INestApplication;
@@ -22,6 +23,9 @@ describe('WebSocket Geolocation Tests', () => {
     create: jest.fn(),
     save: jest.fn(),
     findOne: jest.fn(),
+    // handleDisconnect la llama en cada socket que se cierra. Sin esto, el
+    // cierre de cualquiera de los clientes del suite lo revienta.
+    update: jest.fn().mockResolvedValue({}),
     createQueryBuilder: jest.fn(() => ({
       leftJoinAndSelect: jest.fn().mockReturnThis(),
       where: jest.fn().mockReturnThis(),
@@ -38,11 +42,26 @@ describe('WebSocket Geolocation Tests', () => {
     findOne: jest.fn(),
   };
 
+  // El gateway valida contra la base de datos al conectar: el claim del token
+  // solo dice quien era cuando se emitio.
+  const mockUsersService = {
+    findOneById: jest.fn().mockResolvedValue({
+      id: 'driver-1',
+      email: 'driver@test.com',
+      isActive: true,
+      role: { name: Role.DRIVER },
+    }),
+  };
+
   beforeAll(async () => {
     const moduleFixture: TestingModule = await Test.createTestingModule({
       providers: [
         DeliveryGateway,
         GeolocationService,
+        {
+          provide: UsersService,
+          useValue: mockUsersService,
+        },
         {
           provide: JwtService,
           useValue: {
@@ -145,6 +164,95 @@ describe('WebSocket Geolocation Tests', () => {
       });
 
       clientSocket.on('connect_error', (error) => {
+        done(error);
+      });
+    });
+
+    it('debería rechazar conexión si la cuenta fue desactivada', (done) => {
+      jest.spyOn(jwtService, 'verify').mockReturnValue({
+        sub: 'driver-1',
+        role: Role.DRIVER,
+      });
+      mockUsersService.findOneById.mockResolvedValueOnce({
+        id: 'driver-1',
+        email: 'driver@test.com',
+        isActive: false,
+        role: { name: Role.DRIVER },
+      });
+
+      const socket = Client(`http://localhost:${port}/delivery`, {
+        auth: { token: 'deactivated-token' },
+      });
+
+      socket.on('auth_error', (error) => {
+        expect(error.code).toBe('ACCOUNT_DISABLED');
+        socket.close();
+        done();
+      });
+
+      socket.on('connect_error', () => {
+        // Al desconectar manualmente el servidor, el cliente puede ver esto
+        // antes que el auth_error.
+        done();
+      });
+    });
+
+    it('debería rechazar conexión si el usuario ya no existe', (done) => {
+      jest.spyOn(jwtService, 'verify').mockReturnValue({
+        sub: 'ghost-1',
+        role: Role.DRIVER,
+      });
+      mockUsersService.findOneById.mockResolvedValueOnce(undefined);
+
+      const socket = Client(`http://localhost:${port}/delivery`, {
+        auth: { token: 'ghost-token' },
+      });
+
+      socket.on('auth_error', (error) => {
+        expect(error.code).toBe('USER_NOT_FOUND');
+        socket.close();
+        done();
+      });
+
+      socket.on('connect_error', () => {
+        done();
+      });
+    });
+
+    it('debería usar el rol de la base de datos, no el del token', (done) => {
+      jest.spyOn(jwtService, 'verify').mockReturnValue({
+        sub: 'driver-1',
+        // El token dice admin; la base de datos dice driver.
+        role: Role.SUPER_ADMIN,
+      });
+      mockUsersService.findOneById.mockResolvedValueOnce({
+        id: 'driver-1',
+        email: 'driver@test.com',
+        isActive: true,
+        role: { name: Role.DRIVER },
+      });
+
+      const socket = Client(`http://localhost:${port}/delivery`, {
+        auth: { token: 'stale-role-token' },
+      });
+
+      socket.on('connect', () => {
+        // Si hubiera confiado en el claim, entraria como admin y este evento
+        // de solo-admin responderia con la lista de repartidores.
+        socket.emit('getActiveDrivers', {
+          latitude: -12.0464,
+          longitude: -77.0428,
+          radius: 5,
+        });
+
+        socket.on('exception', (error) => {
+          expect(error.code).toBe('ACCESS_DENIED');
+          socket.close();
+          done();
+        });
+      });
+
+      socket.on('connect_error', (error) => {
         done(error);
       });
     });

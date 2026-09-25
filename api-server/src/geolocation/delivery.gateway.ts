@@ -11,9 +11,11 @@ import { Server, Socket } from 'socket.io';
 import { Logger } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { GeolocationService } from './geolocation.service';
+import { UsersService } from '../users/users.service';
 import { DriverLocationUpdateDto } from './dto/driver-location-update.dto';
 import { GetActiveDriversDto } from './dto/get-active-drivers.dto';
 import { Role } from '../common/enums/role.enum';
+import { ALLOWED_ORIGINS } from '../common/config/cors';
 
 interface AuthenticatedSocket extends Socket {
   userId?: string;
@@ -23,7 +25,7 @@ interface AuthenticatedSocket extends Socket {
 
 @WebSocketGateway({
   cors: {
-    origin: '*',
+    origin: ALLOWED_ORIGINS,
     methods: ['GET', 'POST'],
     credentials: true,
   },
@@ -40,6 +42,7 @@ export class DeliveryGateway
   constructor(
     private readonly jwtService: JwtService,
     private readonly geolocationService: GeolocationService,
+    private readonly usersService: UsersService,
   ) {}
 
   async handleConnection(client: AuthenticatedSocket) {
@@ -62,10 +65,40 @@ export class DeliveryGateway
       // Verificar y decodificar el token JWT
       const payload = this.jwtService.verify(token);
 
+      // El claim dice quien era el usuario al emitirse el token. La base de
+      // datos dice quien es ahora: si la cuenta se desactivo o cambio de rol
+      // despues, el claim sigue affirmando lo viejo, y con el se eligen las
+      // salas a las que se une el socket.
+      const user = await this.usersService.findOneById(payload.sub);
+
+      if (!user) {
+        this.logger.warn(
+          `❌ Client ${client.id}: user ${payload.sub} no longer exists`,
+        );
+        client.emit('auth_error', {
+          code: 'USER_NOT_FOUND',
+          message: 'User account no longer exists',
+        });
+        client.disconnect();
+        return;
+      }
+
+      if (!user.isActive) {
+        this.logger.warn(
+          `❌ Client ${client.id}: user ${payload.sub} is deactivated`,
+        );
+        client.emit('auth_error', {
+          code: 'ACCOUNT_DISABLED',
+          message: 'Your account has been deactivated',
+        });
+        client.disconnect();
+        return;
+      }
+
       // Asignar información del usuario al socket
-      client.userId = payload.sub;
-      client.userRole = payload.role;
-      client.userEmail = payload.email;
+      client.userId = user.id;
+      client.userRole = user.role?.name ?? Role.CLIENT;
+      client.userEmail = user.email ?? undefined;
 
       // Unir al cliente a salas según su rol
       await this.joinRoleBasedRooms(client);

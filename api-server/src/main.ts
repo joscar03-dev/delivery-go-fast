@@ -3,6 +3,7 @@ import { ValidationPipe } from '@nestjs/common';
 import { AppModule } from './app.module';
 import * as bodyParser from 'body-parser';
 import { bootstrap as bootstrapGlobalAgent } from 'global-agent';
+import { ALLOWED_ORIGINS } from './common/config/cors';
 
 async function bootstrap() {
   // Configurar zona horaria para Lima, Perú (UTC-5)
@@ -41,18 +42,7 @@ async function bootstrap() {
 
   // CORS para frontend Ionic y app móvil
   app.enableCors({
-    origin: [
-      'http://localhost:8100', // Desarrollo web
-      'http://localhost:4200', // Desarrollo Angular
-      'http://localhost:8101', // Desarrollo web alternativo
-      'http://10.0.2.2:8100', // Android emulator
-      'capacitor://localhost', // Capacitor iOS
-      'ionic://localhost', // Ionic iOS
-      'https://localhost', // General
-      'https://gofastdelivery.site', // Producción web
-      'https://www.gofastdelivery.site', // Producción web (www)
-      'https://api.gofastdelivery.site', // Producción API
-    ],
+    origin: ALLOWED_ORIGINS,
     credentials: true,
     methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
     allowedHeaders: ['Content-Type', 'Authorization'],
