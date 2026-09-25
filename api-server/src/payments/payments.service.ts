@@ -1,9 +1,21 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import {
+  ForbiddenException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { PaymentMethod } from './entities/payment-method.entity';
 import { RestaurantDeliveryConfig } from './entities/restaurant-delivery-config.entity';
 import { OrderPayment } from './entities/order-payment.entity';
+import { Order } from '../orders/entities/order.entity';
+import { Role } from '../common/enums/role.enum';
+
+/** Identidad mínima necesaria para autorizar la gestión de pagos de un pedido. */
+export interface PaymentActor {
+  id: string;
+  role: string;
+}
 
 @Injectable()
 export class PaymentsService {
@@ -14,6 +26,8 @@ export class PaymentsService {
     private deliveryConfigRepo: Repository<RestaurantDeliveryConfig>,
     @InjectRepository(OrderPayment)
     private orderPaymentRepo: Repository<OrderPayment>,
+    @InjectRepository(Order)
+    private orderRepo: Repository<Order>,
   ) {}
 
   /**
@@ -113,14 +127,60 @@ export class PaymentsService {
   }
 
   /**
+   * Autoriza la gestión de pagos de un pedido.
+   *
+   * Solo un super admin o el dueño del restaurante del pedido pueden operar sobre
+   * sus pagos. El dueño se valida contra `restaurants.owner_id` del pedido, nunca
+   * contra un dato enviado por el cliente.
+   *
+   * Cuando el pedido existe pero no pertenece al actor se responde 404 y no 403,
+   * para no confirmar la existencia de pedidos ajenos.
+   */
+  async assertCanManageOrderPayment(
+    orderId: string,
+    actor: PaymentActor,
+  ): Promise<void> {
+    if (
+      actor.role !== Role.SUPER_ADMIN &&
+      actor.role !== Role.RESTAURANT_OWNER
+    ) {
+      throw new ForbiddenException(
+        'Solo un super admin o el dueño del restaurante puede gestionar los pagos de un pedido',
+      );
+    }
+
+    const order = await this.orderRepo.findOne({
+      where: { id: orderId },
+      relations: { restaurant: { owner: true } },
+    });
+
+    if (!order) {
+      throw new NotFoundException(`No se encontró el pedido ${orderId}`);
+    }
+
+    if (actor.role === Role.SUPER_ADMIN) {
+      return;
+    }
+
+    if (order.restaurant?.owner?.id !== actor.id) {
+      throw new NotFoundException(`No se encontró el pedido ${orderId}`);
+    }
+  }
+
+  /**
    * Verificar un pago (para admin/restaurante)
+   *
+   * `actor` proviene del access token validado; no se acepta un `verifiedBy`
+   * arbitrario para que la auditoría no sea falsificable desde el cliente.
    */
   async verifyPayment(
     orderId: string,
     status: 'pending' | 'verified' | 'failed',
-    verifiedBy: string,
+    actor: PaymentActor,
     notes?: string,
   ): Promise<OrderPayment> {
+    await this.assertCanManageOrderPayment(orderId, actor);
+
     const payment = await this.orderPaymentRepo.findOne({
       where: { orderId },
     });
@@ -133,7 +193,7 @@ export class PaymentsService {
 
     payment.paymentStatus = status;
     payment.verifiedAt = new Date();
-    payment.verifiedBy = verifiedBy;
+    payment.verifiedBy = actor.id;
 
     if (notes) {
       payment.notes = notes;
@@ -145,7 +205,12 @@ export class PaymentsService {
   /**
    * Obtener información de pago de una orden
    */
-  async getOrderPayment(orderId: string): Promise<OrderPayment> {
+  async getOrderPayment(
+    orderId: string,
+    actor: PaymentActor,
+  ): Promise<OrderPayment> {
+    await this.assertCanManageOrderPayment(orderId, actor);
+
     const payment = await this.orderPaymentRepo.findOne({
       where: { orderId },
     });

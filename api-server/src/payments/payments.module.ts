@@ -5,6 +5,7 @@ import { PaymentsController } from './payments.controller';
 import { PaymentMethod } from './entities/payment-method.entity';
 import { OrderPayment } from './entities/order-payment.entity';
 import { RestaurantDeliveryConfig } from './entities/restaurant-delivery-config.entity';
+import { Order } from '../orders/entities/order.entity';
 
 @Module({
   imports: [
@@ -12,6 +13,7 @@ import { RestaurantDeliveryConfig } from './entities/restaurant-delivery-config.
       PaymentMethod,
       OrderPayment,
       RestaurantDeliveryConfig,
+      Order,
     ]),
   ],
   controllers: [PaymentsController],

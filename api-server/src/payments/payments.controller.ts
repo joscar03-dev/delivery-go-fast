@@ -7,8 +7,11 @@ import {
   UseGuards,
   Request,
 } from '@nestjs/common';
-import { PaymentsService } from './payments.service';
+import { PaymentsService, PaymentActor } from './payments.service';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
+import { RolesGuard } from '../auth/guards/roles.guard';
+import { Roles } from '../auth/decorators/roles.decorator';
+import { Role } from '../common/enums/role.enum';
 import { VerifyPaymentDto } from './dto/checkout.dto';
 
 @Controller('payments')
@@ -37,24 +40,30 @@ export class PaymentsController {
    * GET /api/payments/orders/:id
    * Obtener información de pago de una orden
    */
-  @UseGuards(JwtAuthGuard)
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(Role.SUPER_ADMIN, Role.RESTAURANT_OWNER)
   @Get('orders/:id')
-  async getOrderPayment(@Param('id') orderId: string) {
-    return this.paymentsService.getOrderPayment(orderId);
+  async getOrderPayment(@Param('id') orderId: string, @Request() req) {
+    return this.paymentsService.getOrderPayment(orderId, this.actorOf(req));
   }
 
   /**
    * POST /api/payments/verify
-   * Verificar un pago (solo para admin/restaurante)
+   * Verificar un pago (solo para super admin o dueño del restaurante)
    */
-  @UseGuards(JwtAuthGuard)
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(Role.SUPER_ADMIN, Role.RESTAURANT_OWNER)
   @Post('verify')
   async verifyPayment(@Body() dto: VerifyPaymentDto, @Request() req) {
     return this.paymentsService.verifyPayment(
       dto.orderId,
       dto.status,
-      req.user.userId,
+      this.actorOf(req),
       dto.notes,
     );
+  }
+
+  private actorOf(req: { user: { sub: string; role: string } }): PaymentActor {
+    return { id: req.user.sub, role: req.user.role };
   }
 }
