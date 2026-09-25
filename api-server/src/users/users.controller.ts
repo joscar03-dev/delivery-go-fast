@@ -1,6 +1,7 @@
 import {
   Controller,
   Get,
+  Post,
   UseGuards,
   Req,
   Patch,
@@ -13,7 +14,7 @@ import { RolesGuard } from '../auth/guards/roles.guard';
 import { Roles } from '../auth/decorators/roles.decorator';
 import { Role as RoleEnum } from '../common/enums/role.enum';
 import { UsersService } from './users.service';
-import { UpdateUserDto } from './dto';
+import { CreateUserDto, UpdateUserDto } from './dto';
 
 @Controller('users')
 export class UsersController {
@@ -66,6 +67,15 @@ export class UsersController {
   async findAllDrivers() {
     const drivers = await this.usersService.findAllDrivers();
     return drivers.map((u) => this.sanitizeUser(u));
+  }
+
+  // Crear usuario con cualquier rol (solo super admin)
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(RoleEnum.SUPER_ADMIN)
+  @Post()
+  async create(@Body() dto: CreateUserDto) {
+    const created = await this.usersService.createAsAdmin(dto);
+    return this.sanitizeUser(created);
   }
 
   // Actualización parcial de usuario (solo super admin)

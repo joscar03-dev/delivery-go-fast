@@ -4,11 +4,9 @@ import {
   IsString,
   MinLength,
   IsOptional,
-  IsEnum,
   Matches,
   ValidateIf,
 } from 'class-validator';
-import { Role } from '../../common/enums/role.enum';
 
 export class RegisterAuthDto {
   @IsNotEmpty()
@@ -34,11 +32,4 @@ export class RegisterAuthDto {
   })
   @IsOptional()
   phone?: string;
-
-  @IsOptional()
-  @IsEnum(Role, {
-    message:
-      'Role must be one of: client, driver, restaurant_owner, super_admin',
-  })
-  role?: Role;
 }

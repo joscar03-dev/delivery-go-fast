@@ -1,0 +1,266 @@
+{
+  "info": {
+    "_postman_id": "b1a4d0e6-3f2c-4a71-9c58-6f0d1a7c2b01",
+    "name": "Go Fast Delivery API",
+    "description": "Operación diaria de la API. NO incluye el bootstrap de la base de datos: el super admin inicial, los roles, los métodos de pago y las categorías se crean con `npm run seed:bootstrap` en api-server (ver BOOTSTRAP.md).\n\nFlujo: 1) ejecuta el request \"Login\" (guarda los tokens en el entorno automáticamente) 2) usa el resto de requests, que ya llevan el Bearer {{accessToken}}.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "auth": {
+    "type": "bearer",
+    "bearer": [
+      {
+        "key": "token",
+        "value": "{{accessToken}}",
+        "type": "string"
+      }
+    ]
+  },
+  "item": [
+    {
+      "name": "1. Autenticación",
+      "item": [
+        {
+          "name": "Login (guarda los tokens)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Login exitoso', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "const body = pm.response.json();",
+                  "",
+                  "if (body.accessToken) {",
+                  "    pm.environment.set('accessToken', body.accessToken);",
+                  "    console.log('accessToken guardado');",
+                  "} else {",
+                  "    console.error('La respuesta no trae accessToken', body);",
+                  "}",
+                  "",
+                  "if (body.refreshToken) {",
+                  "    pm.environment.set('refreshToken', body.refreshToken);",
+                  "}"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "auth": { "type": "noauth" },
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"identifier\": \"{{adminEmail}}\",\n  \"password\": \"{{adminPassword}}\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/auth/login",
+              "host": ["{{baseUrl}}"],
+              "path": ["auth", "login"]
+            },
+            "description": "`identifier` acepta email o teléfono en E.164. Devuelve accessToken y refreshToken, que el test script guarda en el entorno."
+          }
+        },
+        {
+          "name": "Refresh token",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "if (pm.response.code === 200) {",
+                  "    const body = pm.response.json();",
+                  "    pm.environment.set('accessToken', body.accessToken);",
+                  "    pm.environment.set('refreshToken', body.refreshToken);",
+                  "}"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "auth": { "type": "noauth" },
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"refreshToken\": \"{{refreshToken}}\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/auth/refresh",
+              "host": ["{{baseUrl}}"],
+              "path": ["auth", "refresh"]
+            }
+          }
+        },
+        {
+          "name": "Mi perfil",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}/users/me",
+              "host": ["{{baseUrl}}"],
+              "path": ["users", "me"]
+            }
+          }
+        },
+        {
+          "name": "Registrar cliente (público)",
+          "request": {
+            "auth": { "type": "noauth" },
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Cliente Nuevo\",\n  \"email\": \"cliente@example.com\",\n  \"password\": \"Cliente123!\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/auth/register",
+              "host": ["{{baseUrl}}"],
+              "path": ["auth", "register"]
+            },
+            "description": "Registro público: SIEMPRE crea rol `client`. El campo `role` ya no se acepta. Para crear cualquier otro rol usa el request \"Crear usuario (admin)\"."
+          }
+        }
+      ]
+    },
+    {
+      "name": "2. Usuarios (super admin)",
+      "item": [
+        {
+          "name": "Listar usuarios",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}/users/admin/all",
+              "host": ["{{baseUrl}}"],
+              "path": ["users", "admin", "all"]
+            }
+          }
+        },
+        {
+          "name": "Crear usuario (admin)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Nuevo Repartidor\",\n  \"email\": \"repartidor@example.com\",\n  \"password\": \"Repartidor123!\",\n  \"role\": \"driver\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/users",
+              "host": ["{{baseUrl}}"],
+              "path": ["users"]
+            },
+            "description": "`role` admite client, driver, restaurant_owner y super_admin. Si se omite, se crea como client."
+          }
+        },
+        {
+          "name": "Promover / cambiar rol",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"role\": \"super_admin\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/users/{{userId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["users", "{{userId}}"]
+            },
+            "description": "El usuario afectado debe volver a iniciar sesión para que su token refleje el nuevo rol."
+          }
+        },
+        {
+          "name": "Activar / desactivar usuario",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"isActive\": false\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/users/{{userId}}/toggle-active",
+              "host": ["{{baseUrl}}"],
+              "path": ["users", "{{userId}}", "toggle-active"]
+            }
+          }
+        },
+        {
+          "name": "Eliminar usuario",
+          "request": {
+            "method": "DELETE",
+            "url": {
+              "raw": "{{baseUrl}}/users/{{userId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["users", "{{userId}}"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "3. Pagos",
+      "item": [
+        {
+          "name": "Métodos de pago",
+          "request": {
+            "auth": { "type": "noauth" },
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}/payments/methods",
+              "host": ["{{baseUrl}}"],
+              "path": ["payments", "methods"]
+            }
+          }
+        }
+      ]
+    }
+  ],
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "http://localhost:3000",
+      "type": "string"
+    },
+    {
+      "key": "userId",
+      "value": "",
+      "type": "string"
+    }
+  ]
+}

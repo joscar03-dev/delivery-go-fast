@@ -295,45 +295,51 @@ npm run start:dev
 
 ### 👤 FASE 6: Crear Super Admin Inicial
 
-#### Paso 6.1: Crear Super Admin
+#### Paso 6.1: Ejecutar el bootstrap
 
-Abre otra terminal PowerShell:
+Define las credenciales en `api-server/.env`:
+
+```env
+BOOTSTRAP_ADMIN_NAME=Admin
+BOOTSTRAP_ADMIN_EMAIL=admin@delivery.com
+BOOTSTRAP_ADMIN_PASSWORD=Admin123!
+```
+
+Y ejecuta:
 
 ```powershell
-# Método 1: Con curl (si tienes curl instalado)
-curl -X POST http://localhost:3000/auth/create-super-admin `
-  -H "Content-Type: application/json" `
-  -d '{\"name\":\"Admin\",\"email\":\"admin@delivery.com\",\"password\":\"Admin123!\"}'
-
-# Método 2: Con Invoke-RestMethod
-$body = @{
-    name = "Admin"
-    email = "admin@delivery.com"
-    password = "Admin123!"
-} | ConvertTo-Json
-
-Invoke-RestMethod -Uri "http://localhost:3000/auth/create-super-admin" `
-  -Method POST `
-  -ContentType "application/json" `
-  -Body $body
+cd C:\laragon\www\delivery-go-fast\api-server
+npm run seed:bootstrap
 ```
+
+El comando también crea los roles, los métodos de pago y las categorías de restaurante
+por defecto. Es idempotente: si ya existe un super admin, no crea otro.
+
+> El endpoint `POST /auth/create-super-admin` fue eliminado. Era público y permitía que
+> cualquiera se auto-asignara el rol de super admin. Ver `BOOTSTRAP.md`.
 
 **Salida esperada**:
 
-```json
-{
-  "access_token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
-  "refresh_token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
-  "user": {
-    "id": "uuid-here",
-    "name": "Admin",
-    "email": "admin@delivery.com",
-    "role": {
-      "id": 1,
-      "name": "super_admin"
-    }
-  }
-}
+```
+Conectando a la base de datos...
+Conexion establecida
+
+Asegurando roles...
+   + rol creado: client
+   + rol creado: driver
+   + rol creado: restaurant_owner
+   + rol creado: super_admin
+
+Asegurando super admin...
+   + super admin creado: admin@delivery.com
+
+Asegurando metodos de pago...
+   = 4 metodo(s) sincronizado(s)
+
+Asegurando categorias de restaurante...
+   = 8 categoria(s) creada(s)
+
+Bootstrap completado exitosamente.
 ```
 
 ---
@@ -353,9 +359,9 @@ curl http://localhost:3000/health
 #### Paso 7.2: Verificar Autenticación
 
 ```powershell
-# Login con el super admin
+# Login con el super admin (el campo es "identifier", no "email")
 $loginBody = @{
-    email = "admin@delivery.com"
+    identifier = "admin@delivery.com"
     password = "Admin123!"
 } | ConvertTo-Json
 
@@ -364,7 +370,7 @@ $response = Invoke-RestMethod -Uri "http://localhost:3000/auth/login" `
   -ContentType "application/json" `
   -Body $loginBody
 
-# Debe retornar tokens
+# Debe retornar accessToken y refreshToken
 $response
 ```
 
@@ -498,17 +504,17 @@ docker-compose down -v
 docker-compose up -d
 Start-Sleep 10
 npm run migration:run:ts
+npm run seed:bootstrap
 npm run start:dev
 
 # Verificar estado
 docker ps
 docker exec -it delivery-postgres psql -U delivery_user -d delivery_db -c "\dt"
 npm run migration:show
+npm run seed:bootstrap
 
-# Crear super admin
-curl -X POST http://localhost:3000/auth/create-super-admin `
-  -H "Content-Type: application/json" `
-  -d '{\"name\":\"Admin\",\"email\":\"admin@delivery.com\",\"password\":\"Admin123!\"}'
+# Crear super admin (usa BOOTSTRAP_ADMIN_* del .env)
+npm run seed:bootstrap
 ```
 
 ---

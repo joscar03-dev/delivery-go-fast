@@ -50,10 +50,6 @@ export class AuthService {
 
     const hashedPassword = await bcrypt.hash(password, 10);
 
-    // Usar el rol del DTO o CLIENT por defecto
-    const roleToAssign = registerDto.role || Role.CLIENT;
-
-    // Construir objeto para create (respetando API existente)
     const payloadForCreate: RegisterAuthDto & { phone?: string } = {
       ...registerDto,
       email: email, // puede ser undefined
@@ -63,68 +59,12 @@ export class AuthService {
     await this.usersService.create(
       payloadForCreate,
       hashedPassword,
-      roleToAssign,
+      Role.CLIENT,
     );
 
     return {
       message: 'Usuario registrado exitosamente',
-      role: roleToAssign,
-    };
-  }
-
-  async createSuperAdmin(registerDto: RegisterAuthDto) {
-    const userExists = await this.usersService.findOneByEmail(
-      registerDto.email,
-    );
-    if (userExists) {
-      throw new ConflictException('El correo electrónico ya está en uso');
-    }
-
-    const hashedPassword = await bcrypt.hash(registerDto.password, 10);
-    await this.usersService.create(
-      registerDto,
-      hashedPassword,
-      Role.SUPER_ADMIN,
-    );
-
-    return { message: 'Super administrador creado exitosamente' };
-  }
-
-  async createDriver(registerDto: RegisterAuthDto) {
-    const userExists = await this.usersService.findOneByEmail(
-      registerDto.email,
-    );
-    if (userExists) {
-      throw new ConflictException('El correo electrónico ya está en uso');
-    }
-
-    const hashedPassword = await bcrypt.hash(registerDto.password, 10);
-    await this.usersService.create(registerDto, hashedPassword, Role.DRIVER);
-
-    return {
-      message: 'Repartidor creado exitosamente',
-      role: Role.DRIVER,
-    };
-  }
-
-  async createRestaurantOwner(registerDto: RegisterAuthDto) {
-    const userExists = await this.usersService.findOneByEmail(
-      registerDto.email,
-    );
-    if (userExists) {
-      throw new ConflictException('El correo electrónico ya está en uso');
-    }
-
-    const hashedPassword = await bcrypt.hash(registerDto.password, 10);
-    await this.usersService.create(
-      registerDto,
-      hashedPassword,
-      Role.RESTAURANT_OWNER,
-    );
-
-    return {
-      message: 'Propietario de restaurante creado exitosamente',
-      role: Role.RESTAURANT_OWNER,
+      role: Role.CLIENT,
     };
   }
 

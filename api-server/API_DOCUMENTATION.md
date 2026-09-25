@@ -13,9 +13,9 @@ La API ha sido **completamente refactorizada** para separar las categorías gen�
 
 ### Base URL: `/auth`
 
-Sistema completo de autenticación y registro con soporte para múltiples roles.
+Sistema completo de autenticación y registro.
 
-#### 📝 Registro de Cliente (Default)
+#### 📝 Registro de Cliente
 
 ```http
 POST /auth/register
@@ -28,10 +28,15 @@ POST /auth/register
 {
   "name": "Juan Pérez",
   "email": "juan@email.com",
-  "password": "mi_password_segura",
-  "role": "client" // Opcional: client (default), driver, restaurant_owner
+  "password": "mi_password_segura"
 }
 ```
+
+Este endpoint **siempre crea un `client`**. El campo `role` ya no se acepta: se ignora
+por el `ValidationPipe` y el servicio asigna `client` de forma fija.
+
+Para crear usuarios de cualquier otro rol usa `POST /users` (ver
+[Users API](#-users-api--solo-super-admin)), que exige un token de `super_admin`.
 
 **Respuesta:**
 
@@ -42,82 +47,23 @@ POST /auth/register
 }
 ```
 
-#### 🚗 Crear Repartidor
+> Este endpoint no devuelve tokens. Después de registrarte debes hacer login.
 
-```http
-POST /auth/create-driver
+#### 👑 Super Administrador inicial
+
+El super admin inicial **no se crea por HTTP**. Los endpoints
+`POST /auth/create-super-admin`, `POST /auth/create-driver` y
+`POST /auth/create-restaurant-owner` fueron eliminados: al no exigir autenticación,
+permitían que cualquier cliente se auto-asignara un rol privilegiado.
+
+Usa el bootstrap, que también crea los roles, los métodos de pago y las categorías:
+
+```bash
+cd api-server
+npm run seed:bootstrap
 ```
 
-**Autenticación:** No requerida  
-**Body:**
-
-```json
-{
-  "name": "Carlos Repartidor",
-  "email": "carlos@email.com",
-  "password": "mi_password_segura"
-}
-```
-
-**Respuesta:**
-
-```json
-{
-  "message": "Repartidor creado exitosamente",
-  "role": "driver"
-}
-```
-
-#### 🏪 Crear Propietario de Restaurante
-
-```http
-POST /auth/create-restaurant-owner
-```
-
-**Autenticación:** No requerida  
-**Body:**
-
-```json
-{
-  "name": "María Propietaria",
-  "email": "maria@email.com",
-  "password": "mi_password_segura"
-}
-```
-
-**Respuesta:**
-
-```json
-{
-  "message": "Propietario de restaurante creado exitosamente",
-  "role": "restaurant_owner"
-}
-```
-
-#### 👑 Crear Super Administrador
-
-```http
-POST /auth/create-super-admin
-```
-
-**Autenticación:** No requerida  
-**Body:**
-
-```json
-{
-  "name": "Admin Sistema",
-  "email": "admin@sistema.com",
-  "password": "super_password_segura"
-}
-```
-
-**Respuesta:**
-
-```json
-{
-  "message": "Super administrador creado exitosamente"
-}
-```
+Ver `BOOTSTRAP.md` en la raíz del repositorio.
 
 #### 🔑 Iniciar Sesión
 
@@ -130,10 +76,12 @@ POST /auth/login
 
 ```json
 {
-  "email": "juan@email.com",
+  "identifier": "juan@email.com",
   "password": "mi_password_segura"
 }
 ```
+
+`identifier` acepta un email o un teléfono en formato E.164 (`+51987654321`).
 
 **Respuesta:**
 
@@ -203,6 +151,101 @@ Una vez autenticado, incluye el token en el header de todas las peticiones prote
 ```http
 Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
 ```
+
+---
+
+## 👥 Users API (solo super admin)
+
+### Base URL: `/users`
+
+Todos los endpoints de este bloque exigen `JwtAuthGuard` + `@Roles(SUPER_ADMIN)`.
+
+#### ➕ Crear usuario con cualquier rol
+
+```http
+POST /users
+```
+
+**Autenticación:** Requiere super admin  
+**Body:**
+
+```json
+{
+  "name": "Carlos Repartidor",
+  "email": "carlos@email.com",
+  "password": "mi_password_segura",
+  "role": "driver"
+}
+```
+
+| Campo | Obligatorio | Notas |
+|---|---|---|
+| `name` | Sí | Mínimo 2 caracteres |
+| `email` | Sí | Debe ser único |
+| `password` | Sí | Mínimo 6 caracteres |
+| `phone` | No | Formato E.164 (`+51987654321`) |
+| `role` | No | `client`, `driver`, `restaurant_owner`, `super_admin`. Default: `client` |
+
+**Respuesta (201):**
+
+```json
+{
+  "id": "uuid",
+  "name": "Carlos Repartidor",
+  "email": "carlos@email.com",
+  "phone": null,
+  "role": "driver",
+  "isActive": true
+}
+```
+
+#### 📋 Listar usuarios (incluye inactivos)
+
+```http
+GET /users/admin/all
+```
+
+#### ♻️ Promover o cambiar rol
+
+```http
+PATCH /users/{userId}
+```
+
+```json
+{
+  "role": "super_admin"
+}
+```
+
+El usuario afectado debe volver a iniciar sesión para que su token refleje el nuevo
+rol.
+
+#### 🔄 Activar / desactivar usuario
+
+```http
+PATCH /users/{userId}/toggle-active
+```
+
+```json
+{
+  "isActive": false
+}
+```
+
+#### 🗑️ Eliminar usuario
+
+```http
+DELETE /users/{userId}
+```
+
+#### 👤 Perfil propio
+
+```http
+GET /users/me
+PATCH /users/me
+```
+
+`PATCH /users/me` ignora cualquier intento de cambiar el `role`.
 
 ---
 
@@ -590,6 +633,22 @@ Los siguientes endpoints han sido **eliminados** del `RestaurantsController`:
 | `GET /restaurants/categories/all`   | `GET /restaurant-categories`              |
 | `POST /restaurants/categories`      | `POST /restaurant-categories`             |
 | `POST /restaurants/categories/seed` | `POST /restaurant-categories` (múltiples) |
+
+### Endpoints de creación de roles eliminados:
+
+- `POST /auth/create-super-admin`
+- `POST /auth/create-driver`
+- `POST /auth/create-restaurant-owner`
+
+Eran públicos, así que cualquier cliente podía auto-asignarse un rol privilegiado. El
+super admin inicial se crea con `npm run seed:bootstrap` (ver `BOOTSTRAP.md`) y los demás
+roles se crean desde `POST /users` con un token de super admin.
+
+| Endpoint Antiguo                | Nuevo Endpoint                                     |
+| ------------------------------- | -------------------------------------------------- |
+| `POST /auth/create-super-admin` | `npm run seed:bootstrap` (solo el primero)         |
+| `POST /auth/create-driver`      | `POST /users` con `{ "role": "driver" }`           |
+| `POST /auth/create-restaurant-owner` | `POST /users` con `{ "role": "restaurant_owner" }` |
 
 ---
 
