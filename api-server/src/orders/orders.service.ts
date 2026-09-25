@@ -150,7 +150,7 @@ export class OrdersService {
               extrasUnit += Number(o.extraPrice) || 0;
             }
           }
-        } catch (e) {
+        } catch {
           // Si algo falla, los extras quedan en 0 para no bloquear la orden
           extrasUnit = extrasUnit || 0;
         }
@@ -305,7 +305,7 @@ export class OrdersService {
             }
           }
         }
-      } catch (error) {
+      } catch {
         // Si hay error calculando extras, continuar sin ellos
       }
 
@@ -394,11 +394,17 @@ export class OrdersService {
               }
             }
           }
-        } catch (error) {
+        } catch {
           // Si hay error calculando extras, continuar sin ellos
         }
 
         const unitTotal = baseUnit + extrasUnit;
+        // PENDIENTE: el importe cobrado si incluye los extras (ver el bloque de
+        // calculo de subtotal mas arriba), pero OrderItem se persiste con
+        // unit_price = baseUnit, sin ellos, asi que el detalle guardado no cuadra
+        // con lo cobrado. No se borra esta linea para no perder la senal: hay que
+        // decidir si unit_price debe ser unitTotal.
+        // eslint-disable-next-line @typescript-eslint/no-unused-vars
         const lineTotal = unitTotal * itemDto.quantity;
 
         const orderItem = manager.create(OrderItem, {

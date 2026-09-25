@@ -3,7 +3,6 @@ import { INestApplication } from '@nestjs/common';
 import { Socket, io as Client } from 'socket.io-client';
 import { JwtService } from '@nestjs/jwt';
 import { getRepositoryToken } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
 import { DeliveryGateway } from '../src/geolocation/delivery.gateway';
 import { GeolocationService } from '../src/geolocation/geolocation.service';
 import { DriverLocation } from '../src/geolocation/entities/driver-location.entity';

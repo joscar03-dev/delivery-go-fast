@@ -177,8 +177,9 @@ export class RestaurantsController {
         );
       }
 
-      // No permitir cambiar el owner si es RESTAURANT_OWNER
-      // eslint-disable-next-line @typescript-eslint/no-unused-vars
+      // No permitir cambiar el owner si es RESTAURANT_OWNER.
+      // ownerId se omite a proposito: si llegara al service, el owner podria
+      // transferirse el restaurante.
       const { ownerId, ...allowedUpdates } = updateRestaurantDto;
       return this.restaurantsService.update(id, allowedUpdates);
     } else {

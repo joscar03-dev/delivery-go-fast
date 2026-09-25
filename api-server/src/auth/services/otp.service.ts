@@ -117,7 +117,10 @@ export class OtpService {
         `✅ reCAPTCHA Enterprise desactivado (phoneEnforcementState: ${configJson.recaptchaConfig?.phoneEnforcementState})`,
       );
     } catch (error) {
-      this.logger.error('⚠️ No se pudo desactivar reCAPTCHA Enterprise:', error);
+      this.logger.error(
+        '⚠️ No se pudo desactivar reCAPTCHA Enterprise:',
+        error,
+      );
     }
   }
 

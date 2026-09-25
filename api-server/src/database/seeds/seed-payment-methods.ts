@@ -1,4 +1,3 @@
-import { DataSource } from 'typeorm';
 import dataSource from '../data-source';
 import { defaultPaymentMethods } from '../../common/seeds/payment-methods.seed';
 

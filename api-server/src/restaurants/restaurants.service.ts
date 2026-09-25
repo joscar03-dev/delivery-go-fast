@@ -19,7 +19,6 @@ import { UpdateMenuItemDto } from './dto/update-menu-item.dto';
 import { FindRestaurantsDto } from './dto/find-restaurants.dto';
 import { defaultCategories } from '../common/seeds/categories.seed';
 import { GeospatialQueryBuilder } from '../common/utils/geospatial.util';
-import { Role } from '../common/enums/role.enum';
 import { Point } from 'geojson';
 
 @Injectable()

@@ -177,7 +177,7 @@ export class GeolocationService {
             usedPath = coveragePath;
             break;
           }
-        } catch (e) {
+        } catch {
           // Intentar siguiente ruta
           continue;
         }

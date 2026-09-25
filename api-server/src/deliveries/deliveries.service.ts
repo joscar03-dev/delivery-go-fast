@@ -12,7 +12,6 @@ import { FindAvailableDeliveriesDto } from './dto/find-available-deliveries.dto'
 import { UpdateOrderStatusDto } from './dto/update-order-status.dto';
 import { OrderStatus } from '../common/enums/order-status.enum';
 import { Role } from '../common/enums/role.enum';
-import { DeliveryType } from '../payments/entities/restaurant-delivery-config.entity';
 
 @Injectable()
 export class DeliveriesService {
