@@ -96,6 +96,17 @@ export class PhoneLoginPage implements OnInit, OnDestroy {
   ngOnInit() {
     console.log('📱 PhoneLoginPage inicializada');
 
+    // 🆕 Precargar reCAPTCHA al entrar para que esté listo antes de enviar
+    if (!this.phoneAuthService.isNative()) {
+      setTimeout(() => {
+        try {
+          this.phoneAuthService.initializeRecaptcha('recaptcha-container');
+        } catch (error) {
+          console.error('❌ Error pre-cargando reCAPTCHA:', error);
+        }
+      }, 300);
+    }
+
     /*  // 🔍 Ejecutar diagnósticos de Firebase
     setTimeout(() => {
       FirebaseDiagnostics.runDiagnostics(this.auth);
@@ -150,7 +161,9 @@ export class PhoneLoginPage implements OnInit, OnDestroy {
       // Solo inicializar reCAPTCHA si es web/PWA (no Android/iOS)
       if (!this.phoneAuthService.isNative()) {
         console.log('🌐 Inicializando reCAPTCHA para Web/PWA');
-        this.phoneAuthService.initializeRecaptcha('recaptcha-container');
+        // force=true: reiniciar el widget en cada intento para no reutilizar
+        // una instancia corrupta de reCAPTCHA v2/Enterprise tras reintentos
+        this.phoneAuthService.initializeRecaptcha('recaptcha-container', true);
       } else {
         console.log('📱 App nativa detectada, saltando reCAPTCHA');
       }
@@ -165,6 +178,14 @@ export class PhoneLoginPage implements OnInit, OnDestroy {
             console.log('✅ OTP enviado:', response.verificationId);
             // 🆕 Guardar verificationId para apps nativas
             this.verificationId = response.verificationId || '';
+
+            // 🆕 Auto-verificación nativa: si ya hay token, saltar el paso OTP
+            if (response.firebaseToken) {
+              this.successMessage = 'Autenticación automática completada';
+              await this.loginOrRegisterWithBackend(response.firebaseToken);
+              return;
+            }
+
             this.successMessage = 'Código enviado correctamente';
             this.currentStep = 'otp';
             this.startResendTimer();

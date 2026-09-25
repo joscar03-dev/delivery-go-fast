@@ -1,4 +1,4 @@
-import { Injectable } from '@angular/core';
+import { Injectable, Optional, Inject } from '@angular/core';
 import {
   Auth,
   RecaptchaVerifier,
@@ -7,6 +7,7 @@ import {
   PhoneAuthProvider,
   signInWithCredential,
 } from '@angular/fire/auth';
+import { AppCheck } from '@angular/fire/app-check';
 import { Platform } from '@ionic/angular';
 import { FirebaseAuthentication } from '@capacitor-firebase/authentication';
 import { Observable, from, throwError } from 'rxjs';
@@ -28,9 +29,20 @@ export class PhoneAuthService {
   private confirmationResult: ConfirmationResult | null = null;
   private isNativeApp: boolean = false;
 
-  constructor(private auth: Auth, private platform: Platform) {
-    // Detectar si estamos en una app nativa (Android/iOS) o en web
-    this.isNativeApp = this.platform.is('capacitor');
+  constructor(
+    private auth: Auth,
+    private platform: Platform,
+    @Optional() @Inject(AppCheck) private appCheck?: AppCheck
+  ) {
+    // Detectar si estamos en una app nativa (Android/iOS) o en web.
+    // Blindaje: solo se considera "nativa" si además el runtime de Capacitor
+    // está realmente presente. En un navegador puro (aunque el UA diga
+    // Android, p.ej. ionic serve) esto evita tomar la ruta nativa y que
+    // Firebase busque SHA-1 de Android en vez de reCAPTCHA web.
+    this.isNativeApp =
+      this.platform.is('capacitor') &&
+      typeof window !== 'undefined' &&
+      !!(window as any).Capacitor;
 
     // 🔍 DEBUG: Logs detallados de plataforma
     console.log('🔥 PhoneAuthService initialized');
@@ -41,8 +53,8 @@ export class PhoneAuthService {
     console.log('🔍 DEBUG - is capacitor:', this.platform.is('capacitor'));
     console.log('🔍 DEBUG - is android:', this.platform.is('android'));
     console.log('🔍 DEBUG - is ios:', this.platform.is('ios'));
+    console.log('🔍 DEBUG - Capacitor runtime present:', this.isNativeApp);
     console.log('🔍 DEBUG - platforms:', this.platform.platforms());
-    console.log('🔍 DEBUG - isNativeApp:', this.isNativeApp);
   }
 
   /**
@@ -56,11 +68,21 @@ export class PhoneAuthService {
   /**
    * Inicializa el reCAPTCHA invisible (solo para web)
    * @param containerId ID del div donde se montará el reCAPTCHA (usar 'recaptcha-container')
+   * @param force Si true, destruye y recrea el verificador (por defecto reutiliza el existente)
    */
-  initializeRecaptcha(containerId: string = 'recaptcha-container'): void {
+  initializeRecaptcha(
+    containerId: string = 'recaptcha-container',
+    force = false
+  ): void {
     // En apps nativas, no se usa reCAPTCHA
     if (this.isNativeApp) {
       console.log('⚡ App nativa detectada: reCAPTCHA no es necesario');
+      return;
+    }
+
+    // Reutilizar el verificador ya inicializado (evita recargar el widget)
+    if (this.recaptchaVerifier && !force) {
+      console.log('✅ reCAPTCHA ya inicializado, reutilizando');
       return;
     }
 
@@ -70,16 +92,13 @@ export class PhoneAuthService {
         this.recaptchaVerifier.clear();
       }
 
-      // Crear nuevo reCAPTCHA invisible
+      // Crear nuevo reCAPTCHA v2 invisible (flujo web estándar).
+      // NADA de parámetros Enterprise: solo size y callback. El widget se
+      // fuerza a renderizar el DOM en sendOTPWeb() antes de enviar.
       this.recaptchaVerifier = new RecaptchaVerifier(this.auth, containerId, {
         size: 'invisible',
         callback: (response: any) => {
-          console.log('✅ reCAPTCHA resuelto:', response);
-        },
-        'expired-callback': () => {
-          console.warn('⚠️ reCAPTCHA expirado, reiniciando...');
-          this.recaptchaVerifier?.clear();
-          this.recaptchaVerifier = null;
+          console.log('✅ reCAPTCHA v2 resuelto:', response);
         },
       });
 
@@ -124,19 +143,41 @@ export class PhoneAuthService {
    * 🌐 Envía OTP usando el SDK web (para navegadores)
    */
   private sendOTPWeb(phoneNumber: string): Observable<PhoneAuthResponse> {
-    console.log('🌐 Usando método WEB (reCAPTCHA)');
-
-    if (!this.recaptchaVerifier) {
-      console.error('❌ reCAPTCHA no inicializado');
-      return throwError(() => ({
-        success: false,
-        message:
-          'reCAPTCHA no inicializado. Llama a initializeRecaptcha() primero.',
-      }));
-    }
+    console.log('🌐 Usando método WEB (reCAPTCHA Enterprise)');
 
     return from(
-      signInWithPhoneNumber(this.auth, phoneNumber, this.recaptchaVerifier)
+      (async (): Promise<ConfirmationResult> => {
+        // 🆕 Flujo NATIVO del SDK: signInWithPhoneNumber() obtiene la config de
+        // recaptcha del backend (/v2/recaptchaConfig), que hoy devuelve la clave
+        // Enterprise vinculada (recaptchaKey) + enforcement AUDIT. El SDK carga
+        // 'enterprise.js' por su cuenta y produce el token Enterprise; App Check
+        // queda como header X-Firebase-AppCheck transparente.
+        // NADA de reCAPTCHA v2 aquí: renderizar el RecaptchaVerifier v2 cargaba
+        // 'api.js' y colisionaba con el loader Enterprise ("Invalid site key").
+        try {
+          console.log(
+            '🆕 Flujo NATIVO Enterprise sin reCAPTCHA v2, enviando SMS...'
+          );
+          return await signInWithPhoneNumber(this.auth, phoneNumber);
+        } catch (error: any) {
+          // Red de seguridad: solo si el SDK exige un verifier v2 (config
+          // degradada / auth/argument-error), reintentar con RecaptchaVerifier.
+          if (error?.code !== 'auth/argument-error') {
+            throw error;
+          }
+          console.warn(
+            '⚠️ argument-error: reintentando con reCAPTCHA v2 (config sin enterprise)'
+          );
+          this.initializeRecaptcha('recaptcha-container', true);
+          await this.recaptchaVerifier!.render();
+          console.log('✅ reCAPTCHA v2 renderizado, enviando SMS...');
+          return signInWithPhoneNumber(
+            this.auth,
+            phoneNumber,
+            this.recaptchaVerifier!
+          );
+        }
+      })()
     ).pipe(
       map((confirmationResult: ConfirmationResult) => {
         this.confirmationResult = confirmationResult;
@@ -152,6 +193,20 @@ export class PhoneAuthService {
       }),
       catchError((error: any) => {
         console.error('❌ Error al enviar OTP:', error);
+
+        // 🔍 Extraer TODA la información disponible del error de Firebase
+        this.logFirebaseAuthError(error);
+
+        // 🆕 Limpiar y reiniciar reCAPTCHA ante error para evitar widgets corruptos
+        if (this.recaptchaVerifier) {
+          try {
+            this.recaptchaVerifier.clear();
+          } catch {
+            // Ignorar errores de limpieza
+          }
+          this.recaptchaVerifier = null;
+        }
+
         let message = 'Error al enviar el código OTP';
 
         // Mensajes de error específicos
@@ -193,10 +248,69 @@ export class PhoneAuthService {
         return throwError(() => ({
           success: false,
           message,
-          error,
+          error: {
+            ...(typeof error === 'object' && error ? error : { raw: error }),
+            customData: error?.customData ?? null,
+            serverResponse: error?.serverResponse ?? null,
+          },
         }));
       })
     );
+  }
+
+  /**
+   * 🔍 Imprime TODA la información disponible de un error de Firebase Auth.
+   * El JS SDK esconde el body HTTP del 400 (serverResponse sale null), así que
+   * además de las propiedades estándar volcamos las claves internas y cualquier
+   * propiedad privada (_tokenResponse, _bytes, etc.).
+   */
+  private logFirebaseAuthError(err: any): void {
+    try {
+      console.error('🔥 Error crudo de Firebase Auth:', err);
+      if (err?.customData)
+        console.log(
+          '📦 customData:',
+          JSON.stringify(err.customData, null, 2)
+        );
+      if (err?.serverResponse)
+        console.log(
+          '🌐 serverResponse:',
+          JSON.stringify(err.serverResponse, null, 2)
+        );
+      console.log('🔍 Claves del objeto error:', Object.keys(err ?? {}));
+
+      // Propiedades internas que Firebase no expone en la API pública
+      const internals: Record<string, unknown> = {};
+      for (const key of [
+        '_tokenResponse',
+        '_bytes',
+        '_code',
+        'code',
+        'message',
+        'status',
+        'errorInfo',
+        'httpStatus',
+        'details',
+        'errorDetail',
+        'requestUrl',
+        'response',
+      ]) {
+        if (err && key in err) internals[key] = err[key];
+      }
+      console.log('🔍 Propiedades internas del error:', internals);
+
+      // Intento de volcado completo (puede fallar por prototipos circulares)
+      try {
+        console.error(
+          '🔍 Detalle completo del error (JSON):',
+          JSON.stringify(err, Object.keys(err ?? {}).concat(['customData', 'serverResponse', '_tokenResponse']), 2)
+        );
+      } catch {
+        console.error('🔍 No fue posible serializar el error completo.');
+      }
+    } catch (e) {
+      console.error('🔍 No se pudo inspeccionar el error:', e);
+    }
   }
 
   /**
@@ -211,18 +325,21 @@ export class PhoneAuthService {
 
     return new Observable((observer) => {
       let codeSentHandler: any;
+      let verificationCompletedHandler: any;
       let verificationFailedHandler: any;
       let completed = false;
 
       // 🔥 Timeout manual de 30 segundos
       const timeoutId = setTimeout(() => {
-        if (!completed) {
-          completed = true;
-          console.error('❌ Timeout: No se recibió respuesta en 30 segundos');
+if (!completed) {
+            completed = true;
+            console.error('❌ Timeout: No se recibió respuesta en 30 segundos');
 
-          // Limpiar listeners
-          if (codeSentHandler) codeSentHandler.remove();
-          if (verificationFailedHandler) verificationFailedHandler.remove();
+            // Limpiar listeners
+            if (codeSentHandler) codeSentHandler.remove();
+            if (verificationCompletedHandler)
+              verificationCompletedHandler.remove();
+            if (verificationFailedHandler) verificationFailedHandler.remove();
 
           observer.error({
             success: false,
@@ -244,6 +361,8 @@ export class PhoneAuthService {
 
         // Limpiar listeners
         if (codeSentHandler) codeSentHandler.remove();
+        if (verificationCompletedHandler)
+          verificationCompletedHandler.remove();
         if (verificationFailedHandler) verificationFailedHandler.remove();
 
         observer.next({
@@ -267,6 +386,8 @@ export class PhoneAuthService {
 
         // Limpiar listeners
         if (codeSentHandler) codeSentHandler.remove();
+        if (verificationCompletedHandler)
+          verificationCompletedHandler.remove();
         if (verificationFailedHandler) verificationFailedHandler.remove();
 
         let message = 'Error al enviar el código OTP';
@@ -293,6 +414,38 @@ export class PhoneAuthService {
         verificationFailedHandler = handler;
       });
 
+      // 🔥 Listener para phoneVerificationCompleted (auto-verificación nativa)
+      FirebaseAuthentication.addListener(
+        'phoneVerificationCompleted',
+        async (event) => {
+          if (completed) return;
+          completed = true;
+          clearTimeout(timeoutId);
+          console.log('✅ phoneVerificationCompleted event:', event);
+
+          // Limpiar listeners
+          if (codeSentHandler) codeSentHandler.remove();
+          if (verificationCompletedHandler)
+            verificationCompletedHandler.remove();
+          if (verificationFailedHandler) verificationFailedHandler.remove();
+
+          // Obtener el ID token de la sesión recién iniciada
+          const idTokenResult = await FirebaseAuthentication.getIdToken();
+          const idToken = idTokenResult?.token;
+          console.log('✅ ID Token (auto-verificación):', idToken);
+
+          observer.next({
+            success: true,
+            message: 'Autenticación automática completada',
+            verificationId: event.verificationCode,
+            firebaseToken: idToken ?? undefined,
+          });
+          observer.complete();
+        }
+      ).then((handler) => {
+        verificationCompletedHandler = handler;
+      });
+
       // 🔥 Llamar al método nativo
       FirebaseAuthentication.signInWithPhoneNumber({ phoneNumber })
         .then(() => {
@@ -308,6 +461,8 @@ export class PhoneAuthService {
 
           // Limpiar listeners
           if (codeSentHandler) codeSentHandler.remove();
+          if (verificationCompletedHandler)
+            verificationCompletedHandler.remove();
           if (verificationFailedHandler) verificationFailedHandler.remove();
 
           observer.error({
