@@ -1,0 +1,75 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+# Cancela el run anterior cuando se empuja otra vez a la misma rama.
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  api:
+    name: API (lint, formato, tipos, tests)
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: api-server
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          # 22 es el unico LTS que aceptan tanto NestJS 11 como Angular 20.
+          node-version: '22'
+          cache: npm
+          cache-dependency-path: api-server/package-lock.json
+
+      - run: npm ci
+
+      # lint antes que el build: el mensaje de error es mas util sin compilar.
+      - name: Lint
+        run: npm run lint
+
+      - name: Formato
+        run: npm run format:check
+
+      - name: Tipos
+        run: npx tsc --noEmit -p tsconfig.json
+
+      - name: Build
+        run: npm run build
+
+      # Los specs stubean ConfigService, asi que no hacen falta secretos
+      # ni servicios. Los e2e de test/ no corren aqui: requieren MySQL y
+      # Redis, y van aparte (npm run test:e2e).
+      - name: Tests
+        run: npm test
+
+  app:
+    name: App (lint, build)
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: delivery-frontend
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+          cache-dependency-path: delivery-frontend/package-lock.json
+
+      - run: npm ci
+
+      # ng lint sale con 0 pese a 3 warnings por directives eslint-disable
+      # muertos en el boilerplate de Angular; los errores si bloquean.
+      - name: Lint
+        run: npm run lint
+
+      - name: Build
+        run: npm run build
