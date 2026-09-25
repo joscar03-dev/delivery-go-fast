@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
@@ -83,6 +83,15 @@ import { Address } from '../../models/address.model';
   ],
 })
 export class CheckoutPage implements OnInit {
+  private cartService = inject(CartService);
+  private orderService = inject(OrderService);
+  private paymentService = inject(PaymentService);
+  private addressService = inject(AddressService);
+  private geolocationService = inject(GeolocationService);
+  private router = inject(Router);
+  private alertController = inject(AlertController);
+  private toastController = inject(ToastController);
+
   // Estado del carrito
   cartItems: CartItem[] = [];
   subtotal: number = 0;
@@ -117,16 +126,7 @@ export class CheckoutPage implements OnInit {
   isLoading: boolean = false;
   isCalculatingDelivery: boolean = false;
 
-  constructor(
-    private cartService: CartService,
-    private orderService: OrderService,
-    private paymentService: PaymentService,
-    private addressService: AddressService,
-    private geolocationService: GeolocationService,
-    private router: Router,
-    private alertController: AlertController,
-    private toastController: ToastController
-  ) {
+  constructor() {
     addIcons({
       locationOutline,
       walletOutline,

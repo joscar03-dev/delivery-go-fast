@@ -14,6 +14,8 @@ export default [
       'coverage/**',
       'projects/**',
       'eslint.config.mjs',
+      // Documento de referencia descargado, no es una plantilla de componente.
+      'src/ImplementarNotificacionesPushenIonicAngular.html',
     ],
   },
   {

@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import {
   FormsModule,
@@ -39,6 +39,13 @@ import { AuthService } from '../services/auth.service';
   ],
 })
 export class DriverApplicationPage implements OnInit {
+  private fb = inject(FormBuilder);
+  private driverApplicationService = inject(DriverApplicationService);
+  private loadingCtrl = inject(LoadingController);
+  private alertCtrl = inject(AlertController);
+  private navCtrl = inject(NavController);
+  private authService = inject(AuthService);
+
   application: DriverApplication | null = null;
   stage1Form!: FormGroup;
   stage2Form!: FormGroup;
@@ -63,14 +70,7 @@ export class DriverApplicationPage implements OnInit {
     { value: VehicleType.AUTO, label: 'Auto' },
   ];
 
-  constructor(
-    private fb: FormBuilder,
-    private driverApplicationService: DriverApplicationService,
-    private loadingCtrl: LoadingController,
-    private alertCtrl: AlertController,
-    private navCtrl: NavController,
-    private authService: AuthService
-  ) {
+  constructor() {
     this.initializeForms();
   }
 

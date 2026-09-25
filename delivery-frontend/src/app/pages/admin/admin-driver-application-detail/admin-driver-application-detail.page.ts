@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import {
   IonicModule,
@@ -22,19 +22,17 @@ import { firstValueFrom } from 'rxjs';
   imports: [IonicModule, CommonModule],
 })
 export class AdminDriverApplicationDetailPage implements OnInit {
+  private route = inject(ActivatedRoute);
+  private driverApplicationService = inject(DriverApplicationService);
+  private loadingCtrl = inject(LoadingController);
+  private alertCtrl = inject(AlertController);
+  private navCtrl = inject(NavController);
+
   application: DriverApplication | null = null;
   isLoading = false;
 
   // Enums para template
   ApplicationStatus = ApplicationStatus;
-
-  constructor(
-    private route: ActivatedRoute,
-    private driverApplicationService: DriverApplicationService,
-    private loadingCtrl: LoadingController,
-    private alertCtrl: AlertController,
-    private navCtrl: NavController
-  ) {}
 
   ngOnInit() {
     const id = this.route.snapshot.paramMap.get('id');

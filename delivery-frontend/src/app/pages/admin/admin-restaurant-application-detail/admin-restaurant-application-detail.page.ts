@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
@@ -23,21 +23,19 @@ import { firstValueFrom } from 'rxjs';
   imports: [IonicModule, CommonModule, FormsModule],
 })
 export class AdminRestaurantApplicationDetailPage implements OnInit {
+  private route = inject(ActivatedRoute);
+  private router = inject(Router);
+  private restaurantApplicationService = inject(RestaurantApplicationService);
+  private loadingCtrl = inject(LoadingController);
+  private alertCtrl = inject(AlertController);
+  private toastCtrl = inject(ToastController);
+
   application: RestaurantApplication | null = null;
   isLoading = false;
   applicationId: string = '';
 
   // Enums para template
   ApplicationStatus = ApplicationStatus;
-
-  constructor(
-    private route: ActivatedRoute,
-    private router: Router,
-    private restaurantApplicationService: RestaurantApplicationService,
-    private loadingCtrl: LoadingController,
-    private alertCtrl: AlertController,
-    private toastCtrl: ToastController
-  ) {}
 
   ngOnInit() {
     this.applicationId = this.route.snapshot.paramMap.get('id') || '';

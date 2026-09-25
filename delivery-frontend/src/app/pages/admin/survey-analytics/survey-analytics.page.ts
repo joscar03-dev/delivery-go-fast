@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import {
@@ -89,12 +89,12 @@ addIcons({
   ],
 })
 export class SurveyAnalyticsPage implements OnInit {
+  private surveyAnalyticsService = inject(SurveyAnalyticsService);
+
   analytics: ReviewAnalytics | null = null;
   allReviews: ReviewDetail[] = [];
   loading = true;
   exporting = false;
-
-  constructor(private surveyAnalyticsService: SurveyAnalyticsService) {}
 
   ngOnInit() {
     this.loadAnalytics();

@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
@@ -78,6 +78,12 @@ import { firstValueFrom } from 'rxjs';
   ],
 })
 export class RestaurantApplicationPage implements OnInit {
+  private restaurantApplicationService = inject(RestaurantApplicationService);
+  private restaurantService = inject(RestaurantService);
+  private toastCtrl = inject(ToastController);
+  private loadingCtrl = inject(LoadingController);
+  private router = inject(Router);
+
   formData: CreateRestaurantApplicationDto = {
     businessName: '',
     businessPhone: '',
@@ -100,13 +106,7 @@ export class RestaurantApplicationPage implements OnInit {
   // Enum para template
   ApplicationStatus = ApplicationStatus;
 
-  constructor(
-    private restaurantApplicationService: RestaurantApplicationService,
-    private restaurantService: RestaurantService,
-    private toastCtrl: ToastController,
-    private loadingCtrl: LoadingController,
-    private router: Router
-  ) {
+  constructor() {
     addIcons({
       storefrontOutline,
       callOutline,

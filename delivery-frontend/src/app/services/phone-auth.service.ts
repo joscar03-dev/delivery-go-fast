@@ -1,4 +1,4 @@
-import { Injectable, Optional, Inject } from '@angular/core';
+import { Injectable, inject } from '@angular/core';
 import {
   Auth,
   RecaptchaVerifier,
@@ -25,15 +25,15 @@ export interface PhoneAuthResponse {
   providedIn: 'root',
 })
 export class PhoneAuthService {
+  private auth = inject(Auth);
+  private platform = inject(Platform);
+  private appCheck = inject<AppCheck>(AppCheck, { optional: true });
+
   private recaptchaVerifier: RecaptchaVerifier | null = null;
   private confirmationResult: ConfirmationResult | null = null;
   private isNativeApp: boolean = false;
 
-  constructor(
-    private auth: Auth,
-    private platform: Platform,
-    @Optional() @Inject(AppCheck) private appCheck?: AppCheck
-  ) {
+  constructor() {
     // Detectar si estamos en una app nativa (Android/iOS) o en web.
     // Blindaje: solo se considera "nativa" si además el runtime de Capacitor
     // está realmente presente. En un navegador puro (aunque el UA diga

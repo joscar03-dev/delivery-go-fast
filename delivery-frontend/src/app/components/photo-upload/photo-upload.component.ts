@@ -1,4 +1,4 @@
-import { Component, Input, Output, EventEmitter } from '@angular/core';
+import { Component, Input, Output, EventEmitter, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import {
   IonicModule,
@@ -15,15 +15,13 @@ import { Camera, CameraResultType, CameraSource } from '@capacitor/camera';
   imports: [CommonModule, IonicModule],
 })
 export class PhotoUploadComponent {
+  private actionSheetCtrl = inject(ActionSheetController);
+  private alertCtrl = inject(AlertController);
+
   @Input() label: string = 'Subir Foto';
   @Input() photo: string | undefined;
   @Input() required: boolean = false;
   @Output() photoChange = new EventEmitter<string>();
-
-  constructor(
-    private actionSheetCtrl: ActionSheetController,
-    private alertCtrl: AlertController
-  ) {}
 
   async selectPhoto() {
     const actionSheet = await this.actionSheetCtrl.create({

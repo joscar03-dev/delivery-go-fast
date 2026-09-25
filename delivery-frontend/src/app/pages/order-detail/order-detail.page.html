@@ -93,6 +93,9 @@
             >
           </div>
 
+          <!-- eslint-disable-next-line @angular-eslint/template/eqeqeq -- "!=" cubre
+               null y undefined a la vez; con "!== null" una speed undefined
+               pasaria el filtro y se pintaria vacio. -->
           <div class="info-row" *ngIf="driverLocation.speed != null">
             <ion-icon name="speedometer-outline"></ion-icon>
             <span>Velocidad: {{ getDriverSpeed() }} km/h</span>

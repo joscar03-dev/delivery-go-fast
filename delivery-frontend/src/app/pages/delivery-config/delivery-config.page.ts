@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
@@ -70,6 +70,12 @@ import { RestaurantService } from '../../services/restaurant.service';
   ],
 })
 export class DeliveryConfigPage implements OnInit {
+  private route = inject(ActivatedRoute);
+  private router = inject(Router);
+  private restaurantService = inject(RestaurantService);
+  private toastController = inject(ToastController);
+  private alertController = inject(AlertController);
+
   restaurantId: string = '';
   restaurantName: string = '';
   isLoading = false;
@@ -85,13 +91,7 @@ export class DeliveryConfigPage implements OnInit {
     deliveryType: 'platform', // Nuevo campo: 'none' | 'restaurant' | 'platform'
   };
 
-  constructor(
-    private route: ActivatedRoute,
-    private router: Router,
-    private restaurantService: RestaurantService,
-    private toastController: ToastController,
-    private alertController: AlertController
-  ) {
+  constructor() {
     addIcons({
       saveOutline,
       cashOutline,

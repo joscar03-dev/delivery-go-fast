@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
@@ -67,14 +67,14 @@ import { RestaurantService } from '../../services/restaurant.service';
   ],
 })
 export class RestaurantAdminPage implements OnInit, ViewWillEnter {
+  private restaurantService = inject(RestaurantService);
+  private router = inject(Router);
+  private toastController = inject(ToastController);
+
   myRestaurants: any[] = [];
   isLoading = false;
 
-  constructor(
-    private restaurantService: RestaurantService,
-    private router: Router,
-    private toastController: ToastController
-  ) {
+  constructor() {
     addIcons({
       restaurantOutline,
       settingsOutline,

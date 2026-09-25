@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import {
   IonicModule,
@@ -21,6 +21,11 @@ import { firstValueFrom } from 'rxjs';
   imports: [IonicModule, CommonModule],
 })
 export class AdminDriverApplicationsPage implements OnInit {
+  private driverApplicationService = inject(DriverApplicationService);
+  private loadingCtrl = inject(LoadingController);
+  private alertCtrl = inject(AlertController);
+  private router = inject(Router);
+
   applications: DriverApplication[] = [];
   filteredApplications: DriverApplication[] = [];
   isLoading = false;
@@ -50,13 +55,6 @@ export class AdminDriverApplicationsPage implements OnInit {
     { value: ApplicationStatus.APPROVED, label: 'Aprobadas', color: 'success' },
     { value: ApplicationStatus.REJECTED, label: 'Rechazadas', color: 'danger' },
   ];
-
-  constructor(
-    private driverApplicationService: DriverApplicationService,
-    private loadingCtrl: LoadingController,
-    private alertCtrl: AlertController,
-    private router: Router
-  ) {}
 
   ngOnInit() {
     this.loadApplications();

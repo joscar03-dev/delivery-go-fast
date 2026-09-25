@@ -30,6 +30,9 @@
       <ion-label>
         <h2>{{ c.name }}</h2>
         <p>{{ c.description }}</p>
+        <!-- eslint-disable-next-line @angular-eslint/template/eqeqeq -- "!=" cubre
+             null y undefined a la vez; con "!== null" un sortOrder undefined
+             pasaria el filtro y se pintaria vacio. -->
         <p *ngIf="c.sortOrder != null">Orden: {{ c.sortOrder }}</p>
         <ion-badge [color]="c.isActive ? 'success' : 'medium'"
           >{{ c.isActive ? 'Activa' : 'Inactiva' }}</ion-badge

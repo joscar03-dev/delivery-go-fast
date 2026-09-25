@@ -1,4 +1,4 @@
-import { Injectable } from '@angular/core';
+import { Injectable, inject } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { environment } from '../../environments/environment';
@@ -21,9 +21,9 @@ export interface CoverageResponse {
   providedIn: 'root',
 })
 export class GeolocationService {
-  private apiUrl = `${environment.apiUrl}/geolocation`;
+  private http = inject(HttpClient);
 
-  constructor(private http: HttpClient) {}
+  private apiUrl = `${environment.apiUrl}/geolocation`;
 
   /**
    * Verifica si una ubicación está dentro de la zona de cobertura del servicio

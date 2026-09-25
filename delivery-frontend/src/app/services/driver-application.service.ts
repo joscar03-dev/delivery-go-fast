@@ -1,4 +1,4 @@
-import { Injectable } from '@angular/core';
+import { Injectable, inject } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { environment } from '../../environments/environment';
@@ -13,9 +13,9 @@ import {
   providedIn: 'root',
 })
 export class DriverApplicationService {
-  private apiUrl = `${environment.apiUrl}/driver-applications`;
+  private http = inject(HttpClient);
 
-  constructor(private http: HttpClient) {}
+  private apiUrl = `${environment.apiUrl}/driver-applications`;
 
   // Crear solicitud inicial (solo DNI, tipo vehículo, fecha nacimiento)
   create(dto: CreateDriverApplicationDto): Observable<DriverApplication> {

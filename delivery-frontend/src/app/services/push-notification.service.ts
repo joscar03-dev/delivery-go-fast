@@ -1,4 +1,4 @@
-import { Injectable } from '@angular/core';
+import { Injectable, inject } from '@angular/core';
 import {
   PushNotifications,
   Token,
@@ -22,15 +22,13 @@ import { Haptics, ImpactStyle } from '@capacitor/haptics';
   providedIn: 'root',
 })
 export class PushNotificationService {
+  private router = inject(Router);
+  private platform = inject(Platform);
+  private http = inject(HttpClient);
+  private toastController = inject(ToastController);
+
   private currentToken: string | null = null;
   private listenersInitialized: boolean = false;
-
-  constructor(
-    private router: Router,
-    private platform: Platform,
-    private http: HttpClient,
-    private toastController: ToastController
-  ) {}
 
   /**
    * Inicializa SOLO los listeners de notificaciones

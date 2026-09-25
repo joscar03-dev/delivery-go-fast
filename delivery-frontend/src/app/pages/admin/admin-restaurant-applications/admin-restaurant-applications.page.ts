@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import {
   IonicModule,
@@ -42,6 +42,11 @@ addIcons({
   imports: [IonicModule, CommonModule],
 })
 export class AdminRestaurantApplicationsPage implements OnInit {
+  private restaurantApplicationService = inject(RestaurantApplicationService);
+  private loadingCtrl = inject(LoadingController);
+  private alertCtrl = inject(AlertController);
+  private router = inject(Router);
+
   applications: RestaurantApplication[] = [];
   filteredApplications: RestaurantApplication[] = [];
   isLoading = false;
@@ -74,13 +79,6 @@ export class AdminRestaurantApplicationsPage implements OnInit {
       color: 'danger',
     },
   ];
-
-  constructor(
-    private restaurantApplicationService: RestaurantApplicationService,
-    private loadingCtrl: LoadingController,
-    private alertCtrl: AlertController,
-    private router: Router
-  ) {}
 
   ngOnInit() {
     this.loadApplications();

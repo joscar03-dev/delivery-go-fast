@@ -1,4 +1,4 @@
-import { Injectable } from '@angular/core';
+import { Injectable, inject } from '@angular/core';
 import { Platform, AlertController, LoadingController } from '@ionic/angular';
 import { Capacitor } from '@capacitor/core';
 
@@ -41,6 +41,10 @@ export interface OrderToPrint {
   providedIn: 'root',
 })
 export class ThermalPrinterService {
+  private platform = inject(Platform);
+  private alertController = inject(AlertController);
+  private loadingController = inject(LoadingController);
+
   private connectedPrinter: PrinterDevice | null = null;
   private isConnected: boolean = false;
 
@@ -62,11 +66,7 @@ export class ThermalPrinterService {
   private readonly LINE_80 =
     '------------------------------------------------\n'; // Para 80mm
 
-  constructor(
-    private platform: Platform,
-    private alertController: AlertController,
-    private loadingController: LoadingController
-  ) {
+  constructor() {
     console.log('🖨️ ThermalPrinterService inicializado');
   }
 

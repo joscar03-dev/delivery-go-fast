@@ -1,10 +1,4 @@
-import {
-  Component,
-  OnInit,
-  OnDestroy,
-  ViewChild,
-  ElementRef,
-} from '@angular/core';
+import { Component, OnInit, OnDestroy, ViewChild, ElementRef, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import {
@@ -59,6 +53,13 @@ import { FirebaseDiagnostics } from '../../utils/firebase-diagnostics';
   ],
 })
 export class PhoneLoginPage implements OnInit, OnDestroy {
+  private phoneAuthService = inject(PhoneAuthService);
+  private authService = inject(AuthService);
+  private router = inject(Router);
+  private alertController = inject(AlertController);
+  private loadingController = inject(LoadingController);
+  private auth = inject(Auth);
+
   @ViewChild('recaptchaContainer', { static: false, read: ElementRef })
   recaptchaContainer!: ElementRef;
 
@@ -82,14 +83,7 @@ export class PhoneLoginPage implements OnInit, OnDestroy {
   errorMessage = '';
   successMessage = '';
 
-  constructor(
-    private phoneAuthService: PhoneAuthService,
-    private authService: AuthService,
-    private router: Router,
-    private alertController: AlertController,
-    private loadingController: LoadingController,
-    private auth: Auth
-  ) {
+  constructor() {
     addIcons({ call, arrowBack, checkmarkCircle });
   }
 
