@@ -860,23 +860,49 @@ export class OrdersService {
     previousStatus?: OrderStatus,
   ): Promise<void> {
     try {
-      // 1. Emitir evento Socket.IO (para usuarios con app abierta)
-      this.deliveryGateway.server.emit('order-status-updated', {
-        orderId,
-        status: newStatus,
-        previousStatus,
-      });
-      console.log(
-        `✅ [Socket.IO] Estado actualizado para pedido ${orderId}: ${previousStatus} → ${newStatus}`,
-      );
-
-      // 2. Emitir evento de cambio de estado (notificación automática vía event listener)
+      // 1. Cargar el pedido para saber a quien le corresponde el aviso
       const order = await this.orderRepository.findOne({
         where: { id: orderId },
         relations: ['client', 'restaurant', 'restaurant.owner', 'driver'],
       });
 
-      if (order && order.client && order.restaurant) {
+      if (!order) {
+        console.warn(
+          `Pedido ${orderId} no encontrado, no se emite cambio de estado`,
+        );
+        return;
+      }
+
+      // 2. Emitir a las salas del pedido, no a todo el servidor. Con
+      // server.emit cualquier usuario conectado enteraba de cualquier cambio
+      // de estado de cualquier pedido. El repartidor asignado entra a
+      // order_<id> al hacer joinOrderRoom desde active-delivery.
+      const statusUpdate = {
+        orderId,
+        status: newStatus,
+        previousStatus,
+      };
+      const ownerId = order.restaurant?.owner?.id;
+
+      this.deliveryGateway.server
+        .to(`order_${orderId}`)
+        .emit('order-status-updated', statusUpdate);
+      this.deliveryGateway.server
+        .to(`role_${Role.SUPER_ADMIN}`)
+        .emit('order-status-updated', statusUpdate);
+
+      if (ownerId) {
+        this.deliveryGateway.server
+          .to(`restaurant_${ownerId}`)
+          .emit('order-status-updated', statusUpdate);
+      }
+
+      console.log(
+        `✅ [Socket.IO] Estado actualizado para pedido ${orderId}: ${previousStatus} → ${newStatus}`,
+      );
+
+      // 3. Emitir evento de cambio de estado (notificación automática vía event listener)
+      if (order.client && order.restaurant) {
         this.eventEmitter.emit(
           'order.status.changed',
           new OrderStatusChangedEvent(
@@ -898,8 +924,8 @@ export class OrdersService {
         );
       }
 
-      // 3. 📋 Si el pedido fue entregado, enviar notificación push para la encuesta
-      if (newStatus === OrderStatus.DELIVERED && order && order.client) {
+      // 4. 📋 Si el pedido fue entregado, enviar notificación push para la encuesta
+      if (newStatus === OrderStatus.DELIVERED && order.client) {
         console.log(
           `📋 Enviando notificación push para encuesta POST del pedido ${orderId}`,
         );
@@ -940,18 +966,28 @@ export class OrdersService {
         status: order.status,
       };
 
-      // 1. Emitir evento Socket.IO (para usuarios con app abierta)
-      this.deliveryGateway.server.emit('new-order-available', orderData);
+      // 1. Emitir a repartidores disponibles y al restaurante dueño, no a
+      // todo el servidor. Este payload lleva deliveryAddress y totalAmount:
+      // con server.emit, cada cliente y cada restaurante conectado veía en
+      // vivo la dirección de los pedidos de los demás.
+      const ownerId = order.restaurant?.owner?.id;
+
+      this.deliveryGateway.server
+        .to('available_drivers')
+        .emit('new-order-available', orderData);
+
+      if (ownerId) {
+        this.deliveryGateway.server
+          .to(`restaurant_${ownerId}`)
+          .emit('new-order-available', orderData);
+      }
+
       console.log(
         `✅ [Socket.IO] Evento 'new-order-available' emitido para pedido ${order.id}`,
       );
 
       // 2. Emitir evento de pedido creado (notificación automática vía event listener)
-      if (
-        order.restaurant?.owner?.id &&
-        order.client?.id &&
-        order.restaurant?.id
-      ) {
+      if (ownerId && order.client?.id && order.restaurant?.id) {
         this.eventEmitter.emit(
           'order.created',
           new OrderCreatedEvent(

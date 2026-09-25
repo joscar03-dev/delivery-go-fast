@@ -311,6 +311,14 @@ export class DeliveryGateway
     if (client.userRole === Role.CLIENT) {
       await client.join('clients');
     }
+
+    // El dueño entra a la sala de su propio restaurante. Es la unica forma
+    // de que el dashboard de un restaurante reciba sus pedidos por socket:
+    // canJoinOrderRoom no le deja entrar a order_<id>, asi que sin esta sala
+    // se queda sin avisos.
+    if (client.userRole === Role.RESTAURANT_OWNER && client.userId) {
+      await client.join(`restaurant_${client.userId}`);
+    }
   }
 
   private async canJoinOrderRoom(
